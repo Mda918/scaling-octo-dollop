@@ -13,13 +13,10 @@
     <header class="bg-white shadow">
         <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-blue-600">НаучныйСоавтор</h1>
-            
             <div class="flex items-center gap-4">
-                <!-- Блок для кнопки авторизации (управляется через JS) -->
                 <div id="auth-block">
                     <button id="loginBtn" class="text-blue-600 font-medium hover:underline">Войти / Регистрация</button>
                 </div>
-                
                 <button id="openModalBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">
                     + Создать объявление
                 </button>
@@ -30,7 +27,6 @@
     <!-- Основная часть -->
     <main class="max-w-5xl mx-auto px-4 py-8">
         <h2 class="text-xl font-semibold mb-4">Ищу соавтора</h2>
-
         <div class="flex flex-col md:flex-row gap-4 mb-6">
             <input type="text" id="searchInput" placeholder="Поиск по названию..." class="w-full md:w-1/2 border border-gray-300 rounded-lg px-4 py-2">
             <select id="filterRole" class="w-full md:w-1/2 border border-gray-300 rounded-lg px-4 py-2">
@@ -41,17 +37,14 @@
                 <option value="Гуманитарий">Гуманитарий</option>
             </select>
         </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Карточки -->
-        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </main>
 
-    <!-- Модальное окно СОЗДАНИЯ -->
+    <!-- Модальное окно СОЗДАНИЯ/РЕДАКТИРОВАНИЯ -->
     <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4 relative max-h-[90vh] overflow-y-auto">
             <button id="closeModalBtn" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
-            <h2 class="text-2xl font-bold mb-4 text-gray-800">Новое объявление</h2>
+            <h2 id="modalTitle" class="text-2xl font-bold mb-4 text-gray-800">Новое объявление</h2>
             <form id="projectForm" class="flex flex-col gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Тема (название)</label>
@@ -75,10 +68,27 @@
                     <textarea id="input-desc" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2"></textarea>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Ваши контакты (Telegram/Почта)</label>
-                    <input type="text" id="input-contact" required class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="@username или email@mail.ru">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Ваши контакты</label>
+                    <input type="text" id="input-contact" required class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="@username или email">
                 </div>
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg mt-2">
+                
+                <!-- БЛОК С КАРТИНКОЙ -->
+                <div class="border border-gray-200 p-3 rounded-lg bg-gray-50">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Картинка проекта</label>
+                    
+                    <div id="current-image-container" class="hidden mb-3 flex items-center gap-3">
+                        <img id="current-image-preview" src="" alt="Текущая картинка" class="h-16 w-16 object-cover rounded-lg border border-gray-300 transition-opacity">
+                        <label class="flex items-center gap-2 text-sm text-red-600 cursor-pointer bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-100 transition">
+                            <input type="checkbox" id="delete-image-checkbox" class="rounded text-red-600 focus:ring-red-500">
+                            Удалить текущую картинку
+                        </label>
+                    </div>
+
+                    <input type="file" id="input-image" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200">
+                    <p class="text-xs text-gray-500 mt-2">Выберите новый файл, чтобы заменить картинку.</p>
+                </div>
+
+                <button type="submit" id="submitBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg mt-2 disabled:opacity-50">
                     Опубликовать
                 </button>
             </form>
@@ -98,12 +108,11 @@
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ (ВХОД/РЕГИСТРАЦИЯ) -->
+    <!-- МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ -->
     <div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4 relative">
             <button id="closeAuthBtn" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
             <h2 class="text-2xl font-bold mb-4 text-gray-800">Вход в систему</h2>
-            
             <form id="authForm" class="flex flex-col gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -113,7 +122,6 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Пароль (мин. 6 символов)</label>
                     <input type="password" id="auth-password" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
                 </div>
-                
                 <div class="flex gap-2 mt-2">
                     <button type="submit" id="loginSubmitBtn" class="w-1/2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Войти</button>
                     <button type="button" id="signupSubmitBtn" class="w-1/2 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Регистрация</button>
@@ -124,15 +132,14 @@
     </div>
 
     <script>
-        // --- НАСТРОЙКИ SUPABASE ---
         const supabaseUrl = 'https://afpqnklgtibofojlvjzm.supabase.co'; 
         const supabaseKey = 'sb_publishable_E023w2ojf9VIqr78rN5VWQ_jOu9uKDQ'; 
         const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        let currentUser = null; // Здесь будем хранить вошедшего пользователя
+        let currentUser = null;
         let allProjects = [];
+        let editingProjectId = null; 
 
-        // --- ЭЛЕМЕНТЫ ---
         const modal = document.getElementById('modal');
         const openBtn = document.getElementById('openModalBtn');
         const closeBtn = document.getElementById('closeModalBtn');
@@ -140,8 +147,20 @@
         const grid = document.querySelector('.grid');
         const searchInput = document.getElementById('searchInput');
         const filterRole = document.getElementById('filterRole');
+        const modalTitle = document.getElementById('modalTitle');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        const fileInput = document.getElementById('input-image');
+        
+        const currentImageContainer = document.getElementById('current-image-container');
+        const currentImagePreview = document.getElementById('current-image-preview');
+        const deleteImageCheckbox = document.getElementById('delete-image-checkbox');
 
-        // Авторизация элементы
+        // Визуальный эффект для галочки удаления
+        deleteImageCheckbox.addEventListener('change', () => {
+            currentImagePreview.style.opacity = deleteImageCheckbox.checked ? '0.2' : '1';
+        });
+
         const authModal = document.getElementById('authModal');
         const loginBtn = document.getElementById('loginBtn');
         const closeAuthBtn = document.getElementById('closeAuthBtn');
@@ -149,7 +168,6 @@
         const authBlock = document.getElementById('auth-block');
         const authMessage = document.getElementById('authMessage');
         
-        // Окно отклика
         const respondModal = document.getElementById('respondModal');
         const closeRespondBtn = document.getElementById('closeRespondBtn');
         const closeRespondBtn2 = document.getElementById('closeRespondBtn2');
@@ -161,10 +179,23 @@
                 authModal.classList.remove('hidden'); authModal.classList.add('flex');
                 return;
             }
+            editingProjectId = null;
+            modalTitle.innerText = "Новое объявление";
+            submitBtn.innerText = "Опубликовать";
+            form.reset();
+            currentImageContainer.classList.add('hidden');
+            deleteImageCheckbox.checked = false;
+            currentImagePreview.style.opacity = '1';
+            
             modal.classList.remove('hidden'); modal.classList.add('flex'); 
         });
-        closeBtn.addEventListener('click', () => { modal.classList.add('hidden'); modal.classList.remove('flex'); });
-        
+
+        closeBtn.addEventListener('click', () => { 
+            modal.classList.add('hidden'); modal.classList.remove('flex'); 
+            form.reset();
+            editingProjectId = null;
+        });
+
         loginBtn.addEventListener('click', () => { authModal.classList.remove('hidden'); authModal.classList.add('flex'); });
         closeAuthBtn.addEventListener('click', () => { authModal.classList.add('hidden'); authModal.classList.remove('flex'); authMessage.classList.add('hidden'); });
         
@@ -177,21 +208,15 @@
         closeRespondBtn2.addEventListener('click', () => { respondModal.classList.add('hidden'); respondModal.classList.remove('flex'); });
 
         // --- АВТОРИЗАЦИЯ ---
-        // Проверяем, вошел ли кто-то при загрузке страницы
         async function checkUser() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             updateAuthUI(session);
-            
-            // Слушаем изменения (вход/выход)
-            supabaseClient.auth.onAuthStateChange((_event, session) => {
-                updateAuthUI(session);
-            });
+            supabaseClient.auth.onAuthStateChange((_event, session) => { updateAuthUI(session); });
         }
 
         function updateAuthUI(session) {
             if (session) {
                 currentUser = session.user;
-                // Показываем email и кнопку Выйти
                 authBlock.innerHTML = `
                     <span class="text-sm text-gray-600 mr-2">${currentUser.email}</span>
                     <button id="logoutBtn" class="text-red-500 font-medium hover:underline text-sm">Выйти</button>
@@ -201,52 +226,42 @@
                 });
             } else {
                 currentUser = null;
-                // Показываем кнопку Войти
                 authBlock.innerHTML = `<button id="loginBtn" class="text-blue-600 font-medium hover:underline">Войти / Регистрация</button>`;
                 document.getElementById('loginBtn').addEventListener('click', () => { 
                     authModal.classList.remove('hidden'); authModal.classList.add('flex'); 
                 });
             }
-            loadProjects(); // Перезагружаем карточки, чтобы обновить кнопки удаления
+            loadProjects();
         }
 
-        // Обработка формы входа
         authForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
-            
             const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-            
             if (error) {
                 authMessage.innerText = "Ошибка: " + error.message;
                 authMessage.className = "text-sm text-center mt-2 text-red-500 block";
             } else {
                 authModal.classList.add('hidden'); authModal.classList.remove('flex');
-                authForm.reset();
-                authMessage.classList.add('hidden');
+                authForm.reset(); authMessage.classList.add('hidden');
             }
         });
 
-        // Обработка формы регистрации
         document.getElementById('signupSubmitBtn').addEventListener('click', async (e) => {
             e.preventDefault();
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
-            
             if(password.length < 6) {
                 authMessage.innerText = "Пароль должен быть не менее 6 символов.";
-                authMessage.className = "text-sm text-center mt-2 text-red-500 block";
-                return;
+                authMessage.className = "text-sm text-center mt-2 text-red-500 block"; return;
             }
-
             const { error } = await supabaseClient.auth.signUp({ email, password });
-            
             if (error) {
                 authMessage.innerText = "Ошибка: " + error.message;
                 authMessage.className = "text-sm text-center mt-2 text-red-500 block";
             } else {
-                authMessage.innerText = "Успех! Если вы не отключили подтверждение почты, проверьте email.";
+                authMessage.innerText = "Успех! Теперь вы можете войти.";
                 authMessage.className = "text-sm text-center mt-2 text-green-600 block";
                 authForm.reset();
             }
@@ -254,25 +269,33 @@
 
         // --- ОТРИСОВКА КАРТОЧЕК ---
         function createCardHTML(project) {
-            // Показываем кнопку удаления ТОЛЬКО если user_id карточки совпадает с ID текущего пользователя
-            const isAuthor = currentUser && project.user_id === currentUser.id;
-            const deleteBtnHTML = isAuthor 
-                ? `<button onclick="deleteProject(${project.id})" class="text-red-500 hover:text-red-700 text-sm font-semibold">Удалить</button>`
+            const isAuthor = currentUser && String(project.user_id) === String(currentUser.id);
+            
+            const actionBtnsHTML = isAuthor 
+                ? `<button onclick="editProject('${project.id}')" class="text-blue-500 hover:text-blue-700 text-sm font-semibold">Изменить</button>
+                   <button onclick="deleteProject('${project.id}')" class="text-red-500 hover:text-red-700 text-sm font-semibold">Удалить</button>`
+                : '';
+
+            const imageHTML = project.image_url 
+                ? `<img src="${project.image_url}" alt="Обложка" class="w-full h-48 object-cover rounded-t-xl">` 
                 : '';
 
             return `
-            <div class="bg-white rounded-xl shadow p-5 border border-gray-100 hover:shadow-md transition relative flex flex-col">
-                <div class="flex justify-between items-start mb-3">
-                    <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded font-bold">Новое</span>
-                    <span class="text-xs text-gray-400">${project.deadline}</span>
-                </div>
-                <h3 class="font-bold text-lg mb-2">${project.title}</h3>
-                <p class="text-sm text-gray-600 mb-4 line-clamp-3 flex-grow">${project.description || 'Описание не добавлено.'}</p>
-                <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
-                    <span class="text-xs font-medium text-gray-500">Нужен: ${project.role}</span>
-                    <div class="flex gap-3">
-                        <button onclick="openRespond('${project.title.replace(/'/g, "\\'")}', '${project.contact}')" class="text-blue-600 text-sm font-semibold hover:underline">Откликнуться</button>
-                        ${deleteBtnHTML}
+            <div class="bg-white rounded-xl shadow border border-gray-100 hover:shadow-md transition relative flex flex-col overflow-hidden">
+                ${imageHTML}
+                <div class="p-5 flex flex-col flex-grow">
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded font-bold">Проект</span>
+                        <span class="text-xs text-gray-400">${project.deadline}</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">${project.title}</h3>
+                    <p class="text-sm text-gray-600 mb-4 line-clamp-3 flex-grow">${project.description || 'Описание не добавлено.'}</p>
+                    <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
+                        <span class="text-xs font-medium text-gray-500">Нужен: ${project.role}</span>
+                        <div class="flex gap-3">
+                            <button onclick="openRespond('${project.title.replace(/'/g, "\\'")}', '${project.contact}')" class="text-blue-600 text-sm font-semibold hover:underline">Откликнуться</button>
+                            ${actionBtnsHTML}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -282,83 +305,163 @@
         function renderProjects() {
             const searchText = searchInput.value.toLowerCase();
             const selectedRole = filterRole.value;
-
             const filtered = allProjects.filter(project => {
                 const matchesSearch = project.title.toLowerCase().includes(searchText) || (project.description && project.description.toLowerCase().includes(searchText));
                 const matchesRole = selectedRole === "" || project.role === selectedRole;
                 return matchesSearch && matchesRole;
             });
-
             grid.innerHTML = '';
             if (filtered.length === 0) {
-                grid.innerHTML = '<p class="text-gray-500 col-span-3 text-center py-8">Ничего не найдено.</p>';
-                return;
+                grid.innerHTML = '<p class="text-gray-500 col-span-3 text-center py-8">Ничего не найдено.</p>'; return;
             }
-            filtered.forEach(project => {
-                grid.insertAdjacentHTML('beforeend', createCardHTML(project));
-            });
+            filtered.forEach(project => { grid.insertAdjacentHTML('beforeend', createCardHTML(project)); });
         }
 
         async function loadProjects() {
             const { data, error } = await supabaseClient.from('projects').select('*').order('id', { ascending: false });
-            if (error) {
-                console.error('Ошибка загрузки:', error);
-            } else {
-                allProjects = data;
-                renderProjects();
+            if (error) { console.error('Ошибка загрузки:', error); } else {
+                allProjects = data; renderProjects();
             }
         }
-
         searchInput.addEventListener('input', renderProjects);
         filterRole.addEventListener('change', renderProjects);
 
-        // --- УДАЛЕНИЕ ---
         async function deleteProject(id) {
             if(confirm('Точно удалить это объявление?')) {
                 const { error } = await supabaseClient.from('projects').delete().eq('id', id);
-                if (error) {
-                    alert("Ошибка при удалении! Возможно, это не ваша карточка.");
-                    console.error(error);
-                } else {
-                    loadProjects();
-                }
+                if (error) { alert("Ошибка при удалении!"); console.error(error); } else { loadProjects(); }
             }
         }
 
-        // --- ОТПРАВКА ФОРМЫ ---
+        // --- ФУНКЦИЯ РЕДАКТИРОВАНИЯ ---
+        window.editProject = function(id) {
+            const project = allProjects.find(p => String(p.id) === String(id));
+            if (!project) {
+                console.error("Ошибка: Проект не найден!");
+                return;
+            }
+
+            editingProjectId = id;
+            modalTitle.innerText = "Редактировать объявление";
+            submitBtn.innerText = "Сохранить изменения";
+
+            document.getElementById('input-title').value = project.title;
+            document.getElementById('input-deadline').value = project.deadline;
+            document.getElementById('input-role').value = project.role;
+            document.getElementById('input-desc').value = project.description || '';
+            document.getElementById('input-contact').value = project.contact;
+            
+            fileInput.value = '';
+
+            if (project.image_url) {
+                currentImagePreview.src = project.image_url;
+                currentImageContainer.classList.remove('hidden');
+            } else {
+                currentImageContainer.classList.add('hidden');
+            }
+            deleteImageCheckbox.checked = false;
+            currentImagePreview.style.opacity = '1';
+
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+        }
+
+        // --- ОТПРАВКА ФОРМЫ (СОЗДАНИЕ ИЛИ ОБНОВЛЕНИЕ) ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault(); 
             
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Сохранение...";
+
             const titleText = document.getElementById('input-title').value;
             const deadlineText = document.getElementById('input-deadline').value || 'сроки не указаны';
             const roleText = document.getElementById('input-role').value;
             const descText = document.getElementById('input-desc').value;
             const contactText = document.getElementById('input-contact').value;
+            
+            const file = fileInput.files[0];
+            let imageUrl = null; 
 
-            // Добавляем user_id
-            const { error } = await supabaseClient.from('projects').insert([
-                { 
-                    title: titleText, 
-                    deadline: deadlineText, 
-                    role: roleText, 
-                    description: descText, 
-                    contact: contactText,
-                    user_id: currentUser.id 
+            if (file) {
+                const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+                const fileName = `${Date.now()}_${cleanName}`;
+                
+                const { error: uploadError } = await supabaseClient.storage
+                    .from('project-images')
+                    .upload(fileName, file);
+
+                if (!uploadError) {
+                    const { data: { publicUrl } } = supabaseClient.storage
+                        .from('project-images')
+                        .getPublicUrl(fileName);
+                    imageUrl = publicUrl;
+                } else {
+                    alert('Ошибка при загрузке картинки!');
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = editingProjectId ? "Сохранить изменения" : "Опубликовать";
+                    return;
                 }
-            ]);
-
-            if (error) {
-                alert('Ошибка при сохранении! Нажми F12 и посмотри консоль.');
-                console.error(error);
-            } else {
-                loadProjects();
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-                form.reset(); 
             }
+
+            if (editingProjectId) {
+                // РЕЖИМ РЕДАКТИРОВАНИЯ
+                const currentProject = allProjects.find(p => String(p.id) === String(editingProjectId));
+                let finalImageUrl = currentProject ? currentProject.image_url : null;
+
+                if (file) {
+                    finalImageUrl = imageUrl;
+                } else if (deleteImageCheckbox.checked) {
+                    finalImageUrl = null;
+                }
+
+                const updateData = {
+                    title: titleText, deadline: deadlineText, role: roleText, 
+                    description: descText, contact: contactText,
+                    image_url: finalImageUrl
+                };
+
+                const { data, error } = await supabaseClient
+                    .from('projects')
+                    .update(updateData)
+                    .eq('id', editingProjectId)
+                    .select(); 
+
+                if (error) {
+                    console.error("Ошибка от Supabase:", error);
+                    alert('Ошибка при обновлении! Посмотри консоль.');
+                } else if (data.length === 0) {
+                    alert('Не удалось обновить. Возможно, это не ваша карточка.');
+                } else {
+                    loadProjects();
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    form.reset(); 
+                    editingProjectId = null; 
+                }
+            } else {
+                // РЕЖИМ СОЗДАНИЯ
+                const { error } = await supabaseClient.from('projects').insert([
+                    { 
+                        title: titleText, deadline: deadlineText, role: roleText, 
+                        description: descText, contact: contactText,
+                        user_id: currentUser.id, image_url: imageUrl
+                    }
+                ]);
+
+                if (error) {
+                    alert('Ошибка при сохранении!');
+                    console.error(error);
+                } else {
+                    loadProjects();
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    form.reset(); 
+                }
+            }
+
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Опубликовать"; 
         });
 
-        // Инициализация
         checkUser();
     </script>
 </body>
