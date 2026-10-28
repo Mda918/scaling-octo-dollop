@@ -14,7 +14,8 @@
         <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-blue-600">НаучныйСоавтор</h1>
             <div class="flex items-center gap-4">
-                <div id="auth-block">
+                <div id="auth-block" class="flex items-center gap-3">
+                    <!-- Сюда JS вставит кнопки профиля и выхода -->
                     <button id="loginBtn" class="text-blue-600 font-medium hover:underline">Войти / Регистрация</button>
                 </div>
                 <button id="openModalBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">
@@ -40,7 +41,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </main>
 
-    <!-- Модальное окно СОЗДАНИЯ/РЕДАКТИРОВАНИЯ -->
+    <!-- Модальное окно СОЗДАНИЯ/РЕДАКТИРОВАНИЯ ПРОЕКТА -->
     <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4 relative max-h-[90vh] overflow-y-auto">
             <button id="closeModalBtn" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
@@ -72,26 +73,69 @@
                     <input type="text" id="input-contact" required class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="@username или email">
                 </div>
                 
-                <!-- БЛОК С КАРТИНКОЙ -->
                 <div class="border border-gray-200 p-3 rounded-lg bg-gray-50">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Картинка проекта</label>
-                    
                     <div id="current-image-container" class="hidden mb-3 flex items-center gap-3">
-                        <img id="current-image-preview" src="" alt="Текущая картинка" class="h-16 w-16 object-cover rounded-lg border border-gray-300 transition-opacity">
+                        <img id="current-image-preview" src="" alt="Текущая картинка" class="h-16 w-16 object-cover rounded-lg border border-gray-300">
                         <label class="flex items-center gap-2 text-sm text-red-600 cursor-pointer bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-100 transition">
                             <input type="checkbox" id="delete-image-checkbox" class="rounded text-red-600 focus:ring-red-500">
-                            Удалить текущую картинку
+                            Удалить картинку
                         </label>
                     </div>
-
                     <input type="file" id="input-image" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200">
-                    <p class="text-xs text-gray-500 mt-2">Выберите новый файл, чтобы заменить картинку.</p>
                 </div>
-
                 <button type="submit" id="submitBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg mt-2 disabled:opacity-50">
                     Опубликовать
                 </button>
             </form>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО ПРОФИЛЯ (РЕДАКТИРОВАНИЕ) -->
+    <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4 relative">
+            <button id="closeProfileBtn" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">Мой профиль</h2>
+            <form id="profileForm" class="flex flex-col gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Ваше ФИО или Имя</label>
+                    <input type="text" id="profile-name" required class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Иванов Иван">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Университет</label>
+                    <input type="text" id="profile-university" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="МГУ им. Ломоносова">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Факультет / Курс</label>
+                    <input type="text" id="profile-faculty" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Медицинский, 3 курс">
+                </div>
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg mt-2">
+                    Сохранить профиль
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО ПРОСМОТРА ЧУЖОГО ПРОФИЛЯ -->
+    <div id="viewProfileModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4 relative">
+            <button id="closeViewProfileBtn" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">Профиль автора</h2>
+            <div class="flex flex-col gap-3">
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-sm text-gray-500">Имя:</p>
+                    <p id="view-profile-name" class="font-semibold text-lg text-gray-900"></p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-sm text-gray-500">Университет:</p>
+                    <p id="view-profile-university" class="font-semibold text-gray-900"></p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-sm text-gray-500">Факультет:</p>
+                    <p id="view-profile-faculty" class="font-semibold text-gray-900"></p>
+                </div>
+            </div>
+            <button id="closeViewProfileBtn2" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg mt-6 transition">Закрыть</button>
         </div>
     </div>
 
@@ -138,8 +182,10 @@
 
         let currentUser = null;
         let allProjects = [];
+        let allProfiles = []; 
         let editingProjectId = null; 
 
+        // Элементы
         const modal = document.getElementById('modal');
         const openBtn = document.getElementById('openModalBtn');
         const closeBtn = document.getElementById('closeModalBtn');
@@ -149,17 +195,11 @@
         const filterRole = document.getElementById('filterRole');
         const modalTitle = document.getElementById('modalTitle');
         const submitBtn = document.getElementById('submitBtn');
-        
         const fileInput = document.getElementById('input-image');
         
         const currentImageContainer = document.getElementById('current-image-container');
         const currentImagePreview = document.getElementById('current-image-preview');
         const deleteImageCheckbox = document.getElementById('delete-image-checkbox');
-
-        // Визуальный эффект для галочки удаления
-        deleteImageCheckbox.addEventListener('change', () => {
-            currentImagePreview.style.opacity = deleteImageCheckbox.checked ? '0.2' : '1';
-        });
 
         const authModal = document.getElementById('authModal');
         const loginBtn = document.getElementById('loginBtn');
@@ -171,6 +211,14 @@
         const respondModal = document.getElementById('respondModal');
         const closeRespondBtn = document.getElementById('closeRespondBtn');
         const closeRespondBtn2 = document.getElementById('closeRespondBtn2');
+
+        // Элементы профиля
+        const profileModal = document.getElementById('profileModal');
+        const closeProfileBtn = document.getElementById('closeProfileBtn');
+        const profileForm = document.getElementById('profileForm');
+        const viewProfileModal = document.getElementById('viewProfileModal');
+        const closeViewProfileBtn = document.getElementById('closeViewProfileBtn');
+        const closeViewProfileBtn2 = document.getElementById('closeViewProfileBtn2');
 
         // --- УПРАВЛЕНИЕ ОКНАМИ ---
         openBtn.addEventListener('click', () => { 
@@ -185,20 +233,17 @@
             form.reset();
             currentImageContainer.classList.add('hidden');
             deleteImageCheckbox.checked = false;
-            currentImagePreview.style.opacity = '1';
-            
             modal.classList.remove('hidden'); modal.classList.add('flex'); 
         });
-
-        closeBtn.addEventListener('click', () => { 
-            modal.classList.add('hidden'); modal.classList.remove('flex'); 
-            form.reset();
-            editingProjectId = null;
-        });
-
+        closeBtn.addEventListener('click', () => { modal.classList.add('hidden'); modal.classList.remove('flex'); form.reset(); editingProjectId = null; });
+        
         loginBtn.addEventListener('click', () => { authModal.classList.remove('hidden'); authModal.classList.add('flex'); });
         closeAuthBtn.addEventListener('click', () => { authModal.classList.add('hidden'); authModal.classList.remove('flex'); authMessage.classList.add('hidden'); });
         
+        closeProfileBtn.addEventListener('click', () => { profileModal.classList.add('hidden'); profileModal.classList.remove('flex'); });
+        closeViewProfileBtn.addEventListener('click', () => { viewProfileModal.classList.add('hidden'); viewProfileModal.classList.remove('flex'); });
+        closeViewProfileBtn2.addEventListener('click', () => { viewProfileModal.classList.add('hidden'); viewProfileModal.classList.remove('flex'); });
+
         function openRespond(title, contact) {
             document.getElementById('respondTitle').innerText = title;
             document.getElementById('respondContact').innerText = contact || 'Автор не указал контакты';
@@ -214,13 +259,24 @@
             supabaseClient.auth.onAuthStateChange((_event, session) => { updateAuthUI(session); });
         }
 
-        function updateAuthUI(session) {
+        async function updateAuthUI(session) {
             if (session) {
                 currentUser = session.user;
                 authBlock.innerHTML = `
-                    <span class="text-sm text-gray-600 mr-2">${currentUser.email}</span>
-                    <button id="logoutBtn" class="text-red-500 font-medium hover:underline text-sm">Выйти</button>
+                    <button id="myProfileBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1.5 rounded-lg text-sm font-medium transition">Мой профиль</button>
+                    <span class="text-sm text-gray-600 hidden md:inline">${currentUser.email}</span>
+                    <button id="logoutBtn" class="text-red-500 font-medium hover:underline text-sm ml-2">Выйти</button>
                 `;
+                
+                // Обработчик кнопки Мой профиль
+                document.getElementById('myProfileBtn').addEventListener('click', () => {
+                    const myProfile = allProfiles.find(p => p.id === currentUser.id);
+                    document.getElementById('profile-name').value = myProfile?.full_name || '';
+                    document.getElementById('profile-university').value = myProfile?.university || '';
+                    document.getElementById('profile-faculty').value = myProfile?.faculty || '';
+                    profileModal.classList.remove('hidden'); profileModal.classList.add('flex');
+                });
+
                 document.getElementById('logoutBtn').addEventListener('click', async () => {
                     await supabaseClient.auth.signOut();
                 });
@@ -231,9 +287,11 @@
                     authModal.classList.remove('hidden'); authModal.classList.add('flex'); 
                 });
             }
+            await loadProfiles();
             loadProjects();
         }
 
+        // Вход/Регистрация
         authForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('auth-email').value;
@@ -267,6 +325,60 @@
             }
         });
 
+        // --- СОХРАНЕНИЕ ПРОФИЛЯ ---
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const full_name = document.getElementById('profile-name').value;
+            const university = document.getElementById('profile-university').value;
+            const faculty = document.getElementById('profile-faculty').value;
+
+            // upsert = обновить, если есть, или создать, если нет
+            const { error } = await supabaseClient.from('profiles').upsert({
+                id: currentUser.id,
+                email: currentUser.email,
+                full_name: full_name,
+                university: university,
+                faculty: faculty
+            });
+
+            if (error) {
+                alert("Ошибка при сохранении профиля!");
+                console.error(error);
+            } else {
+                alert("Профиль успешно сохранен!");
+                profileModal.classList.add('hidden'); profileModal.classList.remove('flex');
+                await loadProfiles(); // Обновляем список профилей
+                loadProjects(); // Перерисовываем карточки
+            }
+        });
+
+        // --- ПРОСМОТР ЧУЖОГО ПРОФИЛЯ ---
+        window.viewAuthorProfile = function(authorId) {
+            const profile = allProfiles.find(p => p.id === authorId);
+            if (!profile) {
+                alert("Этот автор еще не заполнил свой профиль.");
+                return;
+            }
+            document.getElementById('view-profile-name').innerText = profile.full_name || 'Не указано';
+            document.getElementById('view-profile-university').innerText = profile.university || 'Не указано';
+            document.getElementById('view-profile-faculty').innerText = profile.faculty || 'Не указано';
+            viewProfileModal.classList.remove('hidden'); viewProfileModal.classList.add('flex');
+        }
+
+        // --- ЗАГРУЗКА ДАННЫХ ---
+        async function loadProfiles() {
+            const { data, error } = await supabaseClient.from('profiles').select('*');
+            if (!error) allProfiles = data;
+        }
+
+        async function loadProjects() {
+            const { data, error } = await supabaseClient.from('projects').select('*').order('id', { ascending: false });
+            if (!error) {
+                allProjects = data; 
+                renderProjects();
+            }
+        }
+
         // --- ОТРИСОВКА КАРТОЧЕК ---
         function createCardHTML(project) {
             const isAuthor = currentUser && String(project.user_id) === String(currentUser.id);
@@ -280,6 +392,10 @@
                 ? `<img src="${project.image_url}" alt="Обложка" class="w-full h-48 object-cover rounded-t-xl">` 
                 : '';
 
+            // Ищем имя автора в загруженных профилях
+            const authorProfile = allProfiles.find(p => p.id === project.user_id);
+            const authorName = authorProfile && authorProfile.full_name ? authorProfile.full_name : 'Аноним';
+
             return `
             <div class="bg-white rounded-xl shadow border border-gray-100 hover:shadow-md transition relative flex flex-col overflow-hidden">
                 ${imageHTML}
@@ -288,7 +404,11 @@
                         <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded font-bold">Проект</span>
                         <span class="text-xs text-gray-400">${project.deadline}</span>
                     </div>
-                    <h3 class="font-bold text-lg mb-2">${project.title}</h3>
+                    <h3 class="font-bold text-lg mb-1">${project.title}</h3>
+                    
+                    <!-- Ссылка на профиль автора -->
+                    <p class="text-xs text-gray-500 mb-3">Автор: <span onclick="viewAuthorProfile('${project.user_id}')" class="text-blue-600 font-medium cursor-pointer hover:underline">${authorName}</span></p>
+
                     <p class="text-sm text-gray-600 mb-4 line-clamp-3 flex-grow">${project.description || 'Описание не добавлено.'}</p>
                     <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
                         <span class="text-xs font-medium text-gray-500">Нужен: ${project.role}</span>
@@ -317,12 +437,6 @@
             filtered.forEach(project => { grid.insertAdjacentHTML('beforeend', createCardHTML(project)); });
         }
 
-        async function loadProjects() {
-            const { data, error } = await supabaseClient.from('projects').select('*').order('id', { ascending: false });
-            if (error) { console.error('Ошибка загрузки:', error); } else {
-                allProjects = data; renderProjects();
-            }
-        }
         searchInput.addEventListener('input', renderProjects);
         filterRole.addEventListener('change', renderProjects);
 
@@ -333,13 +447,9 @@
             }
         }
 
-        // --- ФУНКЦИЯ РЕДАКТИРОВАНИЯ ---
         window.editProject = function(id) {
             const project = allProjects.find(p => String(p.id) === String(id));
-            if (!project) {
-                console.error("Ошибка: Проект не найден!");
-                return;
-            }
+            if (!project) return;
 
             editingProjectId = id;
             modalTitle.innerText = "Редактировать объявление";
@@ -365,7 +475,7 @@
             modal.classList.remove('hidden'); modal.classList.add('flex');
         }
 
-        // --- ОТПРАВКА ФОРМЫ (СОЗДАНИЕ ИЛИ ОБНОВЛЕНИЕ) ---
+        // --- ОТПРАВКА ФОРМЫ ПРОЕКТА ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault(); 
             
@@ -385,14 +495,10 @@
                 const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
                 const fileName = `${Date.now()}_${cleanName}`;
                 
-                const { error: uploadError } = await supabaseClient.storage
-                    .from('project-images')
-                    .upload(fileName, file);
+                const { error: uploadError } = await supabaseClient.storage.from('project-images').upload(fileName, file);
 
                 if (!uploadError) {
-                    const { data: { publicUrl } } = supabaseClient.storage
-                        .from('project-images')
-                        .getPublicUrl(fileName);
+                    const { data: { publicUrl } } = supabaseClient.storage.from('project-images').getPublicUrl(fileName);
                     imageUrl = publicUrl;
                 } else {
                     alert('Ошибка при загрузке картинки!');
@@ -403,15 +509,11 @@
             }
 
             if (editingProjectId) {
-                // РЕЖИМ РЕДАКТИРОВАНИЯ
                 const currentProject = allProjects.find(p => String(p.id) === String(editingProjectId));
                 let finalImageUrl = currentProject ? currentProject.image_url : null;
 
-                if (file) {
-                    finalImageUrl = imageUrl;
-                } else if (deleteImageCheckbox.checked) {
-                    finalImageUrl = null;
-                }
+                if (file) finalImageUrl = imageUrl;
+                else if (deleteImageCheckbox.checked) finalImageUrl = null;
 
                 const updateData = {
                     title: titleText, deadline: deadlineText, role: roleText, 
@@ -419,17 +521,13 @@
                     image_url: finalImageUrl
                 };
 
-                const { data, error } = await supabaseClient
-                    .from('projects')
-                    .update(updateData)
-                    .eq('id', editingProjectId)
-                    .select(); 
+                const { data, error } = await supabaseClient.from('projects').update(updateData).eq('id', editingProjectId).select(); 
 
                 if (error) {
                     console.error("Ошибка от Supabase:", error);
-                    alert('Ошибка при обновлении! Посмотри консоль.');
+                    alert('Ошибка при обновлении! Посмотри консоль (F12).');
                 } else if (data.length === 0) {
-                    alert('Не удалось обновить. Возможно, это не ваша карточка.');
+                    alert('Не удалось обновить.');
                 } else {
                     loadProjects();
                     modal.classList.add('hidden');
@@ -438,7 +536,6 @@
                     editingProjectId = null; 
                 }
             } else {
-                // РЕЖИМ СОЗДАНИЯ
                 const { error } = await supabaseClient.from('projects').insert([
                     { 
                         title: titleText, deadline: deadlineText, role: roleText, 
