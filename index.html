@@ -685,26 +685,50 @@
             `);
         }
 
-        function setupGroupRealtime(projectId) {
+              function setupGroupRealtime(projectId) {
             if (groupChatSubscription) supabaseClient.removeChannel(groupChatSubscription);
-            groupChatSubscription = supabaseClient.channel('group-chat')
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'group_messages' }, (payload) => {
-                    if (String(payload.new.project_id) === String(projectId)) {
-                        const container = document.getElementById('groupChatMessages');
-                        if (container.innerHTML.includes('Сообщений пока нет')) container.innerHTML = '';
-                        renderGroupMessage(payload.new);
-                        container.scrollTop = container.scrollHeight;
-                    }
+            
+            // Слушаем канал конкретного проекта
+            groupChatSubscription = supabaseClient.channel(`project_group_${projectId}`)
+                .on('broadcast', { event: 'new_group_message' }, (payload) => {
+                    const newMsg = payload.payload;
+                    const container = document.getElementById('groupChatMessages');
+                    if (container.innerHTML.includes('Сообщений пока нет')) container.innerHTML = '';
+                    renderGroupMessage(newMsg);
+                    container.scrollTop = container.scrollHeight;
                 }).subscribe();
         }
 
-        document.getElementById('groupChatForm').addEventListener('submit', async (e) => {
+               document.getElementById('groupChatForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const input = document.getElementById('groupChatInput');
             const text = input.value.trim();
             if (!text) return;
             input.value = '';
-            await supabaseClient.from('group_messages').insert([{ project_id: currentDetailProjectId, sender_id: currentUser.id, content: text }]);
+
+            // 1. Сохраняем в базу (добавили .select(), чтобы получить данные сообщения обратно)
+            const { data, error } = await supabaseClient.from('group_messages').insert([{ 
+                project_id: currentDetailProjectId, 
+                sender_id: currentUser.id, 
+                content: text 
+            }]).select();
+
+            if (!error && data && data.length > 0) {
+                const newMessage = data[0];
+                
+                // 2. Отправляем сигнал всем в комнате
+                const notifyChannel = supabaseClient.channel(`project_group_${currentDetailProjectId}`);
+                notifyChannel.subscribe((status) => {
+                    if (status === 'SUBSCRIBED') {
+                        notifyChannel.send({
+                            type: 'broadcast',
+                            event: 'new_group_message',
+                            payload: newMessage
+                        });
+                        setTimeout(() => supabaseClient.removeChannel(notifyChannel), 1000);
+                    }
+                });
+            }
         });
 
         // ОТЗЫВЫ
