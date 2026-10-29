@@ -60,9 +60,9 @@
                     <div id="detail-members-list" class="flex flex-wrap gap-2"></div>
                 </div>
 
-                <!-- БЛОК ФАЙЛОВ ПРОЕКТА -->
-                <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-200">
-                    <h3 class="font-bold text-blue-900 mb-2 flex items-center gap-2">📁 Файлы проекта</h3>
+                <!-- БЛОК ФАЙЛОВ ПРОЕКТА (СКРЫВАЕМЫЙ) -->
+                <div id="files-block-container" class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-200 hidden">
+                    <h3 class="font-bold text-blue-900 mb-2 flex items-center gap-2">📁 Файлы проекта (видят только участники)</h3>
                     <div id="detail-files-list" class="flex flex-col gap-2 mb-3"></div>
                     
                     <div id="upload-file-container" class="hidden border-t border-blue-200 pt-3 mt-3">
@@ -207,7 +207,7 @@
         let currentUser = null;
         let allProjects = [];
         let allProfiles = []; 
-        let myApprovedProjectIds = []; // Сюда запишем ID проектов, где мы участник
+        let myApprovedProjectIds = []; 
         let editingProjectId = null; 
         let activeChat = { receiverId: null, projectId: null, receiverName: '' };
         let currentDetailProjectId = null;
@@ -284,7 +284,6 @@
             loadProjects();
         }
 
-        // Загружаем проекты, где мы одобрены
         async function loadMyApprovedProjects() {
             if (!currentUser) return;
             const { data } = await supabaseClient.from('join_requests').select('project_id').eq('user_id', currentUser.id).eq('status', 'approved');
@@ -408,22 +407,25 @@
                 `;
             }
 
-            document.getElementById('upload-file-container').classList.toggle('hidden', !(isAuthor || isApproved));
-            
-            // 2. Загружаем участников и файлы
+            // 2. Показываем/скрываем файлы (только для автора и участников)
+            const canViewFiles = isAuthor || isApproved;
+            document.getElementById('files-block-container').classList.toggle('hidden', !canViewFiles);
+            document.getElementById('upload-file-container').classList.toggle('hidden', !canViewFiles);
+
+            // 3. Загружаем данные
             loadProjectMembers(id, isAuthor);
-            loadProjectFiles(id);
+            if (canViewFiles) {
+                loadProjectFiles(id);
+            }
 
             document.getElementById('detailModal').classList.remove('hidden'); 
             document.getElementById('detailModal').classList.add('flex');
         }
 
-        // Загрузка участников
         async function loadProjectMembers(projectId, isAuthor) {
             const list = document.getElementById('detail-members-list');
             list.innerHTML = '<p class="text-sm text-gray-500">Загрузка...</p>';
             
-            // Получаем одобренные заявки
             const { data } = await supabaseClient.from('join_requests').select('user_id').eq('project_id', projectId).eq('status', 'approved');
             list.innerHTML = '';
             
@@ -435,40 +437,24 @@
             data.forEach(req => {
                 const profile = allProfiles.find(p => p.id === req.user_id);
                 const name = profile?.full_name || 'Пользователь';
-                
-                // Если ты автор, у тебя есть кнопка "Исключить"
                 const kickBtn = isAuthor ? `<button onclick="kickMember(${projectId}, '${req.user_id}', '${name}')" class="ml-2 text-xs text-red-500 hover:text-red-700 font-bold" title="Исключить">✕</button>` : '';
-                
-                list.insertAdjacentHTML('beforeend', `
-                    <span class="bg-gray-200 text-gray-800 text-sm px-3 py-1 rounded-full flex items-center">
-                        ${name} ${kickBtn}
-                    </span>
-                `);
+                list.insertAdjacentHTML('beforeend', `<span class="bg-gray-200 text-gray-800 text-sm px-3 py-1 rounded-full flex items-center">${name} ${kickBtn}</span>`);
             });
         }
 
-        // Исключение участника (Кик)
         window.kickMember = async function(projectId, memberId, memberName) {
             if(!confirm(`Вы уверены, что хотите исключить ${memberName}? Все загруженные им файлы будут удалены.`)) return;
-
-            // 1. Меняем статус заявки на rejected
             await supabaseClient.from('join_requests').update({ status: 'rejected' }).eq('project_id', projectId).eq('user_id', memberId);
-            
-            // 2. Удаляем его файлы
             await supabaseClient.from('project_files').delete().eq('project_id', projectId).eq('user_id', memberId);
-
             alert('Участник исключен.');
-            openProjectDetail(projectId); // Обновляем окно
+            openProjectDetail(projectId);
         }
 
-        // Покинуть проект
         window.leaveProject = async function(projectId) {
             if(!confirm('Вы уверены, что хотите покинуть проект? Ваши файлы будут удалены.')) return;
-
             await supabaseClient.from('join_requests').update({ status: 'rejected' }).eq('project_id', projectId).eq('user_id', currentUser.id);
             await supabaseClient.from('project_files').delete().eq('project_id', projectId).eq('user_id', currentUser.id);
-
-            await loadMyApprovedProjects(); // Обновляем список зеленых карточек
+            await loadMyApprovedProjects();
             loadProjects();
             document.getElementById('detailModal').classList.add('hidden');
             document.getElementById('detailModal').classList.remove('flex');
@@ -488,16 +474,25 @@
                 return;
             }
 
-            data.forEach(file => {
+            // Генерируем временные ссылки (живут 1 час) для каждого файла
+            for (const file of data) {
+                let downloadUrl = file.file_url;
+                
+                // Если ссылка не http (старый формат), или если мы хотим безопасность - генерируем временную
+                if (!downloadUrl.startsWith('http')) {
+                    const { data: urlData } = await supabaseClient.storage.from('project-documents').createSignedUrl(file.file_url, 3600);
+                    if (urlData) downloadUrl = urlData.signedUrl;
+                }
+
                 const author = allProfiles.find(p => p.id === file.user_id);
                 const authorName = author?.full_name || 'Кто-то';
                 list.insertAdjacentHTML('beforeend', `
-                    <a href="${file.file_url}" target="_blank" class="flex justify-between items-center bg-white p-2 rounded border border-blue-100 hover:bg-blue-100 transition shadow-sm text-sm text-blue-700 font-medium">
+                    <a href="${downloadUrl}" target="_blank" class="flex justify-between items-center bg-white p-2 rounded border border-blue-100 hover:bg-blue-100 transition shadow-sm text-sm text-blue-700 font-medium">
                         <span>📄 ${file.file_name}</span>
                         <span class="text-xs text-gray-400">от ${authorName}</span>
                     </a>
                 `);
-            });
+            }
         }
 
         document.getElementById('uploadFileForm').addEventListener('submit', async (e) => {
@@ -510,14 +505,20 @@
             btn.disabled = true; btn.innerText = "Ждите...";
 
             const cleanName = file.name.replace(/[^a-zA-Z0-9.\s_-]/g, '_');
-            const fileName = `files/${Date.now()}_${cleanName}`;
+            const fileName = `${Date.now()}_${cleanName}`;
             
-            const { error: uploadError } = await supabaseClient.storage.from('project-images').upload(fileName, file);
+            // Загружаем в ЗАКРЫТЫЙ бакет project-documents
+            const { error: uploadError } = await supabaseClient.storage.from('project-documents').upload(fileName, file);
             
             if (uploadError) { alert("Ошибка загрузки файла!"); console.error(uploadError); }
             else {
-                const { data: { publicUrl } } = supabaseClient.storage.from('project-images').getPublicUrl(fileName);
-                await supabaseClient.from('project_files').insert([{ project_id: currentDetailProjectId, user_id: currentUser.id, file_name: file.name, file_url: publicUrl }]);
+                // Сохраняем в базу ТОЛЬКО путь к файлу, а не ссылку (для безопасности)
+                await supabaseClient.from('project_files').insert([{ 
+                    project_id: currentDetailProjectId, 
+                    user_id: currentUser.id, 
+                    file_name: file.name, 
+                    file_url: fileName // сохраняем путь, а не ссылку
+                }]);
                 fileInput.value = '';
                 loadProjectFiles(currentDetailProjectId); 
             }
@@ -611,7 +612,6 @@
             const author = allProfiles.find(p => p.id === project.user_id);
             const authorName = author?.full_name || 'Аноним';
             
-            // ПРОВЕРКА: если ты участник, карточка зеленая
             const isApproved = myApprovedProjectIds.includes(String(project.id));
             const cardBorderClass = isApproved ? 'border-green-500 bg-green-50' : 'border-gray-100';
             const statusBadge = isApproved ? '<span class="bg-green-500 text-white text-xs px-2 py-1 rounded font-bold ml-2">Вы в проекте</span>' : '';
