@@ -81,9 +81,8 @@
         <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4 relative">
             <button id="closeReportBtn" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
             <h2 class="text-2xl font-bold mb-4 text-gray-800">Пожаловаться</h2>
-            <p class="text-sm text-gray-600 mb-4">Если пользователь нарушает правила (оскорбления, спам, шантаж), опишите ситуацию. Администратор проверит переписку.</p>
             <form id="reportForm" class="flex flex-col gap-4">
-                <textarea id="report-reason" rows="3" required placeholder="Что случилось?" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"></textarea>
+                <textarea id="report-reason" rows="3" required placeholder="Что случилось?" class="w-full border border-gray-300 rounded-lg px-3 py-2"></textarea>
                 <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Отправить жалобу</button>
             </form>
         </div>
@@ -95,41 +94,21 @@
             <button id="closeModalBtn" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
             <h2 id="modalTitle" class="text-2xl font-bold mb-4 text-gray-800">Новое объявление</h2>
             <form id="projectForm" class="flex flex-col gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Тема (название)</label>
-                    <input type="text" id="input-title" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Тема</label><input type="text" id="input-title" required class="w-full border border-gray-300 rounded-lg px-3 py-2"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Сроки</label><input type="text" id="input-deadline" class="w-full border border-gray-300 rounded-lg px-3 py-2"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Кто нужен?</label>
+                    <select id="input-role" class="w-full border border-gray-300 rounded-lg px-3 py-2"><option>Теоретик</option><option>Практик (врач)</option><option>Дизайнер</option><option>Гуманитарий</option></select>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Сроки</label>
-                    <input type="text" id="input-deadline" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Кто нужен?</label>
-                    <select id="input-role" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                        <option>Теоретик</option>
-                        <option>Практик (врач)</option>
-                        <option>Дизайнер</option>
-                        <option>Гуманитарий</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Краткое описание</label>
-                    <textarea id="input-desc" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2"></textarea>
-                </div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Краткое описание</label><textarea id="input-desc" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2"></textarea></div>
                 <div class="border border-gray-200 p-3 rounded-lg bg-gray-50">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Картинка проекта</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Картинка</label>
                     <div id="current-image-container" class="hidden mb-3 flex items-center gap-3">
                         <img id="current-image-preview" src="" class="h-16 w-16 object-cover rounded-lg border border-gray-300">
-                        <label class="flex items-center gap-2 text-sm text-red-600 cursor-pointer bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-100 transition">
-                            <input type="checkbox" id="delete-image-checkbox" class="rounded text-red-600 focus:ring-red-500">
-                            Удалить картинку
-                        </label>
+                        <label class="flex items-center gap-2 text-sm text-red-600 cursor-pointer bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-100 transition"><input type="checkbox" id="delete-image-checkbox"> Удалить</label>
                     </div>
-                    <input type="file" id="input-image" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200">
+                    <input type="file" id="input-image" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200">
                 </div>
-                <button type="submit" id="submitBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg mt-2 disabled:opacity-50">
-                    Опубликовать
-                </button>
+                <button type="submit" id="submitBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg mt-2">Опубликовать</button>
             </form>
         </div>
     </div>
@@ -140,21 +119,10 @@
             <button id="closeProfileBtn" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
             <h2 class="text-2xl font-bold mb-4 text-gray-800">Мой профиль</h2>
             <form id="profileForm" class="flex flex-col gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Ваше ФИО или Имя</label>
-                    <input type="text" id="profile-name" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Университет</label>
-                    <input type="text" id="profile-university" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Факультет / Курс</label>
-                    <input type="text" id="profile-faculty" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                </div>
-                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg mt-2">
-                    Сохранить профиль
-                </button>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">ФИО/Имя</label><input type="text" id="profile-name" required class="w-full border border-gray-300 rounded-lg px-3 py-2"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Университет</label><input type="text" id="profile-university" class="w-full border border-gray-300 rounded-lg px-3 py-2"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Факультет / Курс</label><input type="text" id="profile-faculty" class="w-full border border-gray-300 rounded-lg px-3 py-2"></div>
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg mt-2">Сохранить профиль</button>
             </form>
         </div>
     </div>
@@ -165,20 +133,11 @@
             <button id="closeViewProfileBtn" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
             <h2 class="text-2xl font-bold mb-4 text-gray-800">Профиль автора</h2>
             <div class="flex flex-col gap-3">
-                <div class="bg-gray-50 p-3 rounded-lg">
-                    <p class="text-sm text-gray-500">Имя:</p>
-                    <p id="view-profile-name" class="font-semibold text-lg text-gray-900"></p>
-                </div>
-                <div class="bg-gray-50 p-3 rounded-lg">
-                    <p class="text-sm text-gray-500">Университет:</p>
-                    <p id="view-profile-university" class="font-semibold text-gray-900"></p>
-                </div>
-                <div class="bg-gray-50 p-3 rounded-lg">
-                    <p class="text-sm text-gray-500">Факультет:</p>
-                    <p id="view-profile-faculty" class="font-semibold text-gray-900"></p>
-                </div>
+                <div class="bg-gray-50 p-3 rounded-lg"><p class="text-sm text-gray-500">Имя:</p><p id="view-profile-name" class="font-semibold text-lg text-gray-900"></p></div>
+                <div class="bg-gray-50 p-3 rounded-lg"><p class="text-sm text-gray-500">Университет:</p><p id="view-profile-university" class="font-semibold text-gray-900"></p></div>
+                <div class="bg-gray-50 p-3 rounded-lg"><p class="text-sm text-gray-500">Факультет:</p><p id="view-profile-faculty" class="font-semibold text-gray-900"></p></div>
             </div>
-            <button id="closeViewProfileBtn2" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg mt-6 transition">Закрыть</button>
+            <button id="closeViewProfileBtn2" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg mt-6">Закрыть</button>
         </div>
     </div>
 
@@ -188,19 +147,12 @@
             <button id="closeAuthBtn" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
             <h2 class="text-2xl font-bold mb-4 text-gray-800">Вход в систему</h2>
             <form id="authForm" class="flex flex-col gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input type="email" id="auth-email" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Пароль</label>
-                    <input type="password" id="auth-password" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                </div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label><input type="email" id="auth-email" required class="w-full border border-gray-300 rounded-lg px-3 py-2"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Пароль</label><input type="password" id="auth-password" required class="w-full border border-gray-300 rounded-lg px-3 py-2"></div>
                 <div class="flex gap-2 mt-2">
                     <button type="submit" id="loginSubmitBtn" class="w-1/2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Войти</button>
                     <button type="button" id="signupSubmitBtn" class="w-1/2 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Регистрация</button>
                 </div>
-                <p id="authMessage" class="text-sm text-center mt-2 hidden"></p>
             </form>
         </div>
     </div>
@@ -216,6 +168,7 @@
         let editingProjectId = null; 
         let activeChat = { receiverId: null, projectId: null, receiverName: '' };
         let chatSubscription = null;
+        let globalSubscription = null; // Для уведомлений на главной
 
         const grid = document.querySelector('.grid');
         const authBlock = document.getElementById('auth-block');
@@ -240,7 +193,6 @@
         document.getElementById('closeViewProfileBtn2').addEventListener('click', () => { document.getElementById('viewProfileModal').classList.add('hidden'); document.getElementById('viewProfileModal').classList.remove('flex'); });
         document.getElementById('closeReportBtn').addEventListener('click', () => { document.getElementById('reportModal').classList.add('hidden'); document.getElementById('reportModal').classList.remove('flex'); });
         
-        // Закрытие чата и списка чатов
         document.getElementById('closeChatBtn').addEventListener('click', () => {
             chatModal.classList.add('hidden'); chatModal.classList.remove('flex');
             if (chatSubscription) { supabaseClient.removeChannel(chatSubscription); chatSubscription = null; }
@@ -259,14 +211,15 @@
             if (session) {
                 currentUser = session.user;
                 authBlock.innerHTML = `
-                    <button id="myInboxBtn" class="bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1.5 rounded-lg text-sm font-medium transition">Мои чаты</button>
+                    <button id="myInboxBtn" class="relative bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1.5 rounded-lg text-sm font-medium transition">
+                        Мои чаты
+                        <span id="unreadBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
+                    </button>
                     <button id="myProfileBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1.5 rounded-lg text-sm font-medium transition">Мой профиль</button>
                     <button id="logoutBtn" class="text-red-500 font-medium hover:underline text-sm ml-2">Выйти</button>
                 `;
                 
-                // Обработчик "Мои чаты"
                 document.getElementById('myInboxBtn').addEventListener('click', openInbox);
-
                 document.getElementById('myProfileBtn').addEventListener('click', () => {
                     const myProfile = allProfiles.find(p => p.id === currentUser.id);
                     document.getElementById('profile-name').value = myProfile?.full_name || '';
@@ -275,8 +228,14 @@
                     document.getElementById('profileModal').classList.remove('hidden'); document.getElementById('profileModal').classList.add('flex');
                 });
                 document.getElementById('logoutBtn').addEventListener('click', async () => { await supabaseClient.auth.signOut(); });
+
+                // Запускаем проверку непрочитанных и глобальный слушатель
+                await updateUnreadBadge();
+                setupGlobalRealtime();
+
             } else {
                 currentUser = null;
+                if (globalSubscription) supabaseClient.removeChannel(globalSubscription);
                 authBlock.innerHTML = `<button id="loginBtn" class="text-blue-600 font-medium hover:underline">Войти / Регистрация</button>`;
                 document.getElementById('loginBtn').addEventListener('click', () => { document.getElementById('authModal').classList.remove('hidden'); document.getElementById('authModal').classList.add('flex'); });
             }
@@ -297,7 +256,7 @@
             if (!error) alert("Успех! Теперь войдите."); else alert(error.message);
         });
 
-        // --- ПРОФИЛИ ---
+        // --- ЗАГРУЗКА ПРОФИЛЕЙ (ТА САМАЯ ФУНКЦИЯ) ---
         async function loadProfiles() {
             const { data } = await supabaseClient.from('profiles').select('*');
             if (data) allProfiles = data;
@@ -314,6 +273,53 @@
             if (!error) { alert("Профиль сохранен!"); document.getElementById('profileModal').classList.add('hidden'); document.getElementById('profileModal').classList.remove('flex'); await loadProfiles(); loadProjects(); }
         });
 
+        // --- УВЕДОМЛЕНИЯ (КРАСНЫЙ КРУЖОК) ---
+        async function updateUnreadBadge() {
+            if (!currentUser) return;
+            const { count } = await supabaseClient
+                .from('messages')
+                .select('*', { count: 'exact', head: true })
+                .eq('receiver_id', currentUser.id)
+                .eq('is_read', false);
+
+            const badge = document.getElementById('unreadBadge');
+            if (badge) {
+                if (count > 0) { badge.innerText = count > 99 ? '99+' : count; badge.classList.remove('hidden'); }
+                else { badge.classList.add('hidden'); }
+            }
+        }
+
+        // Глобальный слушатель (срабатывает, даже если чат закрыт)
+        function setupGlobalRealtime() {
+            if (globalSubscription) supabaseClient.removeChannel(globalSubscription);
+            
+            globalSubscription = supabaseClient.channel('global-messages')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+                    const newMsg = payload.new;
+                    if (String(newMsg.receiver_id) === String(currentUser.id)) {
+                        // Если мы сейчас в этом чате, сразу помечаем как прочитанное
+                        if (activeChat.receiverId === newMsg.sender_id && activeChat.projectId === newMsg.project_id) {
+                            markMessagesAsRead(newMsg.sender_id, newMsg.project_id);
+                        } else {
+                            // Иначе обновляем счетчик
+                            updateUnreadBadge();
+                            // Если открыт список чатов, обновляем его
+                            if (!document.getElementById('inboxModal').classList.contains('hidden')) {
+                                openInbox();
+                            }
+                        }
+                    }
+                }).subscribe();
+        }
+
+        async function markMessagesAsRead(senderId, projectId) {
+            await supabaseClient.from('messages').update({ is_read: true })
+                .eq('receiver_id', currentUser.id)
+                .eq('sender_id', senderId)
+                .eq('project_id', projectId);
+            updateUnreadBadge(); // Обновляем кружок
+        }
+
         // --- СПИСОК ЧАТОВ (INBOX) ---
         async function openInbox() {
             const inboxList = document.getElementById('inboxList');
@@ -321,31 +327,21 @@
             document.getElementById('inboxModal').classList.remove('hidden');
             document.getElementById('inboxModal').classList.add('flex');
 
-            // Получаем все сообщения, где мы отправитель или получатель
             const { data, error } = await supabaseClient
-                .from('messages')
-                .select('*')
+                .from('messages').select('*')
                 .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
                 .order('created_at', { ascending: false });
 
             if (error) { inboxList.innerHTML = 'Ошибка загрузки.'; return; }
 
-            if (data.length === 0) {
-                inboxList.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">У вас пока нет сообщений.</p>';
-                return;
-            }
+            if (data.length === 0) { inboxList.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">У вас пока нет сообщений.</p>'; return; }
 
-            // Группируем сообщения по уникальным парам (проект + собеседник)
             const chatsMap = new Map();
             data.forEach(msg => {
                 const otherId = msg.sender_id === currentUser.id ? msg.receiver_id : msg.sender_id;
                 const key = `${msg.project_id}_${otherId}`;
                 if (!chatsMap.has(key)) {
-                    chatsMap.set(key, {
-                        projectId: msg.project_id,
-                        otherId: otherId,
-                        lastMessage: msg.content
-                    });
+                    chatsMap.set(key, { projectId: msg.project_id, otherId: otherId, lastMessage: msg.content });
                 }
             });
 
@@ -354,7 +350,6 @@
             for (const chat of chatsMap.values()) {
                 const project = allProjects.find(p => String(p.id) === String(chat.projectId));
                 const otherProfile = allProfiles.find(p => p.id === chat.otherId);
-                
                 const projectTitle = project ? project.title : 'Удаленный проект';
                 const otherName = otherProfile?.full_name || 'Пользователь';
 
@@ -370,7 +365,6 @@
             }
         }
 
-        // Вспомогательная функция для открытия чата из списка
         window.openChatFromInbox = function(receiverId, projectId, projectTitle) {
             document.getElementById('inboxModal').classList.add('hidden');
             document.getElementById('inboxModal').classList.remove('flex');
@@ -389,6 +383,7 @@
             
             chatModal.classList.remove('hidden'); chatModal.classList.add('flex');
             
+            await markMessagesAsRead(receiverId, projectId); // Помечаем прочитанным
             await loadMessages();
             setupRealtime(receiverId, projectId);
             chatInput.focus();
@@ -398,16 +393,13 @@
             if (!activeChat.receiverId || !activeChat.projectId) return;
             
             const { data, error } = await supabaseClient
-                .from('messages')
-                .select('*')
+                .from('messages').select('*')
                 .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${activeChat.receiverId}),and(sender_id.eq.${activeChat.receiverId},receiver_id.eq.${currentUser.id})`)
                 .order('created_at', { ascending: true });
 
-            if (error) { console.error("Ошибка загрузки:", error); return; }
+            if (error) { console.error("Ошибка:", error); return; }
 
             chatMessages.innerHTML = '';
-            
-            // Фильтруем строго по проекту
             const projectMessages = data.filter(msg => String(msg.project_id) === String(activeChat.projectId));
             
             if (!projectMessages || projectMessages.length === 0) {
@@ -433,22 +425,19 @@
 
         function setupRealtime(receiverId, projectId) {
             if (chatSubscription) supabaseClient.removeChannel(chatSubscription);
-
             chatSubscription = supabaseClient.channel('chat-realtime')
-                .on('postgres_changes', { 
-                    event: 'INSERT', schema: 'public', table: 'messages'
-                }, (payload) => {
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
                     const newMsg = payload.new;
-                    
                     if (String(newMsg.project_id) !== String(projectId)) return;
-                    
                     if ((String(newMsg.sender_id) === String(currentUser.id) && String(newMsg.receiver_id) === String(receiverId)) ||
                         (String(newMsg.sender_id) === String(receiverId) && String(newMsg.receiver_id) === String(currentUser.id))) {
-                        
                         if (chatMessages.innerHTML.includes('Начните диалог')) chatMessages.innerHTML = '';
-                        
                         renderMessage(newMsg);
                         chatMessages.scrollTop = chatMessages.scrollHeight;
+                        
+                        if (String(newMsg.receiver_id) === String(currentUser.id)) {
+                            markMessagesAsRead(receiverId, projectId);
+                        }
                     }
                 }).subscribe();
         }
@@ -458,30 +447,26 @@
             const text = chatInput.value.trim();
             if (!text) return;
             chatInput.value = '';
-            
             await supabaseClient.from('messages').insert([{
                 sender_id: currentUser.id, receiver_id: activeChat.receiverId,
-                project_id: activeChat.projectId, content: text
+                project_id: activeChat.projectId, content: text, is_read: false
             }]);
         });
 
         // --- ЖАЛОБЫ ---
         document.getElementById('reportBtn').addEventListener('click', () => {
             document.getElementById('report-reason').value = '';
-            document.getElementById('reportModal').classList.remove('hidden'); 
-            document.getElementById('reportModal').classList.add('flex');
+            document.getElementById('reportModal').classList.remove('hidden'); document.getElementById('reportModal').classList.add('flex');
         });
 
         document.getElementById('reportForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const reason = document.getElementById('report-reason').value;
             await supabaseClient.from('reports').insert([{
                 reporter_id: currentUser.id, reported_user_id: activeChat.receiverId,
-                project_id: activeChat.projectId, reason: reason
+                project_id: activeChat.projectId, reason: document.getElementById('report-reason').value
             }]);
             alert("Жалоба отправлена администратору. Спасибо!");
-            document.getElementById('reportModal').classList.add('hidden');
-            document.getElementById('reportModal').classList.remove('flex');
+            document.getElementById('reportModal').classList.add('hidden'); document.getElementById('reportModal').classList.remove('flex');
         });
 
         // --- ПРОЕКТЫ И КАРТОЧКИ ---
@@ -505,10 +490,7 @@
 
         function createCardHTML(project) {
             const isAuthor = currentUser && String(project.user_id) === String(currentUser.id);
-            const actionBtnsHTML = isAuthor 
-                ? `<button onclick="editProject('${project.id}')" class="text-blue-500 hover:text-blue-700 text-sm font-semibold">Изменить</button>
-                   <button onclick="deleteProject('${project.id}')" class="text-red-500 hover:text-red-700 text-sm font-semibold">Удалить</button>`
-                : '';
+            const actionBtnsHTML = isAuthor ? `<button onclick="editProject('${project.id}')" class="text-blue-500 hover:text-blue-700 text-sm font-semibold">Изменить</button><button onclick="deleteProject('${project.id}')" class="text-red-500 hover:text-red-700 text-sm font-semibold">Удалить</button>` : '';
             const imageHTML = project.image_url ? `<img src="${project.image_url}" class="w-full h-48 object-cover rounded-t-xl">` : '';
             const author = allProfiles.find(p => p.id === project.user_id);
             const authorName = author?.full_name || 'Аноним';
@@ -527,14 +509,10 @@
                     <p class="text-sm text-gray-600 mb-4 line-clamp-3 flex-grow">${project.description || 'Описание не добавлено.'}</p>
                     <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
                         <span class="text-xs font-medium text-gray-500">Нужен: ${project.role}</span>
-                        <div class="flex gap-3">
-                            ${writeBtnHTML}
-                            ${actionBtnsHTML}
-                        </div>
+                        <div class="flex gap-3">${writeBtnHTML}${actionBtnsHTML}</div>
                     </div>
                 </div>
-            </div>
-            `;
+            </div>`;
         }
 
         document.getElementById('searchInput').addEventListener('input', renderProjects);
