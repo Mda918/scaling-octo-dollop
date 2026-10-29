@@ -58,27 +58,25 @@
                         <p id="detail-author" class="font-bold text-lg text-gray-800"></p>
                     </div>
                     <div id="detail-actions" class="flex gap-3">
-                        <!-- Сюда JS добавит кнопки -->
+                        <!-- Кнопки -->
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО ЗАЯВОК (ДЛЯ АВТОРА) -->
+    <!-- МОДАЛЬНОЕ ОКНО ЗАЯВОК -->
     <div id="requestsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-xl shadow-lg w-full max-w-lg mx-4 relative flex flex-col h-[80vh]">
             <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
                 <h3 class="font-bold text-lg text-gray-800">Заявки на проекты</h3>
                 <button id="closeRequestsBtn" class="text-gray-500 hover:text-red-500 font-bold text-2xl">&times;</button>
             </div>
-            <div id="requestsList" class="flex-grow p-4 overflow-y-auto bg-gray-100 flex flex-col gap-2">
-                <!-- Список заявок -->
-            </div>
+            <div id="requestsList" class="flex-grow p-4 overflow-y-auto bg-gray-100 flex flex-col gap-2"></div>
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО: СПИСОК ЧАТОВ (ВХОДЯЩИЕ) -->
+    <!-- МОДАЛЬНОЕ ОКНО: СПИСОК ЧАТОВ -->
     <div id="inboxModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-xl shadow-lg w-full max-w-lg mx-4 relative flex flex-col h-[80vh]">
             <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
@@ -227,7 +225,10 @@
             if (session) {
                 currentUser = session.user;
                 authBlock.innerHTML = `
-                    <button id="myRequestsBtn" class="bg-yellow-100 text-yellow-700 hover:bg-yellow-200 px-3 py-1.5 rounded-lg text-sm font-medium transition">Заявки</button>
+                    <button id="myRequestsBtn" class="relative bg-yellow-100 text-yellow-700 hover:bg-yellow-200 px-3 py-1.5 rounded-lg text-sm font-medium transition">
+                        Заявки
+                        <span id="requestsBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
+                    </button>
                     <button id="myInboxBtn" class="relative bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1.5 rounded-lg text-sm font-medium transition">
                         Мои чаты
                         <span id="unreadBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
@@ -300,9 +301,27 @@
             }
         }
 
+        async function updateRequestsBadge() {
+            if (!currentUser) return;
+            const myProjectIds = allProjects.filter(p => p.user_id === currentUser.id).map(p => p.id);
+            const badge = document.getElementById('requestsBadge');
+            if (!badge) return;
+
+            if (myProjectIds.length === 0) { badge.classList.add('hidden'); return; }
+
+            const { count } = await supabaseClient.from('join_requests')
+                .select('*', { count: 'exact', head: true })
+                .in('project_id', myProjectIds)
+                .eq('status', 'pending');
+
+            if (count > 0) { badge.innerText = count > 99 ? '99+' : count; badge.classList.remove('hidden'); }
+            else { badge.classList.add('hidden'); }
+        }
+
         function setupGlobalRealtime() {
             if (globalSubscription) supabaseClient.removeChannel(globalSubscription);
-            globalSubscription = supabaseClient.channel('global-messages')
+            
+            globalSubscription = supabaseClient.channel('global-updates')
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
                     const newMsg = payload.new;
                     if (String(newMsg.receiver_id) === String(currentUser.id)) {
@@ -312,7 +331,14 @@
                             updateUnreadBadge();
                         }
                     }
-                }).subscribe();
+                })
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'join_requests' }, (payload) => {
+                    updateRequestsBadge();
+                    if (!document.getElementById('requestsModal').classList.contains('hidden')) {
+                        openRequests();
+                    }
+                })
+                .subscribe();
         }
 
         async function markMessagesAsRead(senderId, projectId) {
@@ -360,9 +386,27 @@
         // --- ОТПРАВКА ЗАЯВКИ ---
         window.sendJoinRequest = async function(projectId, authorId) {
             if (!currentUser) { alert("Войдите, чтобы подать заявку!"); return; }
-            const { data } = await supabaseClient.from('join_requests').select('*').eq('project_id', projectId).eq('user_id', currentUser.id);
-            if (data && data.length > 0) { alert("Вы уже подали заявку на этот проект. Ждите ответа."); return; }
+            
+            // Проверяем наличие заявки
+            const { data } = await supabaseClient.from('join_requests')
+                .select('*')
+                .eq('project_id', projectId)
+                .eq('user_id', currentUser.id)
+                .maybeSingle();
 
+            if (data) {
+                if (data.status === 'pending') { alert("Вы уже подали заявку. Ждите ответа."); return; }
+                if (data.status === 'approved') { alert("Вы уже приняты в этот проект!"); return; }
+                if (data.status === 'rejected') {
+                    // Обновляем старую заявку обратно на pending
+                    const { error } = await supabaseClient.from('join_requests').update({ status: 'pending' }).eq('id', data.id);
+                    if (error) { alert("Ошибка!"); console.error(error); }
+                    else { alert("Заявка отправлена повторно! Автор получит уведомление."); document.getElementById('detailModal').classList.add('hidden'); document.getElementById('detailModal').classList.remove('flex'); }
+                    return;
+                }
+            }
+
+            // Если заявки не было, создаем новую
             const { error } = await supabaseClient.from('join_requests').insert([{ project_id: projectId, user_id: currentUser.id, status: 'pending' }]);
             if (error) { alert("Ошибка при отправке заявки!"); console.error(error); }
             else { alert("Заявка отправлена! Автор получит уведомление."); document.getElementById('detailModal').classList.add('hidden'); document.getElementById('detailModal').classList.remove('flex'); }
@@ -409,7 +453,11 @@
         // --- КАРТОЧКИ ---
         async function loadProjects() {
             const { data } = await supabaseClient.from('projects').select('*').order('id', { ascending: false });
-            if (data) { allProjects = data; renderProjects(); }
+            if (data) { 
+                allProjects = data; 
+                renderProjects(); 
+                updateRequestsBadge(); 
+            }
         }
 
         function renderProjects() {
