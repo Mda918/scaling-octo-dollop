@@ -772,21 +772,28 @@
             if (count > 0) { badge.innerText = count > 99 ? '99+' : count; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
         }
 
-        function setupGlobalRealtime() {
-            if (globalSubscription) supabaseClient.removeChannel(globalSubscription);
+                function setupGlobalRealtime() { 
+            if (globalSubscription) supabaseClient.removeChannel(globalSubscription); 
             globalSubscription = supabaseClient.channel('global-updates')
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
-                    const newMsg = payload.new;
-                    if (String(newMsg.receiver_id) === String(currentUser.id)) {
-                        if (activeChat.receiverId === newMsg.sender_id && activeChat.projectId === newMsg.project_id) { markMessagesAsRead(newMsg.sender_id, newMsg.project_id); }
-                        else { updateUnreadBadge(); }
-                    }
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => { 
+                    const newMsg = payload.new; 
+                    if (String(newMsg.receiver_id) === String(currentUser.id)) { 
+                        if (activeChat.receiverId === newMsg.sender_id && activeChat.projectId === newMsg.project_id) { 
+                            markMessagesAsRead(newMsg.sender_id, newMsg.project_id); 
+                        } else { 
+                            updateUnreadBadge(); 
+                            // Если открыто окно "Мои чаты", мгновенно обновляем список диалогов
+                            if (!document.getElementById('inboxModal').classList.contains('hidden')) {
+                                openInbox();
+                            }
+                        } 
+                    } 
                 })
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'join_requests' }, (payload) => {
-                    updateRequestsBadge();
-                    if (!document.getElementById('requestsModal').classList.contains('hidden')) openRequests();
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'join_requests' }, (payload) => { 
+                    updateRequestsBadge(); 
+                    if (!document.getElementById('requestsModal').classList.contains('hidden')) openRequests(); 
                 })
-                .subscribe();
+                .subscribe(); 
         }
 
         async function markMessagesAsRead(senderId, projectId) {
