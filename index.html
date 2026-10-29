@@ -321,7 +321,7 @@
         }
 
         // --- СПИСОК ЧАТОВ (INBOX) ---
-        async function openInbox() {
+               async function openInbox() {
             const inboxList = document.getElementById('inboxList');
             inboxList.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">Загрузка...</p>';
             document.getElementById('inboxModal').classList.remove('hidden');
@@ -340,8 +340,19 @@
             data.forEach(msg => {
                 const otherId = msg.sender_id === currentUser.id ? msg.receiver_id : msg.sender_id;
                 const key = `${msg.project_id}_${otherId}`;
+                
                 if (!chatsMap.has(key)) {
-                    chatsMap.set(key, { projectId: msg.project_id, otherId: otherId, lastMessage: msg.content });
+                    chatsMap.set(key, { 
+                        projectId: msg.project_id, 
+                        otherId: otherId, 
+                        lastMessage: msg.content,
+                        unreadCount: 0 // Счетчик для каждого чата
+                    });
+                }
+                
+                // Если сообщение адресовано нам и оно не прочитано — плюсуем счетчик
+                if (msg.receiver_id === currentUser.id && msg.is_read === false) {
+                    chatsMap.get(key).unreadCount++;
                 }
             });
 
@@ -353,10 +364,18 @@
                 const projectTitle = project ? project.title : 'Удаленный проект';
                 const otherName = otherProfile?.full_name || 'Пользователь';
 
+                // Если есть непрочитанные, рисуем красный кружок рядом с именем
+                const badgeHTML = chat.unreadCount > 0 
+                    ? `<span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full ml-2">${chat.unreadCount}</span>` 
+                    : '';
+
                 inboxList.insertAdjacentHTML('beforeend', `
                     <div onclick="openChatFromInbox('${chat.otherId}', ${chat.projectId}, '${projectTitle.replace(/'/g, "\\'")}')" class="bg-white p-3 rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:bg-gray-50 transition flex flex-col">
                         <div class="flex justify-between items-center mb-1">
-                            <span class="font-bold text-gray-800 text-sm">${otherName}</span>
+                            <div class="flex items-center">
+                                <span class="font-bold text-gray-800 text-sm">${otherName}</span>
+                                ${badgeHTML}
+                            </div>
                             <span class="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded">${projectTitle}</span>
                         </div>
                         <p class="text-xs text-gray-500 truncate">${chat.lastMessage}</p>
