@@ -772,26 +772,20 @@
             if (count > 0) { badge.innerText = count > 99 ? '99+' : count; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
         }
 
-                  function setupGlobalRealtime() { 
+                   function setupGlobalRealtime() { 
             if (globalSubscription) supabaseClient.removeChannel(globalSubscription); 
             
-            globalSubscription = supabaseClient.channel('public:messages')
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => { 
-                    const newMsg = payload.new; 
-                    console.log("Пришло новое сообщение:", newMsg); // Выведем в консоль для проверки
-                    
-                    if (String(newMsg.receiver_id) === String(currentUser.id)) { 
-                        if (activeChat.receiverId === newMsg.sender_id && activeChat.projectId === newMsg.project_id) { 
-                            markMessagesAsRead(newMsg.sender_id, newMsg.project_id); 
-                        } else { 
-                            updateUnreadBadge(); 
-                            if (!document.getElementById('inboxModal').classList.contains('hidden')) {
-                                openInbox();
-                            }
-                        } 
-                    } 
+            // Слушаем ЛИЧНЫЙ канал текущего пользователя
+            globalSubscription = supabaseClient.channel(`user_notifications_${currentUser.id}`)
+                .on('broadcast', { event: 'new_message' }, (payload) => { 
+                    console.log("Пришло уведомление о сообщении!", payload);
+                    updateUnreadBadge(); 
+                    if (!document.getElementById('inboxModal').classList.contains('hidden')) {
+                        openInbox();
+                    }
                 })
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'join_requests' }, (payload) => { 
+                .on('broadcast', { event: 'new_request' }, (payload) => { 
+                    console.log("Пришло уведомление о заявке!", payload);
                     updateRequestsBadge(); 
                     if (!document.getElementById('requestsModal').classList.contains('hidden')) openRequests(); 
                 })
@@ -863,24 +857,36 @@
             btn.disabled = false;
         });
 
-        window.sendJoinRequest = async function (projectId, authorId) {
-            if (!currentUser) return alert("Войдите!");
-            const { data } = await supabaseClient.from('join_requests').select('*').eq('project_id', projectId).eq('user_id', currentUser.id).maybeSingle();
-            if (data) {
-                if (data.status === 'pending') return alert("Ждите.");
-                if (data.status === 'approved') return alert("Вы приняты.");
-                if (data.status === 'rejected') {
-                    await supabaseClient.from('join_requests').update({ status: 'pending' }).eq('id', data.id);
-                    alert("Заявка отправлена повторно!");
-                    document.getElementById('detailModal').classList.add('hidden');
-                    document.getElementById('detailModal').classList.remove('flex');
-                    return;
-                }
+               window.sendJoinRequest = async function(projectId, authorId) { 
+            if (!currentUser) return alert("Войдите!"); 
+            const { data } = await supabaseClient.from('join_requests').select('*').eq('project_id', projectId).eq('user_id', currentUser.id).maybeSingle(); 
+            if (data) { 
+                if (data.status === 'pending') return alert("Ждите."); 
+                if (data.status === 'approved') return alert("Вы приняты."); 
+                if (data.status === 'rejected') { 
+                    await supabaseClient.from('join_requests').update({ status: 'pending' }).eq('id', data.id); 
+                } 
+            } else {
+                await supabaseClient.from('join_requests').insert([{ project_id: projectId, user_id: currentUser.id, status: 'pending' }]); 
             }
-            await supabaseClient.from('join_requests').insert([{ project_id: projectId, user_id: currentUser.id, status: 'pending' }]);
-            alert("Заявка отправлена!");
-            document.getElementById('detailModal').classList.add('hidden');
-            document.getElementById('detailModal').classList.remove('flex');
+            
+            alert("Заявка отправлена!"); 
+            
+            // Отправляем сигнал автору проекта
+            const notifyChannel = supabaseClient.channel(`user_notifications_${authorId}`);
+            notifyChannel.subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    notifyChannel.send({
+                        type: 'broadcast',
+                        event: 'new_request',
+                        payload: { message: 'new' }
+                    });
+                    setTimeout(() => supabaseClient.removeChannel(notifyChannel), 1000);
+                }
+            });
+
+            document.getElementById('detailModal').classList.add('hidden'); 
+            document.getElementById('detailModal').classList.remove('flex'); 
         }
 
         async function openRequests() {
@@ -1050,10 +1056,28 @@
                 }).subscribe();
         }
 
-        document.getElementById('chatForm').addEventListener('submit', async (e) => {
-            e.preventDefault(); const text = document.getElementById('chatInput').value.trim(); if (!text) return;
-            document.getElementById('chatInput').value = '';
+               document.getElementById('chatForm').addEventListener('submit', async (e) => { 
+            e.preventDefault(); 
+            const text = document.getElementById('chatInput').value.trim(); 
+            if (!text) return; 
+            document.getElementById('chatInput').value = ''; 
+            
+            // 1. Сохраняем в базу
             await supabaseClient.from('messages').insert([{ sender_id: currentUser.id, receiver_id: activeChat.receiverId, project_id: activeChat.projectId, content: text, is_read: false }]);
+            
+            // 2. Отправляем сигнал получателю
+            const notifyChannel = supabaseClient.channel(`user_notifications_${activeChat.receiverId}`);
+            notifyChannel.subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    notifyChannel.send({
+                        type: 'broadcast',
+                        event: 'new_message',
+                        payload: { message: 'new' }
+                    });
+                    // Отписываемся от канала, чтобы не засорять память
+                    setTimeout(() => supabaseClient.removeChannel(notifyChannel), 1000);
+                }
+            });
         });
 
         document.getElementById('reportBtn').addEventListener('click', () => {
