@@ -49,19 +49,21 @@
                 <h2 id="detail-title" class="text-3xl font-bold mb-2"></h2>
                 <p class="text-gray-500 mb-4">Нужен: <span id="detail-role" class="font-bold text-blue-600"></span> | Сроки: <span id="detail-deadline"></span></p>
                 
-                <div class="bg-gray-50 p-4 rounded-lg mb-6 border">
+                <div class="bg-gray-50 p-4 rounded-lg mb-4 border">
                     <h3 class="font-bold text-gray-800 mb-2">Описание:</h3>
                     <p id="detail-desc" class="text-gray-700 whitespace-pre-wrap"></p>
                 </div>
 
+                <!-- БЛОК УЧАСТНИКОВ -->
+                <div class="mb-6 border-b pb-4">
+                    <h3 class="font-bold text-gray-800 mb-2">Участники проекта:</h3>
+                    <div id="detail-members-list" class="flex flex-wrap gap-2"></div>
+                </div>
+
                 <!-- БЛОК ФАЙЛОВ ПРОЕКТА -->
                 <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-200">
-                    <h3 class="font-bold text-blue-900 mb-2 flex items-center gap-2">
-                        📁 Файлы проекта (презентации, документы)
-                    </h3>
-                    <div id="detail-files-list" class="flex flex-col gap-2 mb-3">
-                        <!-- Список файлов -->
-                    </div>
+                    <h3 class="font-bold text-blue-900 mb-2 flex items-center gap-2">📁 Файлы проекта</h3>
+                    <div id="detail-files-list" class="flex flex-col gap-2 mb-3"></div>
                     
                     <div id="upload-file-container" class="hidden border-t border-blue-200 pt-3 mt-3">
                         <form id="uploadFileForm" class="flex gap-2 items-center">
@@ -205,6 +207,7 @@
         let currentUser = null;
         let allProjects = [];
         let allProfiles = []; 
+        let myApprovedProjectIds = []; // Сюда запишем ID проектов, где мы участник
         let editingProjectId = null; 
         let activeChat = { receiverId: null, projectId: null, receiverName: '' };
         let currentDetailProjectId = null;
@@ -235,7 +238,7 @@
             activeChat = { receiverId: null, projectId: null };
         });
 
-        // --- АВТОРИЗАЦИЯ ---
+        // --- АВТОРИЗАЦИЯ И ЗАГРУЗКА ДАННЫХ ---
         async function checkUser() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             updateAuthUI(session);
@@ -247,12 +250,10 @@
                 currentUser = session.user;
                 authBlock.innerHTML = `
                     <button id="myRequestsBtn" class="relative bg-yellow-100 text-yellow-700 hover:bg-yellow-200 px-3 py-1.5 rounded-lg text-sm font-medium transition">
-                        Заявки
-                        <span id="requestsBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
+                        Заявки <span id="requestsBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
                     </button>
                     <button id="myInboxBtn" class="relative bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1.5 rounded-lg text-sm font-medium transition">
-                        Мои чаты
-                        <span id="unreadBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
+                        Мои чаты <span id="unreadBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
                     </button>
                     <button id="myProfileBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1.5 rounded-lg text-sm font-medium transition">Профиль</button>
                     <button id="logoutBtn" class="text-red-500 font-medium hover:underline text-sm ml-2">Выйти</button>
@@ -269,16 +270,25 @@
                 });
                 document.getElementById('logoutBtn').addEventListener('click', async () => { await supabaseClient.auth.signOut(); });
 
+                await loadMyApprovedProjects();
                 await updateUnreadBadge();
                 setupGlobalRealtime();
             } else {
                 currentUser = null;
+                myApprovedProjectIds = [];
                 if (globalSubscription) supabaseClient.removeChannel(globalSubscription);
                 authBlock.innerHTML = `<button id="loginBtn" class="text-blue-600 font-medium hover:underline">Войти / Регистрация</button>`;
                 document.getElementById('loginBtn').addEventListener('click', () => { document.getElementById('authModal').classList.remove('hidden'); document.getElementById('authModal').classList.add('flex'); });
             }
             await loadProfiles();
             loadProjects();
+        }
+
+        // Загружаем проекты, где мы одобрены
+        async function loadMyApprovedProjects() {
+            if (!currentUser) return;
+            const { data } = await supabaseClient.from('join_requests').select('project_id').eq('user_id', currentUser.id).eq('status', 'approved');
+            if (data) myApprovedProjectIds = data.map(d => String(d.project_id));
         }
 
         document.getElementById('authForm').addEventListener('submit', async (e) => {
@@ -294,7 +304,6 @@
             if (!error) alert("Успех! Теперь войдите."); else alert(error.message);
         });
 
-        // --- ЗАГРУЗКА ПРОФИЛЕЙ ---
         async function loadProfiles() {
             const { data } = await supabaseClient.from('profiles').select('*');
             if (data) allProfiles = data;
@@ -327,14 +336,9 @@
             const myProjectIds = allProjects.filter(p => p.user_id === currentUser.id).map(p => p.id);
             const badge = document.getElementById('requestsBadge');
             if (!badge) return;
-
             if (myProjectIds.length === 0) { badge.classList.add('hidden'); return; }
 
-            const { count } = await supabaseClient.from('join_requests')
-                .select('*', { count: 'exact', head: true })
-                .in('project_id', myProjectIds)
-                .eq('status', 'pending');
-
+            const { count } = await supabaseClient.from('join_requests').select('*', { count: 'exact', head: true }).in('project_id', myProjectIds).eq('status', 'pending');
             if (count > 0) { badge.innerText = count > 99 ? '99+' : count; badge.classList.remove('hidden'); }
             else { badge.classList.add('hidden'); }
         }
@@ -348,16 +352,12 @@
                     if (String(newMsg.receiver_id) === String(currentUser.id)) {
                         if (activeChat.receiverId === newMsg.sender_id && activeChat.projectId === newMsg.project_id) {
                             markMessagesAsRead(newMsg.sender_id, newMsg.project_id);
-                        } else {
-                            updateUnreadBadge();
-                        }
+                        } else { updateUnreadBadge(); }
                     }
                 })
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'join_requests' }, (payload) => {
                     updateRequestsBadge();
-                    if (!document.getElementById('requestsModal').classList.contains('hidden')) {
-                        openRequests();
-                    }
+                    if (!document.getElementById('requestsModal').classList.contains('hidden')) openRequests();
                 })
                 .subscribe();
         }
@@ -367,7 +367,7 @@
             updateUnreadBadge(); 
         }
 
-        // --- ДЕТАЛЬНЫЙ ПРОСМОТР ПРОЕКТА (С ФАЙЛАМИ) ---
+        // --- ДЕТАЛЬНЫЙ ПРОСМОТР ПРОЕКТА ---
         window.openProjectDetail = async function(id) {
             const project = allProjects.find(p => String(p.id) === String(id));
             if (!project) return;
@@ -387,14 +387,19 @@
 
             const actionsDiv = document.getElementById('detail-actions');
             const isAuthor = currentUser && String(project.user_id) === String(currentUser.id);
-            const isApproved = await checkIfApproved(project.id);
+            const isApproved = myApprovedProjectIds.includes(String(project.id));
 
-            // Настройка кнопок
+            // 1. Настройка кнопок
             if (isAuthor) {
                 actionsDiv.innerHTML = `
                     <button onclick="openRequests()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-bold">Заявки</button>
                     <button onclick="editProject(${project.id})" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-bold">Изменить</button>
                     <button onclick="deleteProject(${project.id})" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold">Удалить</button>
+                `;
+            } else if (isApproved) {
+                actionsDiv.innerHTML = `
+                    <button onclick="leaveProject(${project.id})" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold">Покинуть проект</button>
+                    <button onclick="openChat('${project.user_id}', ${project.id}, '${project.title.replace(/'/g, "\\'")}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold">Написать автору</button>
                 `;
             } else {
                 actionsDiv.innerHTML = `
@@ -403,20 +408,70 @@
                 `;
             }
 
-            // Показываем блок загрузки, если автор или одобренный
             document.getElementById('upload-file-container').classList.toggle('hidden', !(isAuthor || isApproved));
-
-            // Загружаем файлы
+            
+            // 2. Загружаем участников и файлы
+            loadProjectMembers(id, isAuthor);
             loadProjectFiles(id);
 
             document.getElementById('detailModal').classList.remove('hidden'); 
             document.getElementById('detailModal').classList.add('flex');
         }
 
-        async function checkIfApproved(projectId) {
-            if (!currentUser) return false;
-            const { data } = await supabaseClient.from('join_requests').select('*').eq('project_id', projectId).eq('user_id', currentUser.id).eq('status', 'approved').maybeSingle();
-            return !!data;
+        // Загрузка участников
+        async function loadProjectMembers(projectId, isAuthor) {
+            const list = document.getElementById('detail-members-list');
+            list.innerHTML = '<p class="text-sm text-gray-500">Загрузка...</p>';
+            
+            // Получаем одобренные заявки
+            const { data } = await supabaseClient.from('join_requests').select('user_id').eq('project_id', projectId).eq('status', 'approved');
+            list.innerHTML = '';
+            
+            if (!data || data.length === 0) {
+                list.innerHTML = '<span class="text-sm text-gray-500 italic">Пока нет утвержденных участников</span>';
+                return;
+            }
+
+            data.forEach(req => {
+                const profile = allProfiles.find(p => p.id === req.user_id);
+                const name = profile?.full_name || 'Пользователь';
+                
+                // Если ты автор, у тебя есть кнопка "Исключить"
+                const kickBtn = isAuthor ? `<button onclick="kickMember(${projectId}, '${req.user_id}', '${name}')" class="ml-2 text-xs text-red-500 hover:text-red-700 font-bold" title="Исключить">✕</button>` : '';
+                
+                list.insertAdjacentHTML('beforeend', `
+                    <span class="bg-gray-200 text-gray-800 text-sm px-3 py-1 rounded-full flex items-center">
+                        ${name} ${kickBtn}
+                    </span>
+                `);
+            });
+        }
+
+        // Исключение участника (Кик)
+        window.kickMember = async function(projectId, memberId, memberName) {
+            if(!confirm(`Вы уверены, что хотите исключить ${memberName}? Все загруженные им файлы будут удалены.`)) return;
+
+            // 1. Меняем статус заявки на rejected
+            await supabaseClient.from('join_requests').update({ status: 'rejected' }).eq('project_id', projectId).eq('user_id', memberId);
+            
+            // 2. Удаляем его файлы
+            await supabaseClient.from('project_files').delete().eq('project_id', projectId).eq('user_id', memberId);
+
+            alert('Участник исключен.');
+            openProjectDetail(projectId); // Обновляем окно
+        }
+
+        // Покинуть проект
+        window.leaveProject = async function(projectId) {
+            if(!confirm('Вы уверены, что хотите покинуть проект? Ваши файлы будут удалены.')) return;
+
+            await supabaseClient.from('join_requests').update({ status: 'rejected' }).eq('project_id', projectId).eq('user_id', currentUser.id);
+            await supabaseClient.from('project_files').delete().eq('project_id', projectId).eq('user_id', currentUser.id);
+
+            await loadMyApprovedProjects(); // Обновляем список зеленых карточек
+            loadProjects();
+            document.getElementById('detailModal').classList.add('hidden');
+            document.getElementById('detailModal').classList.remove('flex');
         }
 
         async function loadProjectFiles(projectId) {
@@ -434,15 +489,17 @@
             }
 
             data.forEach(file => {
+                const author = allProfiles.find(p => p.id === file.user_id);
+                const authorName = author?.full_name || 'Кто-то';
                 list.insertAdjacentHTML('beforeend', `
-                    <a href="${file.file_url}" target="_blank" class="flex items-center gap-2 bg-white p-2 rounded border border-blue-100 hover:bg-blue-100 transition shadow-sm text-sm text-blue-700 font-medium">
-                        📄 ${file.file_name}
+                    <a href="${file.file_url}" target="_blank" class="flex justify-between items-center bg-white p-2 rounded border border-blue-100 hover:bg-blue-100 transition shadow-sm text-sm text-blue-700 font-medium">
+                        <span>📄 ${file.file_name}</span>
+                        <span class="text-xs text-gray-400">от ${authorName}</span>
                     </a>
                 `);
             });
         }
 
-        // Загрузка файла
         document.getElementById('uploadFileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const fileInput = document.getElementById('project-file-input');
@@ -453,24 +510,16 @@
             btn.disabled = true; btn.innerText = "Ждите...";
 
             const cleanName = file.name.replace(/[^a-zA-Z0-9.\s_-]/g, '_');
-            const fileName = `files/${Date.now()}_${cleanName}`; // Папка files внутри бакета
+            const fileName = `files/${Date.now()}_${cleanName}`;
             
-            // Загружаем в тот же бакет project-images
             const { error: uploadError } = await supabaseClient.storage.from('project-images').upload(fileName, file);
             
             if (uploadError) { alert("Ошибка загрузки файла!"); console.error(uploadError); }
             else {
                 const { data: { publicUrl } } = supabaseClient.storage.from('project-images').getPublicUrl(fileName);
-                
-                await supabaseClient.from('project_files').insert([{
-                    project_id: currentDetailProjectId,
-                    user_id: currentUser.id,
-                    file_name: file.name, // Оригинальное имя для отображения
-                    file_url: publicUrl
-                }]);
-                
-                fileInput.value = ''; // Очищаем инпут
-                loadProjectFiles(currentDetailProjectId); // Обновляем список
+                await supabaseClient.from('project_files').insert([{ project_id: currentDetailProjectId, user_id: currentUser.id, file_name: file.name, file_url: publicUrl }]);
+                fileInput.value = '';
+                loadProjectFiles(currentDetailProjectId); 
             }
             btn.disabled = false; btn.innerText = "Загрузить";
         });
@@ -482,7 +531,7 @@
 
             if (data) {
                 if (data.status === 'pending') { alert("Вы уже подали заявку. Ждите ответа."); return; }
-                if (data.status === 'approved') { alert("Вы уже приняты в этот проект!"); return; }
+                if (data.status === 'approved') { alert("Вы уже приняты!"); return; }
                 if (data.status === 'rejected') {
                     const { error } = await supabaseClient.from('join_requests').update({ status: 'pending' }).eq('id', data.id);
                     if (error) { alert("Ошибка!"); console.error(error); }
@@ -493,7 +542,7 @@
 
             const { error } = await supabaseClient.from('join_requests').insert([{ project_id: projectId, user_id: currentUser.id, status: 'pending' }]);
             if (error) { alert("Ошибка при отправке заявки!"); console.error(error); }
-            else { alert("Заявка отправлена! Автор получит уведомление."); document.getElementById('detailModal').classList.add('hidden'); document.getElementById('detailModal').classList.remove('flex'); }
+            else { alert("Заявка отправлена!"); document.getElementById('detailModal').classList.add('hidden'); document.getElementById('detailModal').classList.remove('flex'); }
         }
 
         // --- ПРОСМОТР ЗАЯВОК ---
@@ -561,13 +610,21 @@
             const imageHTML = project.image_url ? `<img src="${project.image_url}" class="w-full h-48 object-cover rounded-t-xl">` : '';
             const author = allProfiles.find(p => p.id === project.user_id);
             const authorName = author?.full_name || 'Аноним';
+            
+            // ПРОВЕРКА: если ты участник, карточка зеленая
+            const isApproved = myApprovedProjectIds.includes(String(project.id));
+            const cardBorderClass = isApproved ? 'border-green-500 bg-green-50' : 'border-gray-100';
+            const statusBadge = isApproved ? '<span class="bg-green-500 text-white text-xs px-2 py-1 rounded font-bold ml-2">Вы в проекте</span>' : '';
 
             return `
-            <div onclick="openProjectDetail(${project.id})" class="bg-white rounded-xl shadow border border-gray-100 hover:shadow-lg transition relative flex flex-col overflow-hidden cursor-pointer">
+            <div onclick="openProjectDetail(${project.id})" class="rounded-xl shadow border ${cardBorderClass} hover:shadow-lg transition relative flex flex-col overflow-hidden cursor-pointer">
                 ${imageHTML}
                 <div class="p-5 flex flex-col flex-grow">
                     <div class="flex justify-between items-start mb-3">
-                        <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded font-bold">Проект</span>
+                        <div class="flex items-center">
+                            <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded font-bold">Проект</span>
+                            ${statusBadge}
+                        </div>
                         <span class="text-xs text-gray-400">${project.deadline}</span>
                     </div>
                     <h3 class="font-bold text-lg mb-1">${project.title}</h3>
