@@ -26,10 +26,25 @@
 
     <!-- Основная часть -->
     <main class="max-w-5xl mx-auto px-4 py-8">
-        <h2 class="text-xl font-semibold mb-4">Ищу соавтора</h2>
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold">Ищу соавтора</h2>
+            <label class="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">
+                <input type="checkbox" id="filterFavorites" class="rounded text-blue-600 focus:ring-blue-500 w-4 h-4">
+                Только избранное (⭐)
+            </label>
+        </div>
+        
         <div class="flex flex-col md:flex-row gap-4 mb-6">
-            <input type="text" id="searchInput" placeholder="Поиск по названию..." class="w-full md:w-1/2 border border-gray-300 rounded-lg px-4 py-2">
-            <select id="filterRole" class="w-full md:w-1/2 border border-gray-300 rounded-lg px-4 py-2">
+            <input type="text" id="searchInput" placeholder="Поиск по названию..." class="w-full md:w-1/3 border border-gray-300 rounded-lg px-4 py-2">
+            <select id="filterCategory" class="w-full md:w-1/3 border border-gray-300 rounded-lg px-4 py-2">
+                <option value="">Все категории</option>
+                <option value="Медицина">Медицина</option>
+                <option value="IT">IT</option>
+                <option value="Экономика">Экономика</option>
+                <option value="Гуманитарные науки">Гуманитарные науки</option>
+                <option value="Другое">Другое</option>
+            </select>
+            <select id="filterRole" class="w-full md:w-1/3 border border-gray-300 rounded-lg px-4 py-2">
                 <option value="">Все роли (Кто нужен?)</option>
                 <option value="Теоретик">Теоретик</option>
                 <option value="Практик (врач)">Практик (врач)</option>
@@ -46,6 +61,10 @@
             <button id="closeDetailBtn" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl bg-white rounded-full p-1 z-10">&times;</button>
             <img id="detail-image" src="" class="w-full h-64 object-cover rounded-t-xl hidden">
             <div class="p-6">
+                <div class="flex items-center gap-2 mb-2">
+                    <span id="detail-category" class="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded font-bold"></span>
+                    <span id="detail-status" class="text-xs px-2 py-1 rounded font-bold"></span>
+                </div>
                 <h2 id="detail-title" class="text-3xl font-bold mb-2"></h2>
                 <p class="text-gray-500 mb-4">Нужен: <span id="detail-role" class="font-bold text-blue-600"></span> | Сроки: <span id="detail-deadline"></span></p>
                 
@@ -54,13 +73,24 @@
                     <p id="detail-desc" class="text-gray-700 whitespace-pre-wrap"></p>
                 </div>
 
+                <!-- БЛОК АВТОРА -->
+                <div class="flex items-center gap-3 mb-6 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                    <img id="detail-author-avatar" src="" class="w-12 h-12 rounded-full object-cover bg-gray-300 hidden">
+                    <div id="detail-author-avatar-placeholder" class="w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold text-lg"></div>
+                    <div>
+                        <p class="text-sm text-gray-500">Автор проекта:</p>
+                        <p id="detail-author" class="font-bold text-lg text-gray-800"></p>
+                        <p id="detail-author-skills" class="text-xs text-blue-600 font-medium"></p>
+                    </div>
+                </div>
+
                 <!-- БЛОК УЧАСТНИКОВ -->
                 <div class="mb-6 border-b pb-4">
                     <h3 class="font-bold text-gray-800 mb-2">Участники проекта:</h3>
                     <div id="detail-members-list" class="flex flex-wrap gap-2"></div>
                 </div>
 
-                <!-- БЛОК ФАЙЛОВ ПРОЕКТА (СКРЫВАЕМЫЙ) -->
+                <!-- БЛОК ФАЙЛОВ ПРОЕКТА -->
                 <div id="files-block-container" class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-200 hidden">
                     <h3 class="font-bold text-blue-900 mb-2 flex items-center gap-2">📁 Файлы проекта (видят только участники)</h3>
                     <div id="detail-files-list" class="flex flex-col gap-2 mb-3"></div>
@@ -75,10 +105,6 @@
                 </div>
 
                 <div class="flex justify-between items-center border-t pt-4">
-                    <div>
-                        <p class="text-sm text-gray-500">Автор:</p>
-                        <p id="detail-author" class="font-bold text-lg text-gray-800"></p>
-                    </div>
                     <div id="detail-actions" class="flex gap-3">
                         <!-- Кнопки -->
                     </div>
@@ -113,9 +139,11 @@
     <div id="chatModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-xl shadow-lg w-full max-w-lg mx-4 relative flex flex-col h-[80vh]">
             <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
-                <div>
-                    <h3 class="font-bold text-lg text-gray-800" id="chatTitle">Чат</h3>
-                    <p class="text-xs text-gray-500" id="chatSubtitle">Проект</p>
+                <div class="flex items-center gap-2">
+                    <div>
+                        <h3 class="font-bold text-lg text-gray-800" id="chatTitle">Чат</h3>
+                        <p class="text-xs text-gray-500" id="chatSubtitle">Проект</p>
+                    </div>
                 </div>
                 <div class="flex items-center gap-4">
                     <button id="reportBtn" class="text-orange-500 hover:text-orange-700 text-xl" title="Пожаловаться">🚩</button>
@@ -151,6 +179,21 @@
             <h2 id="modalTitle" class="text-2xl font-bold mb-4 text-gray-800">Новое объявление</h2>
             <form id="projectForm" class="flex flex-col gap-4">
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Тема</label><input type="text" id="input-title" required class="w-full border border-gray-300 rounded-lg px-3 py-2"></div>
+                <div class="flex gap-2">
+                    <div class="w-1/2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Категория</label>
+                        <select id="input-category" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                            <option>Медицина</option><option>IT</option><option>Экономика</option><option>Гуманитарные науки</option><option>Другое</option>
+                        </select>
+                    </div>
+                    <div class="w-1/2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Статус</label>
+                        <select id="input-status" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                            <option value="open">Открыт набор</option>
+                            <option value="closed">Набор закрыт</option>
+                        </select>
+                    </div>
+                </div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Сроки</label><input type="text" id="input-deadline" class="w-full border border-gray-300 rounded-lg px-3 py-2"></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Кто нужен?</label>
                     <select id="input-role" class="w-full border border-gray-300 rounded-lg px-3 py-2"><option>Теоретик</option><option>Практик (врач)</option><option>Дизайнер</option><option>Гуманитарий</option></select>
@@ -175,7 +218,16 @@
             <button id="closeProfileBtn" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
             <h2 class="text-2xl font-bold mb-4 text-gray-800">Мой профиль</h2>
             <form id="profileForm" class="flex flex-col gap-4">
+                <div class="flex items-center gap-4 mb-2">
+                    <img id="profile-avatar-preview" src="" class="w-16 h-16 rounded-full object-cover bg-gray-200 hidden">
+                    <div id="profile-avatar-placeholder" class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 font-bold text-2xl">👤</div>
+                    <div class="flex-grow">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Аватарка</label>
+                        <input type="file" id="profile-avatar-input" accept="image/*" class="w-full text-sm text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200">
+                    </div>
+                </div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">ФИО/Имя</label><input type="text" id="profile-name" required class="w-full border border-gray-300 rounded-lg px-3 py-2"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Навыки (через запятую)</label><input type="text" id="profile-skills" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Python, SPSS, Английский"></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Университет</label><input type="text" id="profile-university" class="w-full border border-gray-300 rounded-lg px-3 py-2"></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Факультет / Курс</label><input type="text" id="profile-faculty" class="w-full border border-gray-300 rounded-lg px-3 py-2"></div>
                 <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg mt-2">Сохранить профиль</button>
@@ -207,7 +259,8 @@
         let currentUser = null;
         let allProjects = [];
         let allProfiles = []; 
-        let myApprovedProjectIds = []; 
+        let myApprovedProjectIds = [];
+        let myFavoriteProjectIds = []; 
         let editingProjectId = null; 
         let activeChat = { receiverId: null, projectId: null, receiverName: '' };
         let currentDetailProjectId = null;
@@ -264,18 +317,31 @@
                 document.getElementById('myProfileBtn').addEventListener('click', () => {
                     const myProfile = allProfiles.find(p => p.id === currentUser.id);
                     document.getElementById('profile-name').value = myProfile?.full_name || '';
+                    document.getElementById('profile-skills').value = myProfile?.skills || '';
                     document.getElementById('profile-university').value = myProfile?.university || '';
                     document.getElementById('profile-faculty').value = myProfile?.faculty || '';
+                    
+                    if (myProfile?.avatar_url) {
+                        document.getElementById('profile-avatar-preview').src = myProfile.avatar_url;
+                        document.getElementById('profile-avatar-preview').classList.remove('hidden');
+                        document.getElementById('profile-avatar-placeholder').classList.add('hidden');
+                    } else {
+                        document.getElementById('profile-avatar-preview').classList.add('hidden');
+                        document.getElementById('profile-avatar-placeholder').classList.remove('hidden');
+                    }
+                    
                     document.getElementById('profileModal').classList.remove('hidden'); document.getElementById('profileModal').classList.add('flex');
                 });
                 document.getElementById('logoutBtn').addEventListener('click', async () => { await supabaseClient.auth.signOut(); });
 
                 await loadMyApprovedProjects();
+                await loadMyFavorites();
                 await updateUnreadBadge();
                 setupGlobalRealtime();
             } else {
                 currentUser = null;
                 myApprovedProjectIds = [];
+                myFavoriteProjectIds = [];
                 if (globalSubscription) supabaseClient.removeChannel(globalSubscription);
                 authBlock.innerHTML = `<button id="loginBtn" class="text-blue-600 font-medium hover:underline">Войти / Регистрация</button>`;
                 document.getElementById('loginBtn').addEventListener('click', () => { document.getElementById('authModal').classList.remove('hidden'); document.getElementById('authModal').classList.add('flex'); });
@@ -288,6 +354,12 @@
             if (!currentUser) return;
             const { data } = await supabaseClient.from('join_requests').select('project_id').eq('user_id', currentUser.id).eq('status', 'approved');
             if (data) myApprovedProjectIds = data.map(d => String(d.project_id));
+        }
+
+        async function loadMyFavorites() {
+            if (!currentUser) return;
+            const { data } = await supabaseClient.from('favorites').select('project_id').eq('user_id', currentUser.id);
+            if (data) myFavoriteProjectIds = data.map(d => String(d.project_id));
         }
 
         document.getElementById('authForm').addEventListener('submit', async (e) => {
@@ -308,15 +380,49 @@
             if (data) allProfiles = data;
         }
 
+        // --- ПРОФИЛЬ (С АВАТАРКОЙ И НАВЫКАМИ) ---
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const { error } = await supabaseClient.from('profiles').upsert({
-                id: currentUser.id, email: currentUser.email,
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true; btn.innerText = "Сохранение...";
+
+            const fileInput = document.getElementById('profile-avatar-input');
+            const file = fileInput.files[0];
+            let avatarUrl = null;
+            
+            if (file) {
+                const fileName = `avatars/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+                const { error: uploadError } = await supabaseClient.storage.from('project-images').upload(fileName, file);
+                if (!uploadError) { 
+                    avatarUrl = supabaseClient.storage.from('project-images').getPublicUrl(fileName).data.publicUrl; 
+                } else {
+                    alert("Ошибка загрузки аватарки!");
+                    btn.disabled = false; btn.innerText = "Сохранить профиль";
+                    return;
+                }
+            }
+
+            const updateData = {
+                id: currentUser.id, 
+                email: currentUser.email,
                 full_name: document.getElementById('profile-name').value,
+                skills: document.getElementById('profile-skills').value,
                 university: document.getElementById('profile-university').value,
                 faculty: document.getElementById('profile-faculty').value
-            });
-            if (!error) { alert("Профиль сохранен!"); document.getElementById('profileModal').classList.add('hidden'); document.getElementById('profileModal').classList.remove('flex'); await loadProfiles(); loadProjects(); }
+            };
+            
+            if (avatarUrl) updateData.avatar_url = avatarUrl;
+
+            const { error } = await supabaseClient.from('profiles').upsert(updateData);
+            if (!error) { 
+                alert("Профиль сохранен!"); 
+                document.getElementById('profileModal').classList.add('hidden'); 
+                document.getElementById('profileModal').classList.remove('flex'); 
+                await loadProfiles(); 
+                loadProjects(); 
+                document.getElementById('profile-avatar-input').value = ''; // Очищаем инпут
+            }
+            btn.disabled = false; btn.innerText = "Сохранить профиль";
         });
 
         // --- УВЕДОМЛЕНИЯ ---
@@ -376,9 +482,30 @@
             document.getElementById('detail-role').innerText = project.role;
             document.getElementById('detail-deadline').innerText = project.deadline;
             document.getElementById('detail-desc').innerText = project.description || 'Описание не добавлено.';
+            document.getElementById('detail-category').innerText = project.category || 'Другое';
+            
+            const statusEl = document.getElementById('detail-status');
+            if (project.status === 'closed') {
+                statusEl.innerText = 'Набор закрыт';
+                statusEl.className = 'bg-red-100 text-red-700 text-xs px-2 py-1 rounded font-bold';
+            } else {
+                statusEl.innerText = 'Открыт набор';
+                statusEl.className = 'bg-green-100 text-green-700 text-xs px-2 py-1 rounded font-bold';
+            }
             
             const author = allProfiles.find(p => p.id === project.user_id);
             document.getElementById('detail-author').innerText = author?.full_name || 'Аноним';
+            document.getElementById('detail-author-skills').innerText = author?.skills ? `Навыки: ${author.skills}` : '';
+
+            if (author?.avatar_url) {
+                document.getElementById('detail-author-avatar').src = author.avatar_url;
+                document.getElementById('detail-author-avatar').classList.remove('hidden');
+                document.getElementById('detail-author-avatar-placeholder').classList.add('hidden');
+            } else {
+                document.getElementById('detail-author-avatar').classList.add('hidden');
+                document.getElementById('detail-author-avatar-placeholder').classList.remove('hidden');
+                document.getElementById('detail-author-avatar-placeholder').innerText = (author?.full_name || 'А')[0].toUpperCase();
+            }
 
             const img = document.getElementById('detail-image');
             if (project.image_url) { img.src = project.image_url; img.classList.remove('hidden'); }
@@ -389,37 +516,60 @@
             const isApproved = myApprovedProjectIds.includes(String(project.id));
 
             // 1. Настройка кнопок
+            let buttonsHTML = '';
             if (isAuthor) {
-                actionsDiv.innerHTML = `
-                    <button onclick="openRequests()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-bold">Заявки</button>
-                    <button onclick="editProject(${project.id})" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-bold">Изменить</button>
-                    <button onclick="deleteProject(${project.id})" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold">Удалить</button>
-                `;
+                buttonsHTML += `<button onclick="openRequests()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-bold">Заявки</button>`;
+                buttonsHTML += `<button onclick="editProject(${project.id})" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-bold">Изменить</button>`;
+                buttonsHTML += `<button onclick="deleteProject(${project.id})" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold">Удалить</button>`;
             } else if (isApproved) {
-                actionsDiv.innerHTML = `
-                    <button onclick="leaveProject(${project.id})" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold">Покинуть проект</button>
-                    <button onclick="openChat('${project.user_id}', ${project.id}, '${project.title.replace(/'/g, "\\'")}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold">Написать автору</button>
-                `;
+                buttonsHTML += `<button onclick="leaveProject(${project.id})" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold">Покинуть проект</button>`;
+                buttonsHTML += `<button onclick="openChat('${project.user_id}', ${project.id}, '${project.title.replace(/'/g, "\\'")}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold">Написать</button>`;
             } else {
-                actionsDiv.innerHTML = `
-                    <button onclick="sendJoinRequest(${project.id}, '${project.user_id}')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold">Подать заявку</button>
-                    <button onclick="openChat('${project.user_id}', ${project.id}, '${project.title.replace(/'/g, "\\'")}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold">Написать</button>
-                `;
+                // Если набор закрыт, кнопку "Подать заявку" не показываем
+                if (project.status !== 'closed') {
+                    buttonsHTML += `<button onclick="sendJoinRequest(${project.id}, '${project.user_id}')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold">Подать заявку</button>`;
+                } else {
+                    buttonsHTML += `<span class="bg-gray-200 text-gray-600 px-4 py-2 rounded-lg font-bold cursor-not-allowed">Набор закрыт</span>`;
+                }
+                buttonsHTML += `<button onclick="openChat('${project.user_id}', ${project.id}, '${project.title.replace(/'/g, "\\'")}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold">Написать</button>`;
             }
 
-            // 2. Показываем/скрываем файлы (только для автора и участников)
+            // Добавляем кнопку Избранное (если это не автор)
+            if (!isAuthor && currentUser) {
+                const isFav = myFavoriteProjectIds.includes(String(project.id));
+                buttonsHTML += `<button onclick="toggleFavorite(${project.id})" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-bold border border-gray-300">${isFav ? '⭐ В избранном' : '☆ В избранное'}</button>`;
+            }
+            
+            actionsDiv.innerHTML = buttonsHTML;
+
             const canViewFiles = isAuthor || isApproved;
             document.getElementById('files-block-container').classList.toggle('hidden', !canViewFiles);
             document.getElementById('upload-file-container').classList.toggle('hidden', !canViewFiles);
 
-            // 3. Загружаем данные
             loadProjectMembers(id, isAuthor);
-            if (canViewFiles) {
-                loadProjectFiles(id);
-            }
+            if (canViewFiles) loadProjectFiles(id);
 
             document.getElementById('detailModal').classList.remove('hidden'); 
             document.getElementById('detailModal').classList.add('flex');
+        }
+
+        // --- ИЗБРАННОЕ ---
+        window.toggleFavorite = async function(projectId) {
+            if (!currentUser) { alert("Войдите, чтобы сохранять проекты!"); return; }
+            const isFav = myFavoriteProjectIds.includes(String(projectId));
+
+            if (isFav) {
+                await supabaseClient.from('favorites').delete().eq('user_id', currentUser.id).eq('project_id', projectId);
+                myFavoriteProjectIds = myFavoriteProjectIds.filter(id => id !== String(projectId));
+            } else {
+                await supabaseClient.from('favorites').insert([{ user_id: currentUser.id, project_id: projectId }]);
+                myFavoriteProjectIds.push(String(projectId));
+            }
+            
+            // Обновляем кнопку на лету
+            const project = allProjects.find(p => String(p.id) === String(projectId));
+            if (project) openProjectDetail(projectId);
+            renderProjects();
         }
 
         async function loadProjectMembers(projectId, isAuthor) {
@@ -474,11 +624,8 @@
                 return;
             }
 
-            // Генерируем временные ссылки (живут 1 час) для каждого файла
             for (const file of data) {
                 let downloadUrl = file.file_url;
-                
-                // Если ссылка не http (старый формат), или если мы хотим безопасность - генерируем временную
                 if (!downloadUrl.startsWith('http')) {
                     const { data: urlData } = await supabaseClient.storage.from('project-documents').createSignedUrl(file.file_url, 3600);
                     if (urlData) downloadUrl = urlData.signedUrl;
@@ -507,18 +654,11 @@
             const cleanName = file.name.replace(/[^a-zA-Z0-9.\s_-]/g, '_');
             const fileName = `${Date.now()}_${cleanName}`;
             
-            // Загружаем в ЗАКРЫТЫЙ бакет project-documents
             const { error: uploadError } = await supabaseClient.storage.from('project-documents').upload(fileName, file);
             
             if (uploadError) { alert("Ошибка загрузки файла!"); console.error(uploadError); }
             else {
-                // Сохраняем в базу ТОЛЬКО путь к файлу, а не ссылку (для безопасности)
-                await supabaseClient.from('project_files').insert([{ 
-                    project_id: currentDetailProjectId, 
-                    user_id: currentUser.id, 
-                    file_name: file.name, 
-                    file_url: fileName // сохраняем путь, а не ссылку
-                }]);
+                await supabaseClient.from('project_files').insert([{ project_id: currentDetailProjectId, user_id: currentUser.id, file_name: file.name, file_url: fileName }]);
                 fileInput.value = '';
                 loadProjectFiles(currentDetailProjectId); 
             }
@@ -584,7 +724,7 @@
             if (error) { alert("Ошибка!"); console.error(error); } else { openRequests(); }
         }
 
-        // --- КАРТОЧКИ ---
+        // --- КАРТОЧКИ И ФИЛЬТРЫ ---
         async function loadProjects() {
             const { data } = await supabaseClient.from('projects').select('*').order('id', { ascending: false });
             if (data) { 
@@ -597,10 +737,16 @@
         function renderProjects() {
             const searchText = document.getElementById('searchInput').value.toLowerCase();
             const selectedRole = document.getElementById('filterRole').value;
+            const selectedCategory = document.getElementById('filterCategory').value;
+            const showOnlyFavorites = document.getElementById('filterFavorites').checked;
+
             const filtered = allProjects.filter(p => {
                 const matchSearch = p.title.toLowerCase().includes(searchText) || (p.description && p.description.toLowerCase().includes(searchText));
                 const matchRole = selectedRole === "" || p.role === selectedRole;
-                return matchSearch && matchRole;
+                const matchCategory = selectedCategory === "" || p.category === selectedCategory;
+                const matchFav = !showOnlyFavorites || myFavoriteProjectIds.includes(String(p.id));
+                
+                return matchSearch && matchRole && matchCategory && matchFav;
             });
             grid.innerHTML = '';
             if (filtered.length === 0) { grid.innerHTML = '<p class="text-gray-500 col-span-3 text-center py-8">Ничего не найдено.</p>'; return; }
@@ -611,24 +757,36 @@
             const imageHTML = project.image_url ? `<img src="${project.image_url}" class="w-full h-48 object-cover rounded-t-xl">` : '';
             const author = allProfiles.find(p => p.id === project.user_id);
             const authorName = author?.full_name || 'Аноним';
+            const avatarUrl = author?.avatar_url;
             
             const isApproved = myApprovedProjectIds.includes(String(project.id));
+            const isFav = myFavoriteProjectIds.includes(String(project.id));
             const cardBorderClass = isApproved ? 'border-green-500 bg-green-50' : 'border-gray-100';
+            
             const statusBadge = isApproved ? '<span class="bg-green-500 text-white text-xs px-2 py-1 rounded font-bold ml-2">Вы в проекте</span>' : '';
+            const closedBadge = project.status === 'closed' ? '<span class="bg-red-500 text-white text-xs px-2 py-1 rounded font-bold ml-2">Набор закрыт</span>' : '';
+            const favIcon = isFav ? '<span class="text-yellow-500 text-xl">⭐</span>' : '';
+
+            const avatarHTML = avatarUrl 
+                ? `<img src="${avatarUrl}" class="w-6 h-6 rounded-full object-cover inline-block mr-1">` 
+                : `<div class="w-6 h-6 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold text-xs inline-block mr-1">${authorName[0].toUpperCase()}</div>`;
 
             return `
-            <div onclick="openProjectDetail(${project.id})" class="rounded-xl shadow border ${cardBorderClass} hover:shadow-lg transition relative flex flex-col overflow-hidden cursor-pointer">
+            <div onclick="openProjectDetail(${project.id})" class="rounded-xl shadow border ${cardBorderClass} hover:shadow-lg transition relative flex flex-col overflow-hidden cursor-pointer bg-white">
                 ${imageHTML}
                 <div class="p-5 flex flex-col flex-grow">
                     <div class="flex justify-between items-start mb-3">
-                        <div class="flex items-center">
-                            <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded font-bold">Проект</span>
-                            ${statusBadge}
+                        <div class="flex items-center flex-wrap gap-1">
+                            <span class="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded font-bold">${project.category || 'Другое'}</span>
+                            ${statusBadge} ${closedBadge}
                         </div>
-                        <span class="text-xs text-gray-400">${project.deadline}</span>
+                        <div class="flex items-center gap-2">
+                            ${favIcon}
+                            <span class="text-xs text-gray-400">${project.deadline}</span>
+                        </div>
                     </div>
                     <h3 class="font-bold text-lg mb-1">${project.title}</h3>
-                    <p class="text-xs text-gray-500 mb-3">Автор: <span class="text-blue-600 font-medium">${authorName}</span></p>
+                    <p class="text-xs text-gray-600 mb-3 flex items-center">${avatarHTML} ${authorName}</p>
                     <p class="text-sm text-gray-600 mb-4 line-clamp-3 flex-grow">${project.description || 'Описание не добавлено.'}</p>
                     <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
                         <span class="text-xs font-medium text-gray-500">Нужен: ${project.role}</span>
@@ -640,6 +798,8 @@
 
         document.getElementById('searchInput').addEventListener('input', renderProjects);
         document.getElementById('filterRole').addEventListener('change', renderProjects);
+        document.getElementById('filterCategory').addEventListener('change', renderProjects);
+        document.getElementById('filterFavorites').addEventListener('change', renderProjects);
 
         // --- ЧАТ ---
         async function openInbox() {
@@ -665,15 +825,21 @@
                 const otherProfile = allProfiles.find(p => p.id === chat.otherId);
                 const projectTitle = project ? project.title : 'Удаленный проект';
                 const otherName = otherProfile?.full_name || 'Пользователь';
+                const otherAvatar = otherProfile?.avatar_url;
+                
                 const badgeHTML = chat.unreadCount > 0 ? `<span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full ml-2">${chat.unreadCount}</span>` : '';
+                const avatarHTML = otherAvatar ? `<img src="${otherAvatar}" class="w-8 h-8 rounded-full object-cover mr-2">` : `<div class="w-8 h-8 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold mr-2">${otherName[0].toUpperCase()}</div>`;
 
                 inboxList.insertAdjacentHTML('beforeend', `
-                    <div onclick="openChatFromInbox('${chat.otherId}', ${chat.projectId}, '${projectTitle.replace(/'/g, "\\'")}')" class="bg-white p-3 rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:bg-gray-50 transition flex flex-col">
-                        <div class="flex justify-between items-center mb-1">
-                            <div class="flex items-center"><span class="font-bold text-gray-800 text-sm">${otherName}</span>${badgeHTML}</div>
-                            <span class="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded">${projectTitle}</span>
+                    <div onclick="openChatFromInbox('${chat.otherId}', ${chat.projectId}, '${projectTitle.replace(/'/g, "\\'")}')" class="bg-white p-3 rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:bg-gray-50 transition flex items-center">
+                        ${avatarHTML}
+                        <div class="flex-grow overflow-hidden">
+                            <div class="flex justify-between items-center mb-1">
+                                <div class="flex items-center"><span class="font-bold text-gray-800 text-sm">${otherName}</span>${badgeHTML}</div>
+                                <span class="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded truncate max-w-[120px]">${projectTitle}</span>
+                            </div>
+                            <p class="text-xs text-gray-500 truncate">${chat.lastMessage}</p>
                         </div>
-                        <p class="text-xs text-gray-500 truncate">${chat.lastMessage}</p>
                     </div>
                 `);
             }
@@ -771,6 +937,8 @@
             document.getElementById('modalTitle').innerText = "Редактировать";
             document.getElementById('submitBtn').innerText = "Сохранить";
             document.getElementById('input-title').value = project.title;
+            document.getElementById('input-category').value = project.category || 'Другое';
+            document.getElementById('input-status').value = project.status || 'open';
             document.getElementById('input-deadline').value = project.deadline;
             document.getElementById('input-role').value = project.role;
             document.getElementById('input-desc').value = project.description || '';
@@ -801,6 +969,8 @@
 
             const projectData = {
                 title: document.getElementById('input-title').value,
+                category: document.getElementById('input-category').value,
+                status: document.getElementById('input-status').value,
                 deadline: document.getElementById('input-deadline').value,
                 role: document.getElementById('input-role').value,
                 description: document.getElementById('input-desc').value,
