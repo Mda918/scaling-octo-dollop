@@ -323,10 +323,10 @@
             chatInput.focus();
         }
 
-                   async function loadMessages() {
-            if (!activeChat.receiverId) return;
+               async function loadMessages() {
+            if (!activeChat.receiverId || !activeChat.projectId) return;
             
-            // Берем все сообщения между этими двумя пользователями
+            // Берем ВСЕ сообщения между этими двумя пользователями
             const { data, error } = await supabaseClient
                 .from('messages')
                 .select('*')
@@ -337,10 +337,13 @@
 
             chatMessages.innerHTML = '';
             
-            if (!data || data.length === 0) {
-                chatMessages.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">Начните диалог первым!</p>';
+            // Оставляем ТОЛЬКО те сообщения, которые относятся к текущему проекту
+            const projectMessages = data.filter(msg => String(msg.project_id) === String(activeChat.projectId));
+            
+            if (!projectMessages || projectMessages.length === 0) {
+                chatMessages.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">Начните диалог по этому проекту первым!</p>';
             } else {
-                data.forEach(msg => renderMessage(msg));
+                projectMessages.forEach(msg => renderMessage(msg));
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
         }
@@ -358,8 +361,7 @@
             `);
         }
 
-        // МАГИЯ REAL-TIME: Слушаем новые сообщения
-                function setupRealtime(receiverId, projectId) {
+                   function setupRealtime(receiverId, projectId) {
             if (chatSubscription) supabaseClient.removeChannel(chatSubscription);
 
             chatSubscription = supabaseClient.channel('chat-realtime')
@@ -368,7 +370,10 @@
                 }, (payload) => {
                     const newMsg = payload.new;
                     
-                    // Проверяем только отправителя и получателя (без проекта)
+                    // ЖЕСТКАЯ ПРОВЕРКА: если сообщение из другого проекта, игнорируем его!
+                    if (String(newMsg.project_id) !== String(projectId)) return;
+                    
+                    // Проверяем, что это диалог между нами двумя
                     if ((String(newMsg.sender_id) === String(currentUser.id) && String(newMsg.receiver_id) === String(receiverId)) ||
                         (String(newMsg.sender_id) === String(receiverId) && String(newMsg.receiver_id) === String(currentUser.id))) {
                         
