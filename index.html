@@ -323,35 +323,27 @@
             chatInput.focus();
         }
 
-                async function loadMessages() {
-            if (!activeChat.projectId) return;
+                   async function loadMessages() {
+            if (!activeChat.receiverId) return;
             
-            // Просто берем ВСЕ сообщения по этому проекту (правила безопасности Supabase сами отсекут лишнее)
+            // Берем все сообщения между этими двумя пользователями
             const { data, error } = await supabaseClient
                 .from('messages')
                 .select('*')
-                .eq('project_id', activeChat.projectId)
+                .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${activeChat.receiverId}),and(sender_id.eq.${activeChat.receiverId},receiver_id.eq.${currentUser.id})`)
                 .order('created_at', { ascending: true });
 
-            if (error) {
-                console.error("Ошибка загрузки сообщений:", error);
-                return;
-            }
+            if (error) { console.error("Ошибка загрузки:", error); return; }
 
             chatMessages.innerHTML = '';
             
-            // Фильтруем прямо в браузере: оставляем только переписку между нами двумя
-            const myMessages = data.filter(msg => 
-                (msg.sender_id === currentUser.id && msg.receiver_id === activeChat.receiverId) ||
-                (msg.sender_id === activeChat.receiverId && msg.receiver_id === currentUser.id)
-            );
-
-            if (myMessages.length === 0) {
+            if (!data || data.length === 0) {
                 chatMessages.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">Начните диалог первым!</p>';
             } else {
-                myMessages.forEach(msg => renderMessage(msg));
+                data.forEach(msg => renderMessage(msg));
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
+        }
         }
 
         function renderMessage(msg) {
@@ -368,20 +360,19 @@
         }
 
         // МАГИЯ REAL-TIME: Слушаем новые сообщения
-        function setupRealtime(receiverId, projectId) {
+                function setupRealtime(receiverId, projectId) {
             if (chatSubscription) supabaseClient.removeChannel(chatSubscription);
 
-            chatSubscription = supabaseClient.channel('custom-chat-channel')
+            chatSubscription = supabaseClient.channel('chat-realtime')
                 .on('postgres_changes', { 
-                    event: 'INSERT', schema: 'public', table: 'messages',
-                    filter: `project_id=eq.${projectId}`
+                    event: 'INSERT', schema: 'public', table: 'messages'
                 }, (payload) => {
                     const newMsg = payload.new;
-                    // Проверяем, что сообщение относится к нашему диалогу
-                    if ((newMsg.sender_id === currentUser.id && newMsg.receiver_id === receiverId) ||
-                        (newMsg.sender_id === receiverId && newMsg.receiver_id === currentUser.id)) {
+                    
+                    // Проверяем только отправителя и получателя (без проекта)
+                    if ((String(newMsg.sender_id) === String(currentUser.id) && String(newMsg.receiver_id) === String(receiverId)) ||
+                        (String(newMsg.sender_id) === String(receiverId) && String(newMsg.receiver_id) === String(currentUser.id))) {
                         
-                        // Если это первое сообщение (была заглушка), очищаем
                         if (chatMessages.innerHTML.includes('Начните диалог')) chatMessages.innerHTML = '';
                         
                         renderMessage(newMsg);
