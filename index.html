@@ -40,6 +40,44 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </main>
 
+    <!-- МОДАЛЬНОЕ ОКНО ДЕТАЛЬНОГО ПРОСМОТРА ПРОЕКТА -->
+    <div id="detailModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-2xl mx-4 relative max-h-[90vh] overflow-y-auto">
+            <button id="closeDetailBtn" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl bg-white rounded-full p-1">&times;</button>
+            <img id="detail-image" src="" class="w-full h-64 object-cover rounded-t-xl hidden">
+            <div class="p-6">
+                <h2 id="detail-title" class="text-3xl font-bold mb-2"></h2>
+                <p class="text-gray-500 mb-4">Нужен: <span id="detail-role" class="font-bold text-blue-600"></span> | Сроки: <span id="detail-deadline"></span></p>
+                <div class="bg-gray-50 p-4 rounded-lg mb-6 border">
+                    <h3 class="font-bold text-gray-800 mb-2">Описание:</h3>
+                    <p id="detail-desc" class="text-gray-700 whitespace-pre-wrap"></p>
+                </div>
+                <div class="flex justify-between items-center border-t pt-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Автор:</p>
+                        <p id="detail-author" class="font-bold text-lg text-gray-800"></p>
+                    </div>
+                    <div id="detail-actions" class="flex gap-3">
+                        <!-- Сюда JS добавит кнопку "Подать заявку" или "Управление" -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО ЗАЯВОК (ДЛЯ АВТОРА) -->
+    <div id="requestsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-lg mx-4 relative flex flex-col h-[80vh]">
+            <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
+                <h3 class="font-bold text-lg text-gray-800">Заявки на проекты</h3>
+                <button id="closeRequestsBtn" class="text-gray-500 hover:text-red-500 font-bold text-2xl">&times;</button>
+            </div>
+            <div id="requestsList" class="flex-grow p-4 overflow-y-auto bg-gray-100 flex flex-col gap-2">
+                <!-- Список заявок -->
+            </div>
+        </div>
+    </div>
+
     <!-- МОДАЛЬНОЕ ОКНО: СПИСОК ЧАТОВ (ВХОДЯЩИЕ) -->
     <div id="inboxModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-xl shadow-lg w-full max-w-lg mx-4 relative flex flex-col h-[80vh]">
@@ -47,9 +85,7 @@
                 <h3 class="font-bold text-lg text-gray-800">Мои чаты</h3>
                 <button id="closeInboxBtn" class="text-gray-500 hover:text-red-500 font-bold text-2xl">&times;</button>
             </div>
-            <div id="inboxList" class="flex-grow p-4 overflow-y-auto bg-gray-100 flex flex-col gap-2">
-                <!-- Список чатов будет здесь -->
-            </div>
+            <div id="inboxList" class="flex-grow p-4 overflow-y-auto bg-gray-100 flex flex-col gap-2"></div>
         </div>
     </div>
 
@@ -99,7 +135,7 @@
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Кто нужен?</label>
                     <select id="input-role" class="w-full border border-gray-300 rounded-lg px-3 py-2"><option>Теоретик</option><option>Практик (врач)</option><option>Дизайнер</option><option>Гуманитарий</option></select>
                 </div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Краткое описание</label><textarea id="input-desc" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2"></textarea></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Краткое описание (видно всем)</label><textarea id="input-desc" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2"></textarea></div>
                 <div class="border border-gray-200 p-3 rounded-lg bg-gray-50">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Картинка</label>
                     <div id="current-image-container" class="hidden mb-3 flex items-center gap-3">
@@ -127,36 +163,6 @@
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО ПРОСМОТРА ЧУЖОГО ПРОФИЛЯ -->
-    <div id="viewProfileModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4 relative">
-            <button id="closeViewProfileBtn" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
-            <h2 class="text-2xl font-bold mb-4 text-gray-800">Профиль автора</h2>
-            <div class="flex flex-col gap-3">
-                <div class="bg-gray-50 p-3 rounded-lg"><p class="text-sm text-gray-500">Имя:</p><p id="view-profile-name" class="font-semibold text-lg text-gray-900"></p></div>
-                <div class="bg-gray-50 p-3 rounded-lg"><p class="text-sm text-gray-500">Университет:</p><p id="view-profile-university" class="font-semibold text-gray-900"></p></div>
-                <div class="bg-gray-50 p-3 rounded-lg"><p class="text-sm text-gray-500">Факультет:</p><p id="view-profile-faculty" class="font-semibold text-gray-900"></p></div>
-            </div>
-            <button id="closeViewProfileBtn2" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg mt-6">Закрыть</button>
-        </div>
-    </div>
-
-    <!-- МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ -->
-    <div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4 relative">
-            <button id="closeAuthBtn" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
-            <h2 class="text-2xl font-bold mb-4 text-gray-800">Вход в систему</h2>
-            <form id="authForm" class="flex flex-col gap-4">
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label><input type="email" id="auth-email" required class="w-full border border-gray-300 rounded-lg px-3 py-2"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Пароль</label><input type="password" id="auth-password" required class="w-full border border-gray-300 rounded-lg px-3 py-2"></div>
-                <div class="flex gap-2 mt-2">
-                    <button type="submit" id="loginSubmitBtn" class="w-1/2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Войти</button>
-                    <button type="button" id="signupSubmitBtn" class="w-1/2 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Регистрация</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <script>
         const supabaseUrl = 'https://afpqnklgtibofojlvjzm.supabase.co'; 
         const supabaseKey = 'sb_publishable_E023w2ojf9VIqr78rN5VWQ_jOu9uKDQ'; 
@@ -168,14 +174,11 @@
         let editingProjectId = null; 
         let activeChat = { receiverId: null, projectId: null, receiverName: '' };
         let chatSubscription = null;
-        let globalSubscription = null; // Для уведомлений на главной
+        let globalSubscription = null;
+        let currentDetailProjectId = null; // Для детального окна
 
         const grid = document.querySelector('.grid');
         const authBlock = document.getElementById('auth-block');
-        const chatModal = document.getElementById('chatModal');
-        const chatMessages = document.getElementById('chatMessages');
-        const chatForm = document.getElementById('chatForm');
-        const chatInput = document.getElementById('chatInput');
         
         // --- УПРАВЛЕНИЕ ОКНАМИ ---
         document.getElementById('openModalBtn').addEventListener('click', () => { 
@@ -186,19 +189,21 @@
         });
         document.getElementById('closeModalBtn').addEventListener('click', () => { document.getElementById('modal').classList.add('hidden'); document.getElementById('modal').classList.remove('flex'); document.getElementById('projectForm').reset(); editingProjectId = null; });
         
-        document.getElementById('loginBtn').addEventListener('click', () => { document.getElementById('authModal').classList.remove('hidden'); document.getElementById('authModal').classList.add('flex'); });
+        // Закрытие детального окна
+        document.getElementById('closeDetailBtn').addEventListener('click', () => { document.getElementById('detailModal').classList.add('hidden'); document.getElementById('detailModal').classList.remove('flex'); });
+
+        // Закрытие остальных окон
         document.getElementById('closeAuthBtn').addEventListener('click', () => { document.getElementById('authModal').classList.add('hidden'); document.getElementById('authModal').classList.remove('flex'); });
         document.getElementById('closeProfileBtn').addEventListener('click', () => { document.getElementById('profileModal').classList.add('hidden'); document.getElementById('profileModal').classList.remove('flex'); });
-        document.getElementById('closeViewProfileBtn').addEventListener('click', () => { document.getElementById('viewProfileModal').classList.add('hidden'); document.getElementById('viewProfileModal').classList.remove('flex'); });
-        document.getElementById('closeViewProfileBtn2').addEventListener('click', () => { document.getElementById('viewProfileModal').classList.add('hidden'); document.getElementById('viewProfileModal').classList.remove('flex'); });
         document.getElementById('closeReportBtn').addEventListener('click', () => { document.getElementById('reportModal').classList.add('hidden'); document.getElementById('reportModal').classList.remove('flex'); });
+        document.getElementById('closeRequestsBtn').addEventListener('click', () => { document.getElementById('requestsModal').classList.add('hidden'); document.getElementById('requestsModal').classList.remove('flex'); });
+        document.getElementById('closeInboxBtn').addEventListener('click', () => { document.getElementById('inboxModal').classList.add('hidden'); document.getElementById('inboxModal').classList.remove('flex'); });
         
         document.getElementById('closeChatBtn').addEventListener('click', () => {
-            chatModal.classList.add('hidden'); chatModal.classList.remove('flex');
+            document.getElementById('chatModal').classList.add('hidden'); document.getElementById('chatModal').classList.remove('flex');
             if (chatSubscription) { supabaseClient.removeChannel(chatSubscription); chatSubscription = null; }
             activeChat = { receiverId: null, projectId: null };
         });
-        document.getElementById('closeInboxBtn').addEventListener('click', () => { document.getElementById('inboxModal').classList.add('hidden'); document.getElementById('inboxModal').classList.remove('flex'); });
 
         // --- АВТОРИЗАЦИЯ ---
         async function checkUser() {
@@ -211,14 +216,16 @@
             if (session) {
                 currentUser = session.user;
                 authBlock.innerHTML = `
+                    <button id="myRequestsBtn" class="bg-yellow-100 text-yellow-700 hover:bg-yellow-200 px-3 py-1.5 rounded-lg text-sm font-medium transition">Заявки</button>
                     <button id="myInboxBtn" class="relative bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1.5 rounded-lg text-sm font-medium transition">
                         Мои чаты
                         <span id="unreadBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
                     </button>
-                    <button id="myProfileBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1.5 rounded-lg text-sm font-medium transition">Мой профиль</button>
+                    <button id="myProfileBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1.5 rounded-lg text-sm font-medium transition">Профиль</button>
                     <button id="logoutBtn" class="text-red-500 font-medium hover:underline text-sm ml-2">Выйти</button>
                 `;
                 
+                document.getElementById('myRequestsBtn').addEventListener('click', openRequests);
                 document.getElementById('myInboxBtn').addEventListener('click', openInbox);
                 document.getElementById('myProfileBtn').addEventListener('click', () => {
                     const myProfile = allProfiles.find(p => p.id === currentUser.id);
@@ -229,10 +236,8 @@
                 });
                 document.getElementById('logoutBtn').addEventListener('click', async () => { await supabaseClient.auth.signOut(); });
 
-                // Запускаем проверку непрочитанных и глобальный слушатель
                 await updateUnreadBadge();
                 setupGlobalRealtime();
-
             } else {
                 currentUser = null;
                 if (globalSubscription) supabaseClient.removeChannel(globalSubscription);
@@ -256,7 +261,7 @@
             if (!error) alert("Успех! Теперь войдите."); else alert(error.message);
         });
 
-        // --- ЗАГРУЗКА ПРОФИЛЕЙ (ТА САМАЯ ФУНКЦИЯ) ---
+        // --- ЗАГРУЗКА ПРОФИЛЕЙ ---
         async function loadProfiles() {
             const { data } = await supabaseClient.from('profiles').select('*');
             if (data) allProfiles = data;
@@ -273,15 +278,10 @@
             if (!error) { alert("Профиль сохранен!"); document.getElementById('profileModal').classList.add('hidden'); document.getElementById('profileModal').classList.remove('flex'); await loadProfiles(); loadProjects(); }
         });
 
-        // --- УВЕДОМЛЕНИЯ (КРАСНЫЙ КРУЖОК) ---
+        // --- УВЕДОМЛЕНИЯ ---
         async function updateUnreadBadge() {
             if (!currentUser) return;
-            const { count } = await supabaseClient
-                .from('messages')
-                .select('*', { count: 'exact', head: true })
-                .eq('receiver_id', currentUser.id)
-                .eq('is_read', false);
-
+            const { count } = await supabaseClient.from('messages').select('*', { count: 'exact', head: true }).eq('receiver_id', currentUser.id).eq('is_read', false);
             const badge = document.getElementById('unreadBadge');
             if (badge) {
                 if (count > 0) { badge.innerText = count > 99 ? '99+' : count; badge.classList.remove('hidden'); }
@@ -289,206 +289,131 @@
             }
         }
 
-        // Глобальный слушатель (срабатывает, даже если чат закрыт)
         function setupGlobalRealtime() {
             if (globalSubscription) supabaseClient.removeChannel(globalSubscription);
-            
             globalSubscription = supabaseClient.channel('global-messages')
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
                     const newMsg = payload.new;
                     if (String(newMsg.receiver_id) === String(currentUser.id)) {
-                        // Если мы сейчас в этом чате, сразу помечаем как прочитанное
                         if (activeChat.receiverId === newMsg.sender_id && activeChat.projectId === newMsg.project_id) {
                             markMessagesAsRead(newMsg.sender_id, newMsg.project_id);
                         } else {
-                            // Иначе обновляем счетчик
                             updateUnreadBadge();
-                            // Если открыт список чатов, обновляем его
-                            if (!document.getElementById('inboxModal').classList.contains('hidden')) {
-                                openInbox();
-                            }
                         }
                     }
                 }).subscribe();
         }
 
         async function markMessagesAsRead(senderId, projectId) {
-            await supabaseClient.from('messages').update({ is_read: true })
-                .eq('receiver_id', currentUser.id)
-                .eq('sender_id', senderId)
-                .eq('project_id', projectId);
-            updateUnreadBadge(); // Обновляем кружок
+            await supabaseClient.from('messages').update({ is_read: true }).eq('receiver_id', currentUser.id).eq('sender_id', senderId).eq('project_id', projectId);
+            updateUnreadBadge(); 
         }
 
-        // --- СПИСОК ЧАТОВ (INBOX) ---
-               async function openInbox() {
-            const inboxList = document.getElementById('inboxList');
-            inboxList.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">Загрузка...</p>';
-            document.getElementById('inboxModal').classList.remove('hidden');
-            document.getElementById('inboxModal').classList.add('flex');
+        // --- ДЕТАЛЬНЫЙ ПРОСМОТР ПРОЕКТА ---
+        window.openProjectDetail = function(id) {
+            const project = allProjects.find(p => String(p.id) === String(id));
+            if (!project) return;
 
-            const { data, error } = await supabaseClient
-                .from('messages').select('*')
-                .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
-                .order('created_at', { ascending: false });
-
-            if (error) { inboxList.innerHTML = 'Ошибка загрузки.'; return; }
-
-            if (data.length === 0) { inboxList.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">У вас пока нет сообщений.</p>'; return; }
-
-            const chatsMap = new Map();
-            data.forEach(msg => {
-                const otherId = msg.sender_id === currentUser.id ? msg.receiver_id : msg.sender_id;
-                const key = `${msg.project_id}_${otherId}`;
-                
-                if (!chatsMap.has(key)) {
-                    chatsMap.set(key, { 
-                        projectId: msg.project_id, 
-                        otherId: otherId, 
-                        lastMessage: msg.content,
-                        unreadCount: 0 // Счетчик для каждого чата
-                    });
-                }
-                
-                // Если сообщение адресовано нам и оно не прочитано — плюсуем счетчик
-                if (msg.receiver_id === currentUser.id && msg.is_read === false) {
-                    chatsMap.get(key).unreadCount++;
-                }
-            });
-
-            inboxList.innerHTML = '';
+            currentDetailProjectId = id;
+            document.getElementById('detail-title').innerText = project.title;
+            document.getElementById('detail-role').innerText = project.role;
+            document.getElementById('detail-deadline').innerText = project.deadline;
+            document.getElementById('detail-desc').innerText = project.description || 'Описание не добавлено.';
             
-            for (const chat of chatsMap.values()) {
-                const project = allProjects.find(p => String(p.id) === String(chat.projectId));
-                const otherProfile = allProfiles.find(p => p.id === chat.otherId);
-                const projectTitle = project ? project.title : 'Удаленный проект';
-                const otherName = otherProfile?.full_name || 'Пользователь';
+            const author = allProfiles.find(p => p.id === project.user_id);
+            document.getElementById('detail-author').innerText = author?.full_name || 'Аноним';
 
-                // Если есть непрочитанные, рисуем красный кружок рядом с именем
-                const badgeHTML = chat.unreadCount > 0 
-                    ? `<span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full ml-2">${chat.unreadCount}</span>` 
-                    : '';
+            const img = document.getElementById('detail-image');
+            if (project.image_url) { img.src = project.image_url; img.classList.remove('hidden'); }
+            else { img.classList.add('hidden'); }
 
-                inboxList.insertAdjacentHTML('beforeend', `
-                    <div onclick="openChatFromInbox('${chat.otherId}', ${chat.projectId}, '${projectTitle.replace(/'/g, "\\'")}')" class="bg-white p-3 rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:bg-gray-50 transition flex flex-col">
-                        <div class="flex justify-between items-center mb-1">
-                            <div class="flex items-center">
-                                <span class="font-bold text-gray-800 text-sm">${otherName}</span>
-                                ${badgeHTML}
+            const actionsDiv = document.getElementById('detail-actions');
+            const isAuthor = currentUser && String(project.user_id) === String(currentUser.id);
+
+            if (isAuthor) {
+                actionsDiv.innerHTML = `<button onclick="openRequests()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-bold">Посмотреть заявки</button>`;
+            } else {
+                actionsDiv.innerHTML = `
+                    <button onclick="sendJoinRequest(${project.id}, '${project.user_id}')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold">Подать заявку на вступление</button>
+                    <button onclick="openChat('${project.user_id}', ${project.id}, '${project.title.replace(/'/g, "\\'")}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold">Написать автору</button>
+                `;
+            }
+
+            document.getElementById('detailModal').classList.remove('hidden'); 
+            document.getElementById('detailModal').classList.add('flex');
+        }
+
+        // --- ОТПРАВКА ЗАЯВКИ ---
+        window.sendJoinRequest = async function(projectId, authorId) {
+            if (!currentUser) { alert("Войдите, чтобы подать заявку!"); return; }
+            
+            // Проверяем, не отправляли ли уже
+            const { data } = await supabaseClient.from('join_requests').select('*').eq('project_id', projectId).eq('user_id', currentUser.id);
+            if (data && data.length > 0) { alert("Вы уже подали заявку на этот проект. Ждите ответа."); return; }
+
+            const { error } = await supabaseClient.from('join_requests').insert([{
+                project_id: projectId, user_id: currentUser.id, status: 'pending'
+            }]);
+
+            if (error) { alert("Ошибка при отправке заявки!"); console.error(error); }
+            else { alert("Заявка отправлена! Автор получит уведомление."); document.getElementById('detailModal').classList.add('hidden'); document.getElementById('detailModal').classList.remove('flex'); }
+        }
+
+        // --- ПРОСМОТР ЗАЯВОК (ДЛЯ АВТОРА) ---
+        async function openRequests() {
+            const list = document.getElementById('requestsList');
+            list.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">Загрузка...</p>';
+            document.getElementById('requestsModal').classList.remove('hidden'); document.getElementById('requestsModal').classList.add('flex');
+
+            // Достаем заявки на проекты, где мы автор
+            const myProjectIds = allProjects.filter(p => p.user_id === currentUser.id).map(p => p.id);
+            
+            const { data, error } = await supabaseClient.from('join_requests').select('*').in('project_id', myProjectIds).order('created_at', { ascending: false });
+
+            if (error) { list.innerHTML = 'Ошибка загрузки.'; return; }
+            if (data.length === 0) { list.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">У вас пока нет заявок.</p>'; return; }
+
+            list.innerHTML = '';
+            data.forEach(req => {
+                const project = allProjects.find(p => String(p.id) === String(req.project_id));
+                const userProfile = allProfiles.find(p => p.id === req.user_id);
+                const userName = userProfile?.full_name || 'Пользователь';
+                const projectName = project ? project.title : 'Удаленный проект';
+
+                let statusBadge = '';
+                if (req.status === 'approved') statusBadge = '<span class="text-green-600 font-bold">Принят</span>';
+                else if (req.status === 'rejected') statusBadge = '<span class="text-red-600 font-bold">Отклонен</span>';
+                else statusBadge = '<span class="text-yellow-600 font-bold">В ожидании</span>';
+
+                const btns = req.status === 'pending' ? `
+                    <div class="flex gap-2 mt-2">
+                        <button onclick="updateRequest(${req.id}, 'approved')" class="bg-green-500 text-white px-3 py-1 rounded text-sm">Принять</button>
+                        <button onclick="updateRequest(${req.id}, 'rejected')" class="bg-red-500 text-white px-3 py-1 rounded text-sm">Отклонить</button>
+                    </div>
+                ` : '';
+
+                list.insertAdjacentHTML('beforeend', `
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <p class="font-bold text-gray-800">${userName}</p>
+                                <p class="text-xs text-gray-500">Хочет в проект: <span class="font-medium text-blue-600">${projectName}</span></p>
                             </div>
-                            <span class="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded">${projectTitle}</span>
+                            ${statusBadge}
                         </div>
-                        <p class="text-xs text-gray-500 truncate">${chat.lastMessage}</p>
+                        ${btns}
                     </div>
                 `);
-            }
+            });
         }
 
-        window.openChatFromInbox = function(receiverId, projectId, projectTitle) {
-            document.getElementById('inboxModal').classList.add('hidden');
-            document.getElementById('inboxModal').classList.remove('flex');
-            openChat(receiverId, projectId, projectTitle);
+        window.updateRequest = async function(reqId, newStatus) {
+            const { error } = await supabaseClient.from('join_requests').update({ status: newStatus }).eq('id', reqId);
+            if (error) { alert("Ошибка!"); console.error(error); }
+            else { openRequests(); } // Обновляем список
         }
 
-        // --- ЧАТ И REAL-TIME ---
-        window.openChat = async function(receiverId, projectId, projectTitle) {
-            if (!currentUser) { alert("Войдите, чтобы писать!"); return; }
-            if (currentUser.id === receiverId) { alert("Это ваш проект!"); return; }
-            
-            activeChat = { receiverId, projectId };
-            document.getElementById('chatTitle').innerText = "Чат по проекту";
-            document.getElementById('chatSubtitle').innerText = projectTitle;
-            chatMessages.innerHTML = '<p class="text-center text-gray-400 text-sm">Загрузка...</p>';
-            
-            chatModal.classList.remove('hidden'); chatModal.classList.add('flex');
-            
-            await markMessagesAsRead(receiverId, projectId); // Помечаем прочитанным
-            await loadMessages();
-            setupRealtime(receiverId, projectId);
-            chatInput.focus();
-        }
-
-        async function loadMessages() {
-            if (!activeChat.receiverId || !activeChat.projectId) return;
-            
-            const { data, error } = await supabaseClient
-                .from('messages').select('*')
-                .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${activeChat.receiverId}),and(sender_id.eq.${activeChat.receiverId},receiver_id.eq.${currentUser.id})`)
-                .order('created_at', { ascending: true });
-
-            if (error) { console.error("Ошибка:", error); return; }
-
-            chatMessages.innerHTML = '';
-            const projectMessages = data.filter(msg => String(msg.project_id) === String(activeChat.projectId));
-            
-            if (!projectMessages || projectMessages.length === 0) {
-                chatMessages.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">Начните диалог по этому проекту первым!</p>';
-            } else {
-                projectMessages.forEach(msg => renderMessage(msg));
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-        }
-
-        function renderMessage(msg) {
-            const isMine = msg.sender_id === currentUser.id;
-            const time = new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            chatMessages.insertAdjacentHTML('beforeend', `
-                <div class="flex ${isMine ? 'justify-end' : 'justify-start'}">
-                    <div class="max-w-[75%] p-3 rounded-xl text-sm ${isMine ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white text-gray-800 border rounded-bl-none shadow-sm'}">
-                        ${msg.content}
-                        <div class="text-[10px] ${isMine ? 'text-blue-200' : 'text-gray-400'} text-right mt-1">${time}</div>
-                    </div>
-                </div>
-            `);
-        }
-
-        function setupRealtime(receiverId, projectId) {
-            if (chatSubscription) supabaseClient.removeChannel(chatSubscription);
-            chatSubscription = supabaseClient.channel('chat-realtime')
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
-                    const newMsg = payload.new;
-                    if (String(newMsg.project_id) !== String(projectId)) return;
-                    if ((String(newMsg.sender_id) === String(currentUser.id) && String(newMsg.receiver_id) === String(receiverId)) ||
-                        (String(newMsg.sender_id) === String(receiverId) && String(newMsg.receiver_id) === String(currentUser.id))) {
-                        if (chatMessages.innerHTML.includes('Начните диалог')) chatMessages.innerHTML = '';
-                        renderMessage(newMsg);
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
-                        
-                        if (String(newMsg.receiver_id) === String(currentUser.id)) {
-                            markMessagesAsRead(receiverId, projectId);
-                        }
-                    }
-                }).subscribe();
-        }
-
-        chatForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const text = chatInput.value.trim();
-            if (!text) return;
-            chatInput.value = '';
-            await supabaseClient.from('messages').insert([{
-                sender_id: currentUser.id, receiver_id: activeChat.receiverId,
-                project_id: activeChat.projectId, content: text, is_read: false
-            }]);
-        });
-
-        // --- ЖАЛОБЫ ---
-        document.getElementById('reportBtn').addEventListener('click', () => {
-            document.getElementById('report-reason').value = '';
-            document.getElementById('reportModal').classList.remove('hidden'); document.getElementById('reportModal').classList.add('flex');
-        });
-
-        document.getElementById('reportForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await supabaseClient.from('reports').insert([{
-                reporter_id: currentUser.id, reported_user_id: activeChat.receiverId,
-                project_id: activeChat.projectId, reason: document.getElementById('report-reason').value
-            }]);
-            alert("Жалоба отправлена администратору. Спасибо!");
-            document.getElementById('reportModal').classList.add('hidden'); document.getElementById('reportModal').classList.remove('flex');
-        });
-
-        // --- ПРОЕКТЫ И КАРТОЧКИ ---
+        // --- КАРТОЧКИ И СПИСКИ ---
         async function loadProjects() {
             const { data } = await supabaseClient.from('projects').select('*').order('id', { ascending: false });
             if (data) { allProjects = data; renderProjects(); }
@@ -509,14 +434,12 @@
 
         function createCardHTML(project) {
             const isAuthor = currentUser && String(project.user_id) === String(currentUser.id);
-            const actionBtnsHTML = isAuthor ? `<button onclick="editProject('${project.id}')" class="text-blue-500 hover:text-blue-700 text-sm font-semibold">Изменить</button><button onclick="deleteProject('${project.id}')" class="text-red-500 hover:text-red-700 text-sm font-semibold">Удалить</button>` : '';
             const imageHTML = project.image_url ? `<img src="${project.image_url}" class="w-full h-48 object-cover rounded-t-xl">` : '';
             const author = allProfiles.find(p => p.id === project.user_id);
             const authorName = author?.full_name || 'Аноним';
-            const writeBtnHTML = !isAuthor ? `<button onclick="openChat('${project.user_id}', ${project.id}, '${project.title.replace(/'/g, "\\'")}')" class="text-blue-600 text-sm font-semibold hover:underline">Написать</button>` : '';
 
             return `
-            <div class="bg-white rounded-xl shadow border border-gray-100 hover:shadow-md transition relative flex flex-col overflow-hidden">
+            <div onclick="openProjectDetail(${project.id})" class="bg-white rounded-xl shadow border border-gray-100 hover:shadow-lg transition relative flex flex-col overflow-hidden cursor-pointer">
                 ${imageHTML}
                 <div class="p-5 flex flex-col flex-grow">
                     <div class="flex justify-between items-start mb-3">
@@ -528,7 +451,7 @@
                     <p class="text-sm text-gray-600 mb-4 line-clamp-3 flex-grow">${project.description || 'Описание не добавлено.'}</p>
                     <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
                         <span class="text-xs font-medium text-gray-500">Нужен: ${project.role}</span>
-                        <div class="flex gap-3">${writeBtnHTML}${actionBtnsHTML}</div>
+                        <span class="text-blue-600 text-sm font-semibold group-hover:underline">Подробнее &rarr;</span>
                     </div>
                 </div>
             </div>`;
@@ -537,10 +460,129 @@
         document.getElementById('searchInput').addEventListener('input', renderProjects);
         document.getElementById('filterRole').addEventListener('change', renderProjects);
 
-        async function deleteProject(id) {
-            if(confirm('Удалить?')) { await supabaseClient.from('projects').delete().eq('id', id); loadProjects(); }
+        // --- ЧАТ (ОСТАЛЬНЫЕ ФУНКЦИИ) ---
+        async function openInbox() {
+            const inboxList = document.getElementById('inboxList');
+            inboxList.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">Загрузка...</p>';
+            document.getElementById('inboxModal').classList.remove('hidden'); document.getElementById('inboxModal').classList.add('flex');
+
+            const { data, error } = await supabaseClient.from('messages').select('*').or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`).order('created_at', { ascending: false });
+            if (error) { inboxList.innerHTML = 'Ошибка загрузки.'; return; }
+            if (data.length === 0) { inboxList.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">У вас пока нет сообщений.</p>'; return; }
+
+            const chatsMap = new Map();
+            data.forEach(msg => {
+                const otherId = msg.sender_id === currentUser.id ? msg.receiver_id : msg.sender_id;
+                const key = `${msg.project_id}_${otherId}`;
+                if (!chatsMap.has(key)) chatsMap.set(key, { projectId: msg.project_id, otherId: otherId, lastMessage: msg.content, unreadCount: 0 });
+                if (msg.receiver_id === currentUser.id && msg.is_read === false) chatsMap.get(key).unreadCount++;
+            });
+
+            inboxList.innerHTML = '';
+            for (const chat of chatsMap.values()) {
+                const project = allProjects.find(p => String(p.id) === String(chat.projectId));
+                const otherProfile = allProfiles.find(p => p.id === chat.otherId);
+                const projectTitle = project ? project.title : 'Удаленный проект';
+                const otherName = otherProfile?.full_name || 'Пользователь';
+                const badgeHTML = chat.unreadCount > 0 ? `<span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full ml-2">${chat.unreadCount}</span>` : '';
+
+                inboxList.insertAdjacentHTML('beforeend', `
+                    <div onclick="openChatFromInbox('${chat.otherId}', ${chat.projectId}, '${projectTitle.replace(/'/g, "\\'")}')" class="bg-white p-3 rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:bg-gray-50 transition flex flex-col">
+                        <div class="flex justify-between items-center mb-1">
+                            <div class="flex items-center"><span class="font-bold text-gray-800 text-sm">${otherName}</span>${badgeHTML}</div>
+                            <span class="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded">${projectTitle}</span>
+                        </div>
+                        <p class="text-xs text-gray-500 truncate">${chat.lastMessage}</p>
+                    </div>
+                `);
+            }
         }
 
+        window.openChatFromInbox = function(receiverId, projectId, projectTitle) {
+            document.getElementById('inboxModal').classList.add('hidden'); document.getElementById('inboxModal').classList.remove('flex');
+            openChat(receiverId, projectId, projectTitle);
+        }
+
+        window.openChat = async function(receiverId, projectId, projectTitle) {
+            if (!currentUser) { alert("Войдите, чтобы писать!"); return; }
+            if (currentUser.id === receiverId) { alert("Это ваш проект!"); return; }
+            
+            activeChat = { receiverId, projectId };
+            document.getElementById('chatTitle').innerText = "Чат по проекту";
+            document.getElementById('chatSubtitle').innerText = projectTitle;
+            document.getElementById('chatMessages').innerHTML = '<p class="text-center text-gray-400 text-sm">Загрузка...</p>';
+            document.getElementById('chatModal').classList.remove('hidden'); document.getElementById('chatModal').classList.add('flex');
+            
+            await markMessagesAsRead(receiverId, projectId);
+            await loadMessages();
+            setupChatRealtime(receiverId, projectId);
+            document.getElementById('chatInput').focus();
+        }
+
+        async function loadMessages() {
+            if (!activeChat.receiverId || !activeChat.projectId) return;
+            const { data, error } = await supabaseClient.from('messages').select('*').or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${activeChat.receiverId}),and(sender_id.eq.${activeChat.receiverId},receiver_id.eq.${currentUser.id})`).order('created_at', { ascending: true });
+            if (error) { console.error("Ошибка:", error); return; }
+            
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '';
+            const projectMessages = data.filter(msg => String(msg.project_id) === String(activeChat.projectId));
+            
+            if (!projectMessages || projectMessages.length === 0) { chatMessages.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">Начните диалог по этому проекту первым!</p>'; }
+            else { projectMessages.forEach(msg => renderMessage(msg)); chatMessages.scrollTop = chatMessages.scrollHeight; }
+        }
+
+        function renderMessage(msg) {
+            const isMine = msg.sender_id === currentUser.id;
+            const time = new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('chatMessages').insertAdjacentHTML('beforeend', `
+                <div class="flex ${isMine ? 'justify-end' : 'justify-start'}">
+                    <div class="max-w-[75%] p-3 rounded-xl text-sm ${isMine ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white text-gray-800 border rounded-bl-none shadow-sm'}">
+                        ${msg.content}
+                        <div class="text-[10px] ${isMine ? 'text-blue-200' : 'text-gray-400'} text-right mt-1">${time}</div>
+                    </div>
+                </div>
+            `);
+        }
+
+        function setupChatRealtime(receiverId, projectId) {
+            if (chatSubscription) supabaseClient.removeChannel(chatSubscription);
+            chatSubscription = supabaseClient.channel('chat-realtime')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+                    const newMsg = payload.new;
+                    if (String(newMsg.project_id) !== String(projectId)) return;
+                    if ((String(newMsg.sender_id) === String(currentUser.id) && String(newMsg.receiver_id) === String(receiverId)) || (String(newMsg.sender_id) === String(receiverId) && String(newMsg.receiver_id) === String(currentUser.id))) {
+                        const chatMessages = document.getElementById('chatMessages');
+                        if (chatMessages.innerHTML.includes('Начните диалог')) chatMessages.innerHTML = '';
+                        renderMessage(newMsg);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        if (String(newMsg.receiver_id) === String(currentUser.id)) markMessagesAsRead(receiverId, projectId);
+                    }
+                }).subscribe();
+        }
+
+        document.getElementById('chatForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = document.getElementById('chatInput').value.trim();
+            if (!text) return;
+            document.getElementById('chatInput').value = '';
+            await supabaseClient.from('messages').insert([{ sender_id: currentUser.id, receiver_id: activeChat.receiverId, project_id: activeChat.projectId, content: text, is_read: false }]);
+        });
+
+        // --- ЖАЛОБЫ ---
+        document.getElementById('reportBtn').addEventListener('click', () => {
+            document.getElementById('report-reason').value = '';
+            document.getElementById('reportModal').classList.remove('hidden'); document.getElementById('reportModal').classList.add('flex');
+        });
+
+        document.getElementById('reportForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await supabaseClient.from('reports').insert([{ reporter_id: currentUser.id, reported_user_id: activeChat.receiverId, project_id: activeChat.projectId, reason: document.getElementById('report-reason').value }]);
+            alert("Жалоба отправлена администратору. Спасибо!");
+            document.getElementById('reportModal').classList.add('hidden'); document.getElementById('reportModal').classList.remove('flex');
+        });
+
+        // --- РЕДАКТИРОВАНИЕ ПРОЕКТА ---
         window.editProject = function(id) {
             const project = allProjects.find(p => String(p.id) === String(id));
             if (!project) return;
@@ -557,6 +599,11 @@
                 document.getElementById('current-image-container').classList.remove('hidden');
             } else document.getElementById('current-image-container').classList.add('hidden');
             document.getElementById('modal').classList.remove('hidden'); document.getElementById('modal').classList.add('flex');
+            document.getElementById('detailModal').classList.add('hidden'); document.getElementById('detailModal').classList.remove('flex');
+        }
+
+        window.deleteProject = async function(id) {
+            if(confirm('Удалить?')) { await supabaseClient.from('projects').delete().eq('id', id); loadProjects(); document.getElementById('detailModal').classList.add('hidden'); document.getElementById('detailModal').classList.remove('flex'); }
         }
 
         document.getElementById('projectForm').addEventListener('submit', async (e) => {
