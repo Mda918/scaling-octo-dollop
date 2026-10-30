@@ -376,6 +376,7 @@
         let groupChatSubscription = null;
         let chatSubscription = null;
         let globalSubscription = null;
+        let unreadGroupCounts = {}; 
 
         const grid = document.querySelector('.grid');
         const authBlock = document.getElementById('auth-block');
@@ -649,7 +650,8 @@
             loadTasks(currentDetailProjectId);
         };
 
-               window.openGroupChat = async function (projectId, projectTitle) {
+        // ГРУППОВОЙ ЧАТ
+        window.openGroupChat = async function (projectId, projectTitle) {
             document.getElementById('groupChatTitle').innerText = `Команда: ${projectTitle}`;
             document.getElementById('groupChatMessages').innerHTML = 'Загрузка...';
             document.getElementById('groupChatModal').classList.remove('hidden');
@@ -697,7 +699,7 @@
             `);
         }
 
-                   function setupGroupRealtime(projectId) {
+        function setupGroupRealtime(projectId) {
             if (groupChatSubscription) supabaseClient.removeChannel(groupChatSubscription);
             
             const channelName = `project_group_${String(projectId)}`;
@@ -717,31 +719,7 @@
                 }).subscribe();
         }
 
-                  window.openGroupChat = async function (projectId, projectTitle) {
-            document.getElementById('groupChatTitle').innerText = `Команда: ${projectTitle}`;
-            document.getElementById('groupChatMessages').innerHTML = 'Загрузка...';
-            document.getElementById('groupChatModal').classList.remove('hidden');
-            document.getElementById('groupChatModal').classList.add('flex');
-            
-            await loadGroupMessages(projectId);
-            setupGroupRealtime(projectId);
-            document.getElementById('groupChatInput').focus();
-
-            // ОТМЕЧАЕМ ЧАТ КАК ПРОЧИТАННЫЙ
-            await supabaseClient.from('join_requests')
-                .update({ last_read_group_at: new Date().toISOString() })
-                .eq('project_id', projectId)
-                .eq('user_id', currentUser.id);
-            
-            // Убираем бейджик с карточки
-            if (unreadGroupCounts[projectId]) {
-                delete unreadGroupCounts[projectId];
-                renderProjects();
-            }
-        }
-
-        // ОТЗЫВЫ
-                // ОТПРАВКА СООБЩЕНИЯ В ГРУППОВОЙ ЧАТ
+        // ОТПРАВКА СООБЩЕНИЯ В ГРУППОВОЙ ЧАТ
         document.getElementById('groupChatForm').addEventListener('submit', async (e) => {
             e.preventDefault(); // СПАСАЕТ ОТ ПЕРЕЗАГРУЗКИ СТРАНИЦЫ
             const input = document.getElementById('groupChatInput');
@@ -757,19 +735,21 @@
             }]);
 
             if (!error) {
-                // 2. Рисуем У СЕБЯ (чтобы ты видел мгновенно)
+                // 2. Создаем объект сообщения
                 const msgData = {
                     project_id: currentDetailProjectId,
                     sender_id: currentUser.id,
                     content: text,
                     created_at: new Date().toISOString()
                 };
+
+                // 3. Рисуем У СЕБЯ (чтобы ты видел мгновенно)
                 const container = document.getElementById('groupChatMessages');
                 if (container.innerHTML.includes('Сообщений пока нет')) container.innerHTML = '';
                 renderGroupMessage(msgData);
                 container.scrollTop = container.scrollHeight;
 
-                // 3. Отправляем остальным (Broadcast)
+                // 4. Отправляем сигнал в сам чат (для тех, кто уже открыл этот чат)
                 if (groupChatSubscription) {
                     groupChatSubscription.send({
                         type: 'broadcast',
@@ -777,9 +757,34 @@
                         payload: msgData
                     });
                 }
+
+                // 5. Отправляем пинг-уведомление ВСЕМ участникам (чтобы загорелся бейджик на главной)
+                const { data: members } = await supabaseClient.from('join_requests')
+                    .select('user_id')
+                    .eq('project_id', currentDetailProjectId)
+                    .eq('status', 'approved');
+
+                if (members) {
+                    members.forEach(member => {
+                        if (member.user_id !== currentUser.id) { // Себе не отправляем
+                            const notifyChannel = supabaseClient.channel(`user_notifications_${member.user_id}`);
+                            notifyChannel.subscribe((status) => {
+                                if (status === 'SUBSCRIBED') {
+                                    notifyChannel.send({
+                                        type: 'broadcast',
+                                        event: 'new_group_message_alert', // <--- ИСПРАВЛЕНО ТУТ
+                                        payload: { project_id: currentDetailProjectId }
+                                    });
+                                    setTimeout(() => supabaseClient.removeChannel(notifyChannel), 1000);
+                                }
+                            });
+                        }
+                    });
+                }
             }
         });
 
+        // ОТЗЫВЫ
         window.openReviewModal = function (targetId) {
             document.getElementById('review-target-id').value = targetId;
             document.getElementById('review-text').value = '';
@@ -823,28 +828,26 @@
             openAdminPanel(); loadProjects();
         };
 
-                let unreadGroupCounts = {}; // Объявляем переменную для счетчиков
-
         async function loadMyApprovedProjects() { 
             if (!currentUser) return; 
             const { data } = await supabaseClient.from('join_requests').select('project_id, last_read_group_at').eq('user_id', currentUser.id).eq('status', 'approved'); 
             if (data) {
                 myApprovedProjectIds = data.map(d => String(d.project_id)); 
-                unreadGroupCounts = {}; // Сбрасываем старые данные
+                unreadGroupCounts = {}; 
                 
-                // Считаем непрочитанные для каждого проекта
                 for (let req of data) {
                     const { count } = await supabaseClient.from('group_messages')
                         .select('*', { count: 'exact', head: true })
                         .eq('project_id', req.project_id)
                         .gt('created_at', req.last_read_group_at)
-                        .neq('sender_id', currentUser.id); // Не считаем свои же сообщения
+                        .neq('sender_id', currentUser.id); 
                     
                     if (count > 0) unreadGroupCounts[req.project_id] = count;
                 }
             } 
         }
-                async function loadMyFavorites() { 
+
+        async function loadMyFavorites() { 
             if (!currentUser) return; 
             const { data } = await supabaseClient.from('favorites').select('project_id').eq('user_id', currentUser.id); 
             if (data) myFavoriteProjectIds = data.map(d => String(d.project_id)); 
@@ -874,7 +877,7 @@
             if (count > 0) { badge.innerText = count > 99 ? '99+' : count; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
         }
 
-                  function setupGlobalRealtime() { 
+        function setupGlobalRealtime() { 
             if (globalSubscription) supabaseClient.removeChannel(globalSubscription); 
             
             globalSubscription = supabaseClient.channel(`user_notifications_${currentUser.id}`)
@@ -886,12 +889,17 @@
                     updateRequestsBadge(); 
                     if (!document.getElementById('requestsModal').classList.contains('hidden')) openRequests(); 
                 })
-                // ДОБАВИЛИ ОБРАБОТКУ ГРУППОВЫХ УВЕДОМЛЕНИЙ
-                .on('broadcast', { event: 'new_group_message_notify' }, (payload) => { 
+                // ИСПРАВЛЕНО ТУТ (теперь слушаем то же событие, которое отправляем)
+                .on('broadcast', { event: 'new_group_message_alert' }, (payload) => { 
                     const projectId = payload.payload.project_id;
+                    
+                    if (String(currentDetailProjectId) === String(projectId) && !document.getElementById('groupChatModal').classList.contains('hidden')) {
+                        return; 
+                    }
+
                     if (!unreadGroupCounts[projectId]) unreadGroupCounts[projectId] = 0;
                     unreadGroupCounts[projectId]++;
-                    renderProjects(); // Перерисовываем карточки, чтобы загорелся бейджик
+                    renderProjects(); 
                 })
                 .subscribe(); 
         }
@@ -961,7 +969,7 @@
             btn.disabled = false;
         });
 
-               window.sendJoinRequest = async function(projectId, authorId) { 
+        window.sendJoinRequest = async function(projectId, authorId) { 
             if (!currentUser) return alert("Войдите!"); 
             const { data } = await supabaseClient.from('join_requests').select('*').eq('project_id', projectId).eq('user_id', currentUser.id).maybeSingle(); 
             if (data) { 
@@ -1038,7 +1046,7 @@
             filtered.forEach(p => { grid.insertAdjacentHTML('beforeend', createCardHTML(p)); });
         }
 
-                function createCardHTML(project) {
+        function createCardHTML(project) {
             const imageHTML = project.image_url ? `<img src="${project.image_url}" class="w-full h-48 object-cover rounded-t-xl">` : '';
             const author = allProfiles.find(p => p.id === project.user_id);
             const authorName = author?.full_name || 'Аноним';
@@ -1168,7 +1176,7 @@
                 }).subscribe();
         }
 
-                  document.getElementById('chatForm').addEventListener('submit', async (e) => { 
+        document.getElementById('chatForm').addEventListener('submit', async (e) => { 
             e.preventDefault(); // Запрещаем перезагрузку страницы
             const input = document.getElementById('chatInput');
             const text = input.value.trim(); 
