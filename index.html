@@ -741,6 +741,45 @@
         }
 
         // ОТЗЫВЫ
+                // ОТПРАВКА СООБЩЕНИЯ В ГРУППОВОЙ ЧАТ
+        document.getElementById('groupChatForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); // СПАСАЕТ ОТ ПЕРЕЗАГРУЗКИ СТРАНИЦЫ
+            const input = document.getElementById('groupChatInput');
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = '';
+
+            // 1. Сохраняем в базу
+            const { error } = await supabaseClient.from('group_messages').insert([{ 
+                project_id: currentDetailProjectId, 
+                sender_id: currentUser.id, 
+                content: text 
+            }]);
+
+            if (!error) {
+                // 2. Рисуем У СЕБЯ (чтобы ты видел мгновенно)
+                const msgData = {
+                    project_id: currentDetailProjectId,
+                    sender_id: currentUser.id,
+                    content: text,
+                    created_at: new Date().toISOString()
+                };
+                const container = document.getElementById('groupChatMessages');
+                if (container.innerHTML.includes('Сообщений пока нет')) container.innerHTML = '';
+                renderGroupMessage(msgData);
+                container.scrollTop = container.scrollHeight;
+
+                // 3. Отправляем остальным (Broadcast)
+                if (groupChatSubscription) {
+                    groupChatSubscription.send({
+                        type: 'broadcast',
+                        event: 'new_group_msg',
+                        payload: msgData
+                    });
+                }
+            }
+        });
+
         window.openReviewModal = function (targetId) {
             document.getElementById('review-target-id').value = targetId;
             document.getElementById('review-text').value = '';
@@ -1129,28 +1168,45 @@
                 }).subscribe();
         }
 
-               document.getElementById('chatForm').addEventListener('submit', async (e) => { 
-            e.preventDefault(); 
-            const text = document.getElementById('chatInput').value.trim(); 
+                  document.getElementById('chatForm').addEventListener('submit', async (e) => { 
+            e.preventDefault(); // Запрещаем перезагрузку страницы
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim(); 
             if (!text) return; 
-            document.getElementById('chatInput').value = ''; 
+            input.value = ''; 
             
             // 1. Сохраняем в базу
-            await supabaseClient.from('messages').insert([{ sender_id: currentUser.id, receiver_id: activeChat.receiverId, project_id: activeChat.projectId, content: text, is_read: false }]);
-            
-            // 2. Отправляем сигнал получателю
-            const notifyChannel = supabaseClient.channel(`user_notifications_${activeChat.receiverId}`);
-            notifyChannel.subscribe((status) => {
-                if (status === 'SUBSCRIBED') {
-                    notifyChannel.send({
-                        type: 'broadcast',
-                        event: 'new_message',
-                        payload: { message: 'new' }
-                    });
-                    // Отписываемся от канала, чтобы не засорять память
-                    setTimeout(() => supabaseClient.removeChannel(notifyChannel), 1000);
-                }
-            });
+            const { error } = await supabaseClient.from('messages').insert([{ 
+                sender_id: currentUser.id, 
+                receiver_id: activeChat.receiverId, 
+                project_id: activeChat.projectId, 
+                content: text, 
+                is_read: false 
+            }]);
+
+            if (!error) {
+                // 2. Рисуем сообщение у СЕБЯ на экране
+                const msgData = {
+                    sender_id: currentUser.id,
+                    receiver_id: activeChat.receiverId,
+                    project_id: activeChat.projectId,
+                    content: text,
+                    created_at: new Date().toISOString()
+                };
+                const container = document.getElementById('chatMessages');
+                if (container.innerHTML.includes('Нет сообщений')) container.innerHTML = '';
+                renderMessage(msgData);
+                container.scrollTop = container.scrollHeight;
+
+                // 3. Отправляем уведомление получателю
+                const notifyChannel = supabaseClient.channel(`user_notifications_${activeChat.receiverId}`);
+                notifyChannel.subscribe((status) => {
+                    if (status === 'SUBSCRIBED') {
+                        notifyChannel.send({ type: 'broadcast', event: 'new_message', payload: { message: 'new' } });
+                        setTimeout(() => supabaseClient.removeChannel(notifyChannel), 1000);
+                    }
+                });
+            }
         });
 
         document.getElementById('reportBtn').addEventListener('click', () => {
