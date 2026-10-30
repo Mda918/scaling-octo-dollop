@@ -653,18 +653,74 @@
             alert("Отзыв сохранен!"); document.getElementById('reviewModal').classList.add('hidden'); document.getElementById('reviewModal').classList.remove('flex');
         });
 
-        // АДМИНКА
-        async function openAdminPanel() {
+              async function openAdminPanel() {
             const list = document.getElementById('adminList'); list.innerHTML = 'Загрузка...';
             document.getElementById('adminModal').classList.remove('hidden'); document.getElementById('adminModal').classList.add('flex');
-            const { data } = await supabaseClient.from('reports').select('*').order('created_at', { ascending: false });
-            list.innerHTML = ''; if (!data || data.length === 0) { list.innerHTML = '<p class="text-center mt-4">Жалоб нет.</p>'; return; }
+            
+            // Берем только те жалобы, которые еще не обработаны (status = 'pending')
+            const { data } = await supabaseClient.from('reports').select('*').eq('status', 'pending').order('created_at', { ascending: false });
+            
+            list.innerHTML = ''; 
+            if (!data || data.length === 0) { list.innerHTML = '<p class="text-center mt-4">Новых жалоб нет. Все молодцы!</p>'; return; }
+            
             data.forEach(report => {
                 const reporter = allProfiles.find(p => p.id === report.reporter_id);
                 const badGuy = allProfiles.find(p => p.id === report.reported_user_id);
-                list.insertAdjacentHTML('beforeend', `<div class="bg-white p-4 rounded shadow border border-red-200 mb-2"><p class="text-sm">От: <b>${reporter?.full_name || 'Аноним'}</b></p><p class="text-sm">На: <b class="text-red-600">${badGuy?.full_name || 'Неизвестный'}</b></p><div class="bg-red-50 p-2 rounded text-sm text-red-800 my-2"><strong>Причина:</strong> ${report.reason}</div><button onclick="deleteBadUser('${report.reported_user_id}')" class="bg-red-600 text-white text-xs px-3 py-1 rounded">Удалить (Бан)</button></div>`);
+                
+                list.insertAdjacentHTML('beforeend', `
+                    <div class="bg-white p-4 rounded shadow border border-red-200 mb-2 text-sm">
+                        <p>Жалоба от: <b>${reporter?.full_name || 'Аноним'}</b> (Варнов: ${reporter?.warnings || 0})</p>
+                        <p>На пользователя: <b class="text-red-600">${badGuy?.full_name || 'Неизвестный'}</b></p>
+                        <div class="bg-red-50 p-2 rounded text-red-800 my-2"><strong>Причина:</strong> ${report.reason}</div>
+                        
+                        <div class="flex flex-wrap gap-2 mt-3">
+                            <button onclick="dismissReport(${report.id})" class="bg-gray-500 hover:bg-gray-600 text-white text-xs px-3 py-1.5 rounded">Игнорировать</button>
+                            <button onclick="warnUser('${report.reporter_id}', '${reporter?.full_name || 'Пользователь'}', ${report.id})" class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-3 py-1.5 rounded">Предупредить автора</button>
+                            <button onclick="deleteBadUser('${report.reported_user_id}', ${report.id})" class="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded">Очистить данные нарушителя</button>
+                        </div>
+                    </div>
+                `);
             });
         }
+
+        // Игнорировать жалобу
+        window.dismissReport = async function(reportId) {
+            await supabaseClient.from('reports').update({ status: 'ignored' }).eq('id', reportId);
+            openAdminPanel(); // Обновляем список
+        }
+
+        // Выдать предупреждение автору жалобы
+        window.warnUser = async function(userId, userName, reportId) {
+            if (!confirm(`Выдать предупреждение пользователю ${userName} за спам жалобами?`)) return;
+            
+            // Получаем текущее количество варнов
+            const profile = allProfiles.find(p => p.id === userId);
+            const currentWarns = profile?.warnings || 0;
+
+            // Прибавляем 1
+            await supabaseClient.from('profiles').update({ warnings: currentWarns + 1 }).eq('id', userId);
+            
+            // Саму жалобу помечаем как обработанную
+            await supabaseClient.from('reports').update({ status: 'ignored' }).eq('id', reportId);
+            
+            alert(`Пользователь ${userName} получил предупреждение. Всего: ${currentWarns + 1}`);
+            await loadProfiles(); // Обновляем профили в памяти
+            openAdminPanel(); 
+        }
+
+        // Удаление данных нарушителя (наша старая кнопка "Бан")
+        window.deleteBadUser = async function(userId, reportId) { 
+            if (!confirm("Вы уверены? Все проекты и файлы этого пользователя будут удалены.")) return; 
+            await supabaseClient.from('projects').delete().eq('user_id', userId); 
+            await supabaseClient.from('profiles').delete().eq('id', userId); 
+            
+            // Помечаем жалобу как обработанную
+            await supabaseClient.from('reports').update({ status: 'ignored' }).eq('id', reportId);
+            
+            alert("Данные пользователя удалены."); 
+            openAdminPanel(); 
+            loadProjects(); 
+        };
         window.deleteBadUser = async function (userId) { if (!confirm("Удалить пользователя?")) return; await supabaseClient.from('projects').delete().eq('user_id', userId); await supabaseClient.from('profiles').delete().eq('id', userId); alert("Удален."); openAdminPanel(); loadProjects(); };
 
         // ОСТАЛЬНЫЕ ФУНКЦИИ
