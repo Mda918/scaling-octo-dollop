@@ -805,7 +805,11 @@
                 }
             } 
         }
-
+        async function loadMyFavorites() { 
+            if (!currentUser) return; 
+            const { data } = await supabaseClient.from('favorites').select('project_id').eq('user_id', currentUser.id); 
+            if (data) myFavoriteProjectIds = data.map(d => String(d.project_id)); 
+        }
         async function updateRequestsBadge() {
             if (!currentUser) return;
             const myProjectIds = allProjects.filter(p => p.user_id === currentUser.id).map(p => p.id);
