@@ -339,10 +339,11 @@
             supabaseClient.auth.onAuthStateChange((_event, session) => { updateAuthUI(session); });
         }
 
-        async function updateAuthUI(session) {
+                async function updateAuthUI(session) {
             if (session) {
                 currentUser = session.user;
                 let adminBtn = currentUser.email === ADMIN_EMAIL ? `<button id="adminPanelBtn" class="bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1.5 rounded-lg text-sm font-medium transition">Админка 🚨</button>` : '';
+                
                 authBlock.innerHTML = `
                     ${adminBtn}
                     <button id="myRequestsBtn" class="relative bg-yellow-100 text-yellow-700 hover:bg-yellow-200 px-3 py-1.5 rounded-lg text-sm font-medium transition">Заявки <span id="requestsBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full hidden">0</span></button>
@@ -350,15 +351,18 @@
                     <button id="myProfileBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1.5 rounded-lg text-sm font-medium transition">Профиль</button>
                     <button id="logoutBtn" class="text-red-500 font-medium hover:underline text-sm ml-2">Выйти</button>
                 `;
+                
                 if (currentUser.email === ADMIN_EMAIL) document.getElementById('adminPanelBtn').addEventListener('click', openAdminPanel);
                 document.getElementById('myRequestsBtn').addEventListener('click', openRequests);
                 document.getElementById('myInboxBtn').addEventListener('click', openInbox);
+                
                 document.getElementById('myProfileBtn').addEventListener('click', () => {
                     const myProfile = allProfiles.find(p => p.id === currentUser.id);
                     document.getElementById('profile-name').value = myProfile?.full_name || '';
                     document.getElementById('profile-skills').value = myProfile?.skills || '';
                     document.getElementById('profile-university').value = myProfile?.university || '';
                     document.getElementById('profile-faculty').value = myProfile?.faculty || '';
+                    
                     if (myProfile?.avatar_url) {
                         document.getElementById('profile-avatar-preview').src = myProfile.avatar_url;
                         document.getElementById('profile-avatar-preview').classList.remove('hidden');
@@ -370,12 +374,28 @@
                     document.getElementById('profileModal').classList.remove('hidden');
                     document.getElementById('profileModal').classList.add('flex');
                 });
+                
                 document.getElementById('logoutBtn').addEventListener('click', async () => { await supabaseClient.auth.signOut(); });
+
+                // Загружаем профили
+                await loadProfiles();
+                
+                // АВТОСОЗДАНИЕ ПРОФИЛЯ: Если профиля нет, создаем его с именем из email
+                const myProfile = allProfiles.find(p => p.id === currentUser.id);
+                if (!myProfile) {
+                    await supabaseClient.from('profiles').insert([{
+                        id: currentUser.id,
+                        email: currentUser.email,
+                        full_name: 'Пользователь ' + currentUser.email.split('@')[0] // Берем часть email до @
+                    }]);
+                    await loadProfiles(); // Перезагружаем, чтобы имя появилось
+                }
 
                 await loadMyApprovedProjects();
                 await loadMyFavorites();
                 await updateUnreadBadge();
                 setupGlobalRealtime();
+                
             } else {
                 currentUser = null; myApprovedProjectIds = []; myFavoriteProjectIds = []; unreadGroupCounts = {};
                 if (globalSubscription) supabaseClient.removeChannel(globalSubscription);
@@ -385,7 +405,6 @@
                     document.getElementById('authModal').classList.add('flex');
                 });
             }
-            await loadProfiles();
             loadProjects();
         }
 
@@ -395,10 +414,23 @@
             if (!error) { document.getElementById('authModal').classList.add('hidden'); document.getElementById('authModal').classList.remove('flex'); document.getElementById('authForm').reset(); } else alert(error.message);
         });
 
-        document.getElementById('signupSubmitBtn').addEventListener('click', async (e) => {
+               document.getElementById('signupSubmitBtn').addEventListener('click', async (e) => {
             e.preventDefault();
-            const { error } = await supabaseClient.auth.signUp({ email: document.getElementById('auth-email').value, password: document.getElementById('auth-password').value });
-            if (!error) alert("Успех! Теперь войдите."); else alert(error.message);
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            
+            // 1. Регистрируем
+            const { error: signUpError } = await supabaseClient.auth.signUp({ email, password });
+            if (signUpError) { alert(signUpError.message); return; }
+
+            // 2. Сразу входим
+            const { error: signInError } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (signInError) { alert("Ошибка входа: " + signInError.message); } 
+            else { 
+                document.getElementById('authModal').classList.add('hidden'); 
+                document.getElementById('authModal').classList.remove('flex'); 
+                document.getElementById('authForm').reset(); 
+            }
         });
 
         async function loadProfiles() {
