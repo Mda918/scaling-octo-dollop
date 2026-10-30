@@ -1161,12 +1161,16 @@
             document.getElementById('chatMessages').insertAdjacentHTML('beforeend', `<div class="flex ${isMine ? 'justify-end' : 'justify-start'} mb-2"><div class="max-w-[75%] p-3 rounded-xl text-sm ${isMine ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white text-gray-800 border rounded-bl-none shadow-sm'}">${msg.content}<div class="text-[10px] ${isMine ? 'text-blue-200' : 'text-gray-400'} text-right mt-1">${time}</div></div></div>`);
         }
 
-        function setupChatRealtime(receiverId, projectId) {
+              function setupChatRealtime(receiverId, projectId) {
             if (chatSubscription) supabaseClient.removeChannel(chatSubscription);
             chatSubscription = supabaseClient.channel('chat-realtime')
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
                     const newMsg = payload.new;
                     if (String(newMsg.project_id) !== String(projectId)) return;
+                    
+                    // ГЛАВНЫЙ ФИКС: Если отправитель — это Я, игнорируем (я уже нарисовал его локально)
+                    if (String(newMsg.sender_id) === String(currentUser.id)) return;
+
                     if ((String(newMsg.sender_id) === String(currentUser.id) && String(newMsg.receiver_id) === String(receiverId)) || (String(newMsg.sender_id) === String(receiverId) && String(newMsg.receiver_id) === String(currentUser.id))) {
                         const chatMessages = document.getElementById('chatMessages');
                         if (chatMessages.innerHTML.includes('Нет сообщений')) chatMessages.innerHTML = '';
