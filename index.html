@@ -845,13 +845,18 @@
                 }).subscribe();
         }
 
-        document.getElementById('chatForm').addEventListener('submit', async (e) => {
+                document.getElementById('chatForm').addEventListener('submit', async (e) => {
             e.preventDefault(); const input = document.getElementById('chatInput'); const text = input.value.trim(); if (!text) return; input.value = '';
             const { data, error } = await supabaseClient.from('messages').insert([{ sender_id: currentUser.id, receiver_id: activeChat.receiverId, project_id: activeChat.projectId, content: text, is_read: false }]).select();
+            
             if (!error && data && data.length > 0) {
                 renderMessage(data[0]); document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
                 const notifyChannel = supabaseClient.channel(`user_notifications_${activeChat.receiverId}`);
                 notifyChannel.subscribe((status) => { if (status === 'SUBSCRIBED') { notifyChannel.send({ type: 'broadcast', event: 'new_message', payload: { message: 'new' } }); setTimeout(() => supabaseClient.removeChannel(notifyChannel), 1000); } });
+            } else if (error) {
+                // ЕСЛИ ОШИБКА, ПОКАЖЕМ ЕЕ НА ТЕЛЕФОНЕ
+                alert("Ошибка при отправке: " + error.message);
+                console.error(error);
             }
         });
 
