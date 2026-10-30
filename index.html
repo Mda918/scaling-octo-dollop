@@ -705,14 +705,14 @@
                 }).subscribe();
         }
 
-           document.getElementById('groupChatForm').addEventListener('submit', async (e) => {
+                  document.getElementById('groupChatForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const input = document.getElementById('groupChatInput');
             const text = input.value.trim();
             if (!text) return;
             input.value = '';
 
-            // 1. Сохраняем сообщение в базу
+            // 1. Сохраняем сообщение в базу (чтобы оно не потерялось)
             const { error } = await supabaseClient.from('group_messages').insert([{ 
                 project_id: currentDetailProjectId, 
                 sender_id: currentUser.id, 
@@ -728,24 +728,20 @@
                     created_at: new Date().toISOString()
                 };
 
-                // 3. СРАЗУ РИСУЕМ У СЕБЯ НА ЭКРАНЕ (без ожидания сигнала)
+                // 3. СРАЗУ РИСУЕМ У СЕБЯ НА ЭКРАНЕ (чтобы ты видел мгновенно)
                 const container = document.getElementById('groupChatMessages');
                 if (container.innerHTML.includes('Сообщений пока нет')) container.innerHTML = '';
                 renderGroupMessage(msgData);
                 container.scrollTop = container.scrollHeight;
 
-                // 4. Отправляем сигнал ДРУГИМ участникам
-                const notifyChannel = supabaseClient.channel(`project_group_${String(currentDetailProjectId)}`);
-                notifyChannel.subscribe((status) => {
-                    if (status === 'SUBSCRIBED') {
-                        notifyChannel.send({
-                            type: 'broadcast',
-                            event: 'new_group_msg',
-                            payload: msgData
-                        });
-                        setTimeout(() => supabaseClient.removeChannel(notifyChannel), 1000);
-                    }
-                });
+                // 4. ОТПРАВЛЯЕМ ЧЕРЕЗ УЖЕ ОТКРЫТЫЙ КАНАЛ (без создания нового)
+                if (groupChatSubscription) {
+                    groupChatSubscription.send({
+                        type: 'broadcast',
+                        event: 'new_group_msg',
+                        payload: msgData
+                    });
+                }
             } else {
                 console.error("Ошибка при сохранении в групповой чат:", error);
             }
