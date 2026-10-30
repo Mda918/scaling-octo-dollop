@@ -685,49 +685,68 @@
             `);
         }
 
-              function setupGroupRealtime(projectId) {
+                  function setupGroupRealtime(projectId) {
             if (groupChatSubscription) supabaseClient.removeChannel(groupChatSubscription);
             
-            // Слушаем канал конкретного проекта
-            groupChatSubscription = supabaseClient.channel(`project_group_${projectId}`)
-                .on('broadcast', { event: 'new_group_message' }, (payload) => {
+            // Название канала строго по ID проекта
+            const channelName = `project_group_${String(projectId)}`;
+            console.log("Подключаемся к каналу группового чата:", channelName);
+
+            groupChatSubscription = supabaseClient.channel(channelName)
+                .on('broadcast', { event: 'new_group_msg' }, (payload) => {
+                    console.log("Пришло сообщение в групповой чат:", payload);
                     const newMsg = payload.payload;
                     const container = document.getElementById('groupChatMessages');
+                    
                     if (container.innerHTML.includes('Сообщений пока нет')) container.innerHTML = '';
+                    
                     renderGroupMessage(newMsg);
                     container.scrollTop = container.scrollHeight;
-                }).subscribe();
+                }).subscribe((status) => {
+                    console.log("Статус подключения к группе:", status);
+                });
         }
 
-               document.getElementById('groupChatForm').addEventListener('submit', async (e) => {
+                 document.getElementById('groupChatForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const input = document.getElementById('groupChatInput');
             const text = input.value.trim();
             if (!text) return;
             input.value = '';
 
-            // 1. Сохраняем в базу (добавили .select(), чтобы получить данные сообщения обратно)
-            const { data, error } = await supabaseClient.from('group_messages').insert([{ 
+            // 1. Сохраняем сообщение в базу данных
+            const { error } = await supabaseClient.from('group_messages').insert([{ 
                 project_id: currentDetailProjectId, 
                 sender_id: currentUser.id, 
                 content: text 
-            }]).select();
+            }]);
 
-            if (!error && data && data.length > 0) {
-                const newMessage = data[0];
+            if (!error) {
+                // 2. Создаем объект сообщения локально (чтобы мгновенно отправить его другим)
+                const msgData = {
+                    project_id: currentDetailProjectId,
+                    sender_id: currentUser.id,
+                    content: text,
+                    created_at: new Date().toISOString()
+                };
+
+                // 3. Отправляем сигнал всем в комнате
+                const channelName = `project_group_${String(currentDetailProjectId)}`;
+                const notifyChannel = supabaseClient.channel(channelName);
                 
-                // 2. Отправляем сигнал всем в комнате
-                const notifyChannel = supabaseClient.channel(`project_group_${currentDetailProjectId}`);
                 notifyChannel.subscribe((status) => {
                     if (status === 'SUBSCRIBED') {
                         notifyChannel.send({
                             type: 'broadcast',
-                            event: 'new_group_message',
-                            payload: newMessage
+                            event: 'new_group_msg',
+                            payload: msgData
                         });
+                        // Закрываем канал, он больше не нужен
                         setTimeout(() => supabaseClient.removeChannel(notifyChannel), 1000);
                     }
                 });
+            } else {
+                console.error("Ошибка при сохранении в групповой чат:", error);
             }
         });
 
