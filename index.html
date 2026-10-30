@@ -805,11 +805,26 @@
                 }
             } 
         }
-        async function loadMyFavorites() { 
+                async function loadMyFavorites() { 
             if (!currentUser) return; 
             const { data } = await supabaseClient.from('favorites').select('project_id').eq('user_id', currentUser.id); 
             if (data) myFavoriteProjectIds = data.map(d => String(d.project_id)); 
         }
+
+        async function updateUnreadBadge() {
+            if (!currentUser) return;
+            const { count } = await supabaseClient.from('messages').select('*', { count: 'exact', head: true }).eq('receiver_id', currentUser.id).eq('is_read', false);
+            const badge = document.getElementById('unreadBadge');
+            if (badge) {
+                if (count > 0) {
+                    badge.innerText = count > 99 ? '99+' : count;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
+        }
+
         async function updateRequestsBadge() {
             if (!currentUser) return;
             const myProjectIds = allProjects.filter(p => p.user_id === currentUser.id).map(p => p.id);
