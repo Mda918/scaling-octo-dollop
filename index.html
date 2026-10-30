@@ -685,36 +685,34 @@
             `);
         }
 
-                  function setupGroupRealtime(projectId) {
+                   function setupGroupRealtime(projectId) {
             if (groupChatSubscription) supabaseClient.removeChannel(groupChatSubscription);
             
-            // Название канала строго по ID проекта
             const channelName = `project_group_${String(projectId)}`;
-            console.log("Подключаемся к каналу группового чата:", channelName);
 
             groupChatSubscription = supabaseClient.channel(channelName)
                 .on('broadcast', { event: 'new_group_msg' }, (payload) => {
-                    console.log("Пришло сообщение в групповой чат:", payload);
                     const newMsg = payload.payload;
-                    const container = document.getElementById('groupChatMessages');
                     
+                    // Если это МОЕ сообщение, игнорируем сигнал (я его уже нарисовал сам при отправке)
+                    if (String(newMsg.sender_id) === String(currentUser.id)) return;
+                    
+                    const container = document.getElementById('groupChatMessages');
                     if (container.innerHTML.includes('Сообщений пока нет')) container.innerHTML = '';
                     
                     renderGroupMessage(newMsg);
                     container.scrollTop = container.scrollHeight;
-                }).subscribe((status) => {
-                    console.log("Статус подключения к группе:", status);
-                });
+                }).subscribe();
         }
 
-                 document.getElementById('groupChatForm').addEventListener('submit', async (e) => {
+           document.getElementById('groupChatForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const input = document.getElementById('groupChatInput');
             const text = input.value.trim();
             if (!text) return;
             input.value = '';
 
-            // 1. Сохраняем сообщение в базу данных
+            // 1. Сохраняем сообщение в базу
             const { error } = await supabaseClient.from('group_messages').insert([{ 
                 project_id: currentDetailProjectId, 
                 sender_id: currentUser.id, 
@@ -722,7 +720,7 @@
             }]);
 
             if (!error) {
-                // 2. Создаем объект сообщения локально (чтобы мгновенно отправить его другим)
+                // 2. Создаем объект для отображения
                 const msgData = {
                     project_id: currentDetailProjectId,
                     sender_id: currentUser.id,
@@ -730,10 +728,14 @@
                     created_at: new Date().toISOString()
                 };
 
-                // 3. Отправляем сигнал всем в комнате
-                const channelName = `project_group_${String(currentDetailProjectId)}`;
-                const notifyChannel = supabaseClient.channel(channelName);
-                
+                // 3. СРАЗУ РИСУЕМ У СЕБЯ НА ЭКРАНЕ (без ожидания сигнала)
+                const container = document.getElementById('groupChatMessages');
+                if (container.innerHTML.includes('Сообщений пока нет')) container.innerHTML = '';
+                renderGroupMessage(msgData);
+                container.scrollTop = container.scrollHeight;
+
+                // 4. Отправляем сигнал ДРУГИМ участникам
+                const notifyChannel = supabaseClient.channel(`project_group_${String(currentDetailProjectId)}`);
                 notifyChannel.subscribe((status) => {
                     if (status === 'SUBSCRIBED') {
                         notifyChannel.send({
@@ -741,7 +743,6 @@
                             event: 'new_group_msg',
                             payload: msgData
                         });
-                        // Закрываем канал, он больше не нужен
                         setTimeout(() => supabaseClient.removeChannel(notifyChannel), 1000);
                     }
                 });
