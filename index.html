@@ -649,15 +649,27 @@
             loadTasks(currentDetailProjectId);
         };
 
-        // ГРУППОВОЙ ЧАТ
-        window.openGroupChat = async function (projectId, projectTitle) {
+               window.openGroupChat = async function (projectId, projectTitle) {
             document.getElementById('groupChatTitle').innerText = `Команда: ${projectTitle}`;
             document.getElementById('groupChatMessages').innerHTML = 'Загрузка...';
             document.getElementById('groupChatModal').classList.remove('hidden');
             document.getElementById('groupChatModal').classList.add('flex');
+            
             await loadGroupMessages(projectId);
             setupGroupRealtime(projectId);
             document.getElementById('groupChatInput').focus();
+
+            // ОТМЕЧАЕМ ЧАТ КАК ПРОЧИТАННЫЙ
+            await supabaseClient.from('join_requests')
+                .update({ last_read_group_at: new Date().toISOString() })
+                .eq('project_id', projectId)
+                .eq('user_id', currentUser.id);
+            
+            // Убираем бейджик с карточки
+            if (unreadGroupCounts[projectId]) {
+                delete unreadGroupCounts[projectId];
+                renderProjects();
+            }
         }
 
         async function loadGroupMessages(projectId) {
@@ -705,47 +717,28 @@
                 }).subscribe();
         }
 
-                  document.getElementById('groupChatForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const input = document.getElementById('groupChatInput');
-            const text = input.value.trim();
-            if (!text) return;
-            input.value = '';
+                  window.openGroupChat = async function (projectId, projectTitle) {
+            document.getElementById('groupChatTitle').innerText = `Команда: ${projectTitle}`;
+            document.getElementById('groupChatMessages').innerHTML = 'Загрузка...';
+            document.getElementById('groupChatModal').classList.remove('hidden');
+            document.getElementById('groupChatModal').classList.add('flex');
+            
+            await loadGroupMessages(projectId);
+            setupGroupRealtime(projectId);
+            document.getElementById('groupChatInput').focus();
 
-            // 1. Сохраняем сообщение в базу (чтобы оно не потерялось)
-            const { error } = await supabaseClient.from('group_messages').insert([{ 
-                project_id: currentDetailProjectId, 
-                sender_id: currentUser.id, 
-                content: text 
-            }]);
-
-            if (!error) {
-                // 2. Создаем объект для отображения
-                const msgData = {
-                    project_id: currentDetailProjectId,
-                    sender_id: currentUser.id,
-                    content: text,
-                    created_at: new Date().toISOString()
-                };
-
-                // 3. СРАЗУ РИСУЕМ У СЕБЯ НА ЭКРАНЕ (чтобы ты видел мгновенно)
-                const container = document.getElementById('groupChatMessages');
-                if (container.innerHTML.includes('Сообщений пока нет')) container.innerHTML = '';
-                renderGroupMessage(msgData);
-                container.scrollTop = container.scrollHeight;
-
-                // 4. ОТПРАВЛЯЕМ ЧЕРЕЗ УЖЕ ОТКРЫТЫЙ КАНАЛ (без создания нового)
-                if (groupChatSubscription) {
-                    groupChatSubscription.send({
-                        type: 'broadcast',
-                        event: 'new_group_msg',
-                        payload: msgData
-                    });
-                }
-            } else {
-                console.error("Ошибка при сохранении в групповой чат:", error);
+            // ОТМЕЧАЕМ ЧАТ КАК ПРОЧИТАННЫЙ
+            await supabaseClient.from('join_requests')
+                .update({ last_read_group_at: new Date().toISOString() })
+                .eq('project_id', projectId)
+                .eq('user_id', currentUser.id);
+            
+            // Убираем бейджик с карточки
+            if (unreadGroupCounts[projectId]) {
+                delete unreadGroupCounts[projectId];
+                renderProjects();
             }
-        });
+        }
 
         // ОТЗЫВЫ
         window.openReviewModal = function (targetId) {
@@ -791,15 +784,26 @@
             openAdminPanel(); loadProjects();
         };
 
-        // ОСТАЛЬНЫЕ ФУНКЦИИ
-        async function loadMyApprovedProjects() { if (!currentUser) return; const { data } = await supabaseClient.from('join_requests').select('project_id').eq('user_id', currentUser.id).eq('status', 'approved'); if (data) myApprovedProjectIds = data.map(d => String(d.project_id)); }
-        async function loadMyFavorites() { if (!currentUser) return; const { data } = await supabaseClient.from('favorites').select('project_id').eq('user_id', currentUser.id); if (data) myFavoriteProjectIds = data.map(d => String(d.project_id)); }
+                let unreadGroupCounts = {}; // Объявляем переменную для счетчиков
 
-        async function updateUnreadBadge() {
-            if (!currentUser) return;
-            const { count } = await supabaseClient.from('messages').select('*', { count: 'exact', head: true }).eq('receiver_id', currentUser.id).eq('is_read', false);
-            const badge = document.getElementById('unreadBadge');
-            if (badge) { if (count > 0) { badge.innerText = count > 99 ? '99+' : count; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); } }
+        async function loadMyApprovedProjects() { 
+            if (!currentUser) return; 
+            const { data } = await supabaseClient.from('join_requests').select('project_id, last_read_group_at').eq('user_id', currentUser.id).eq('status', 'approved'); 
+            if (data) {
+                myApprovedProjectIds = data.map(d => String(d.project_id)); 
+                unreadGroupCounts = {}; // Сбрасываем старые данные
+                
+                // Считаем непрочитанные для каждого проекта
+                for (let req of data) {
+                    const { count } = await supabaseClient.from('group_messages')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('project_id', req.project_id)
+                        .gt('created_at', req.last_read_group_at)
+                        .neq('sender_id', currentUser.id); // Не считаем свои же сообщения
+                    
+                    if (count > 0) unreadGroupCounts[req.project_id] = count;
+                }
+            } 
         }
 
         async function updateRequestsBadge() {
@@ -812,22 +816,24 @@
             if (count > 0) { badge.innerText = count > 99 ? '99+' : count; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
         }
 
-                   function setupGlobalRealtime() { 
+                  function setupGlobalRealtime() { 
             if (globalSubscription) supabaseClient.removeChannel(globalSubscription); 
             
-            // Слушаем ЛИЧНЫЙ канал текущего пользователя
             globalSubscription = supabaseClient.channel(`user_notifications_${currentUser.id}`)
                 .on('broadcast', { event: 'new_message' }, (payload) => { 
-                    console.log("Пришло уведомление о сообщении!", payload);
                     updateUnreadBadge(); 
-                    if (!document.getElementById('inboxModal').classList.contains('hidden')) {
-                        openInbox();
-                    }
+                    if (!document.getElementById('inboxModal').classList.contains('hidden')) openInbox();
                 })
                 .on('broadcast', { event: 'new_request' }, (payload) => { 
-                    console.log("Пришло уведомление о заявке!", payload);
                     updateRequestsBadge(); 
                     if (!document.getElementById('requestsModal').classList.contains('hidden')) openRequests(); 
+                })
+                // ДОБАВИЛИ ОБРАБОТКУ ГРУППОВЫХ УВЕДОМЛЕНИЙ
+                .on('broadcast', { event: 'new_group_message_notify' }, (payload) => { 
+                    const projectId = payload.payload.project_id;
+                    if (!unreadGroupCounts[projectId]) unreadGroupCounts[projectId] = 0;
+                    unreadGroupCounts[projectId]++;
+                    renderProjects(); // Перерисовываем карточки, чтобы загорелся бейджик
                 })
                 .subscribe(); 
         }
@@ -974,7 +980,7 @@
             filtered.forEach(p => { grid.insertAdjacentHTML('beforeend', createCardHTML(p)); });
         }
 
-        function createCardHTML(project) {
+                function createCardHTML(project) {
             const imageHTML = project.image_url ? `<img src="${project.image_url}" class="w-full h-48 object-cover rounded-t-xl">` : '';
             const author = allProfiles.find(p => p.id === project.user_id);
             const authorName = author?.full_name || 'Аноним';
@@ -986,12 +992,20 @@
             const closedBadge = project.status === 'closed' ? '<span class="bg-red-500 text-white text-xs px-2 py-1 rounded font-bold ml-2">Набор закрыт</span>' : '';
             const favIcon = isFav ? '<span class="text-yellow-500 text-xl">⭐</span>' : '';
             const avatarHTML = avatarUrl ? `<img src="${avatarUrl}" class="w-6 h-6 rounded-full object-cover inline-block mr-1">` : `<div class="w-6 h-6 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold text-xs inline-block mr-1">${authorName[0].toUpperCase()}</div>`;
+            
+            // БЕЙДЖИК ДЛЯ ГРУППОВОГО ЧАТА
+            const unreadChatBadge = (unreadGroupCounts[project.id] > 0) 
+                ? `<span class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full ml-2 animate-pulse">💬 ${unreadGroupCounts[project.id]}</span>` 
+                : '';
 
             return `<div onclick="openProjectDetail(${project.id})" class="rounded-xl shadow border ${cardBorderClass} hover:shadow-lg transition relative flex flex-col overflow-hidden cursor-pointer bg-white">
                 ${imageHTML}
                 <div class="p-5 flex flex-col flex-grow">
                     <div class="flex justify-between items-start mb-3">
-                        <div class="flex items-center flex-wrap gap-1"><span class="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded font-bold">${project.category || 'Другое'}</span>${statusBadge} ${closedBadge}</div>
+                        <div class="flex items-center flex-wrap gap-1">
+                            <span class="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded font-bold">${project.category || 'Другое'}</span>
+                            ${statusBadge} ${closedBadge} ${unreadChatBadge}
+                        </div>
                         <div class="flex items-center gap-2">${favIcon}<span class="text-xs text-gray-400">${project.deadline}</span></div>
                     </div>
                     <h3 class="font-bold text-lg mb-1">${project.title}</h3>
