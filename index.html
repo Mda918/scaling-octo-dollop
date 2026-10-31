@@ -74,7 +74,7 @@
 
                 <!-- БЛОК АВТОРА -->
                 <div class="flex items-center gap-3 mb-6 bg-blue-50 p-3 rounded-lg border border-blue-100 cursor-pointer hover:bg-blue-100 transition" onclick="viewProfile(document.getElementById('detail-author').getAttribute('data-id'))">
-                    <img id="detail-author-avatar" src="" class="w-12 h-12 rounded-full object-cover bg-gray-300 hidden">
+                    <img id="detail-author-avatar" src="" class="w-12 h-12 rounded-full object-cover bg-gray-300 hidden hover:opacity-80 transition">
                     <div id="detail-author-avatar-placeholder" class="w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold text-lg"></div>
                     <div>
                         <p class="text-sm text-gray-500">Автор проекта (нажми, чтобы открыть профиль):</p>
@@ -177,7 +177,7 @@
         <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4 relative max-h-[90vh] overflow-y-auto">
             <button id="closeViewProfileBtn" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
             <div class="flex items-center gap-4 mb-4">
-                <img id="view-avatar" src="" class="w-16 h-16 rounded-full object-cover bg-gray-200 hidden">
+                <img id="view-avatar" src="" class="w-16 h-16 rounded-full object-cover bg-gray-200 hidden cursor-pointer hover:opacity-80 transition">
                 <div id="view-avatar-placeholder" class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 font-bold text-2xl"></div>
                 <div>
                     <h2 id="view-name" class="text-2xl font-bold text-gray-800"></h2>
@@ -256,7 +256,7 @@
         <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4 relative"><button id="closeProfileBtn" class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
             <h2 class="text-2xl font-bold mb-4">Мой профиль</h2>
             <form id="profileForm" class="flex flex-col gap-4">
-                <div class="flex items-center gap-4 mb-2"><img id="profile-avatar-preview" src="" class="w-16 h-16 rounded-full object-cover hidden">
+                <div class="flex items-center gap-4 mb-2"><img id="profile-avatar-preview" src="" class="w-16 h-16 rounded-full object-cover hidden cursor-pointer hover:opacity-80 transition">
                     <div id="profile-avatar-placeholder" class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 font-bold text-2xl">👤</div>
                     <div class="flex-grow"><label class="block text-sm font-medium mb-1">Аватарка</label><input type="file" id="profile-avatar-input" accept="image/*" class="w-full text-sm text-gray-500"></div>
                 </div>
@@ -276,6 +276,11 @@
                 <div class="flex gap-2 mt-2"><button type="submit" id="loginSubmitBtn" class="w-1/2 bg-blue-600 text-white font-bold py-2 rounded-lg">Войти</button><button type="button" id="signupSubmitBtn" class="w-1/2 bg-green-600 text-white font-bold py-2 rounded-lg">Регистрация</button></div>
             </form>
         </div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО ДЛЯ УВЕЛИЧЕНИЯ АВАТАРКИ -->
+    <div id="imageZoomModal" class="fixed inset-0 bg-black bg-opacity-80 hidden items-center justify-center z-[100] cursor-zoom-out" onclick="this.classList.add('hidden'); this.classList.remove('flex');">
+        <img id="zoomedImage" src="" class="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl">
     </div>
 
     <!-- СКРИПТ -->
@@ -300,6 +305,21 @@
 
         const grid = document.querySelector('.grid');
         const authBlock = document.getElementById('auth-block');
+
+        // === ЗАЩИТА ОТ XSS (Санитайзер) ===
+        // Эта функция заменяет опасные символы на безопасные, чтобы скрипты не выполнялись
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        // Функция для увеличения аватарки
+        window.openZoomModal = function(imageUrl) {
+            if (!imageUrl) return;
+            document.getElementById('zoomedImage').src = imageUrl;
+            document.getElementById('imageZoomModal').classList.remove('hidden');
+            document.getElementById('imageZoomModal').classList.add('flex');
+        }
 
         // УПРАВЛЕНИЕ ОКНАМИ
         document.getElementById('openModalBtn').addEventListener('click', () => {
@@ -339,11 +359,10 @@
             supabaseClient.auth.onAuthStateChange((_event, session) => { updateAuthUI(session); });
         }
 
-                async function updateAuthUI(session) {
+        async function updateAuthUI(session) {
             if (session) {
                 currentUser = session.user;
                 let adminBtn = currentUser.email === ADMIN_EMAIL ? `<button id="adminPanelBtn" class="bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1.5 rounded-lg text-sm font-medium transition">Админка 🚨</button>` : '';
-                
                 authBlock.innerHTML = `
                     ${adminBtn}
                     <button id="myRequestsBtn" class="relative bg-yellow-100 text-yellow-700 hover:bg-yellow-200 px-3 py-1.5 rounded-lg text-sm font-medium transition">Заявки <span id="requestsBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full hidden">0</span></button>
@@ -351,22 +370,20 @@
                     <button id="myProfileBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1.5 rounded-lg text-sm font-medium transition">Профиль</button>
                     <button id="logoutBtn" class="text-red-500 font-medium hover:underline text-sm ml-2">Выйти</button>
                 `;
-                
                 if (currentUser.email === ADMIN_EMAIL) document.getElementById('adminPanelBtn').addEventListener('click', openAdminPanel);
                 document.getElementById('myRequestsBtn').addEventListener('click', openRequests);
                 document.getElementById('myInboxBtn').addEventListener('click', openInbox);
-                
                 document.getElementById('myProfileBtn').addEventListener('click', () => {
                     const myProfile = allProfiles.find(p => p.id === currentUser.id);
                     document.getElementById('profile-name').value = myProfile?.full_name || '';
                     document.getElementById('profile-skills').value = myProfile?.skills || '';
                     document.getElementById('profile-university').value = myProfile?.university || '';
                     document.getElementById('profile-faculty').value = myProfile?.faculty || '';
-                    
                     if (myProfile?.avatar_url) {
                         document.getElementById('profile-avatar-preview').src = myProfile.avatar_url;
                         document.getElementById('profile-avatar-preview').classList.remove('hidden');
                         document.getElementById('profile-avatar-placeholder').classList.add('hidden');
+                        document.getElementById('profile-avatar-preview').onclick = () => openZoomModal(myProfile.avatar_url);
                     } else {
                         document.getElementById('profile-avatar-preview').classList.add('hidden');
                         document.getElementById('profile-avatar-placeholder').classList.remove('hidden');
@@ -374,28 +391,25 @@
                     document.getElementById('profileModal').classList.remove('hidden');
                     document.getElementById('profileModal').classList.add('flex');
                 });
-                
                 document.getElementById('logoutBtn').addEventListener('click', async () => { await supabaseClient.auth.signOut(); });
 
-                // Загружаем профили
                 await loadProfiles();
                 
-                // АВТОСОЗДАНИЕ ПРОФИЛЯ: Если профиля нет, создаем его с именем из email
+                // АВТОСОЗДАНИЕ ПРОФИЛЯ
                 const myProfile = allProfiles.find(p => p.id === currentUser.id);
                 if (!myProfile) {
                     await supabaseClient.from('profiles').insert([{
                         id: currentUser.id,
                         email: currentUser.email,
-                        full_name: 'Пользователь ' + currentUser.email.split('@')[0] // Берем часть email до @
+                        full_name: 'Пользователь ' + currentUser.email.split('@')[0]
                     }]);
-                    await loadProfiles(); // Перезагружаем, чтобы имя появилось
+                    await loadProfiles();
                 }
 
                 await loadMyApprovedProjects();
                 await loadMyFavorites();
                 await updateUnreadBadge();
                 setupGlobalRealtime();
-                
             } else {
                 currentUser = null; myApprovedProjectIds = []; myFavoriteProjectIds = []; unreadGroupCounts = {};
                 if (globalSubscription) supabaseClient.removeChannel(globalSubscription);
@@ -414,23 +428,15 @@
             if (!error) { document.getElementById('authModal').classList.add('hidden'); document.getElementById('authModal').classList.remove('flex'); document.getElementById('authForm').reset(); } else alert(error.message);
         });
 
-               document.getElementById('signupSubmitBtn').addEventListener('click', async (e) => {
+        document.getElementById('signupSubmitBtn').addEventListener('click', async (e) => {
             e.preventDefault();
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
-            
-            // 1. Регистрируем
             const { error: signUpError } = await supabaseClient.auth.signUp({ email, password });
             if (signUpError) { alert(signUpError.message); return; }
-
-            // 2. Сразу входим
             const { error: signInError } = await supabaseClient.auth.signInWithPassword({ email, password });
             if (signInError) { alert("Ошибка входа: " + signInError.message); } 
-            else { 
-                document.getElementById('authModal').classList.add('hidden'); 
-                document.getElementById('authModal').classList.remove('flex'); 
-                document.getElementById('authForm').reset(); 
-            }
+            else { document.getElementById('authModal').classList.add('hidden'); document.getElementById('authModal').classList.remove('flex'); document.getElementById('authForm').reset(); }
         });
 
         async function loadProfiles() {
@@ -451,7 +457,19 @@
             const updateData = { id: currentUser.id, email: currentUser.email, full_name: document.getElementById('profile-name').value, skills: document.getElementById('profile-skills').value, university: document.getElementById('profile-university').value, faculty: document.getElementById('profile-faculty').value };
             if (avatarUrl) updateData.avatar_url = avatarUrl;
             const { error } = await supabaseClient.from('profiles').upsert(updateData);
-            if (!error) { alert("Сохранено!"); document.getElementById('profileModal').classList.add('hidden'); document.getElementById('profileModal').classList.remove('flex'); await loadProfiles(); loadProjects(); document.getElementById('profile-avatar-input').value = ''; }
+            if (!error) { 
+                if (avatarUrl) {
+                    document.getElementById('profile-avatar-preview').src = avatarUrl;
+                    document.getElementById('profile-avatar-preview').classList.remove('hidden');
+                    document.getElementById('profile-avatar-placeholder').classList.add('hidden');
+                }
+                alert("Сохранено!"); 
+                document.getElementById('profileModal').classList.add('hidden'); 
+                document.getElementById('profileModal').classList.remove('flex'); 
+                await loadProfiles(); 
+                loadProjects(); 
+                document.getElementById('profile-avatar-input').value = ''; 
+            }
             btn.disabled = false;
         });
 
@@ -459,11 +477,20 @@
             if (!userId) return;
             const p = allProfiles.find(prof => prof.id === userId); if (!p) return;
             document.getElementById('view-name').innerText = p.full_name || 'Пользователь';
-            document.getElementById('view-skills').innerText = p.skills ? `Навыки: ${p.skills}` : '';
+            document.getElementById('view-skills').innerText = p.skills ? `Навыки: ${escapeHTML(p.skills)}` : '';
             document.getElementById('view-university').innerText = p.university || 'Не указан';
             document.getElementById('view-faculty').innerText = p.faculty || '';
-            if (p.avatar_url) { document.getElementById('view-avatar').src = p.avatar_url; document.getElementById('view-avatar').classList.remove('hidden'); document.getElementById('view-avatar-placeholder').classList.add('hidden'); } 
-            else { document.getElementById('view-avatar').classList.add('hidden'); document.getElementById('view-avatar-placeholder').classList.remove('hidden'); document.getElementById('view-avatar-placeholder').innerText = (p.full_name || 'А')[0].toUpperCase(); }
+            if (p.avatar_url) { 
+                document.getElementById('view-avatar').src = p.avatar_url; 
+                document.getElementById('view-avatar').classList.remove('hidden'); 
+                document.getElementById('view-avatar-placeholder').classList.add('hidden'); 
+                document.getElementById('view-avatar').onclick = () => openZoomModal(p.avatar_url);
+            } 
+            else { 
+                document.getElementById('view-avatar').classList.add('hidden'); 
+                document.getElementById('view-avatar-placeholder').classList.remove('hidden'); 
+                document.getElementById('view-avatar-placeholder').innerText = (p.full_name || 'А')[0].toUpperCase(); 
+            }
             const reviewsList = document.getElementById('view-reviews-list'); reviewsList.innerHTML = 'Загрузка...';
             const { data } = await supabaseClient.from('reviews').select('*').eq('target_id', userId);
             if (!data || data.length === 0) { reviewsList.innerHTML = 'Отзывов пока нет.'; document.getElementById('view-rating').innerText = 'Нет рейтинга'; } 
@@ -473,7 +500,7 @@
                 reviewsList.innerHTML = '';
                 data.forEach(r => {
                     const author = allProfiles.find(a => a.id === r.author_id);
-                    reviewsList.insertAdjacentHTML('beforeend', `<div class="bg-gray-50 p-2 rounded border text-sm mb-2"><div class="flex justify-between font-bold text-gray-700"><span>${author?.full_name || 'Аноним'}</span><span class="text-yellow-500">${'★'.repeat(r.rating)}</span></div><p class="text-gray-600 mt-1">${r.text}</p></div>`);
+                    reviewsList.insertAdjacentHTML('beforeend', `<div class="bg-gray-50 p-2 rounded border text-sm mb-2"><div class="flex justify-between font-bold text-gray-700"><span>${author?.full_name || 'Аноним'}</span><span class="text-yellow-500">${'★'.repeat(r.rating)}</span></div><p class="text-gray-600 mt-1">${escapeHTML(r.text)}</p></div>`);
                 });
             }
             document.getElementById('viewProfileModal').classList.remove('hidden');
@@ -492,12 +519,24 @@
             const statusEl = document.getElementById('detail-status');
             if (project.status === 'closed') { statusEl.innerText = 'Набор закрыт'; statusEl.className = 'bg-red-100 text-red-700 text-xs px-2 py-1 rounded font-bold'; } 
             else { statusEl.innerText = 'Открыт набор'; statusEl.className = 'bg-green-100 text-green-700 text-xs px-2 py-1 rounded font-bold'; }
+            
             const author = allProfiles.find(p => p.id === project.user_id);
             document.getElementById('detail-author').innerText = author?.full_name || 'Аноним';
             document.getElementById('detail-author').setAttribute('data-id', project.user_id);
-            document.getElementById('detail-author-skills').innerText = author?.skills ? `Навыки: ${author.skills}` : '';
-            if (author?.avatar_url) { document.getElementById('detail-author-avatar').src = author.avatar_url; document.getElementById('detail-author-avatar').classList.remove('hidden'); document.getElementById('detail-author-avatar-placeholder').classList.add('hidden'); } 
-            else { document.getElementById('detail-author-avatar').classList.add('hidden'); document.getElementById('detail-author-avatar-placeholder').classList.remove('hidden'); document.getElementById('detail-author-avatar-placeholder').innerText = (author?.full_name || 'А')[0].toUpperCase(); }
+            document.getElementById('detail-author-skills').innerText = author?.skills ? `Навыки: ${escapeHTML(author.skills)}` : '';
+            
+            if (author?.avatar_url) { 
+                document.getElementById('detail-author-avatar').src = author.avatar_url; 
+                document.getElementById('detail-author-avatar').classList.remove('hidden'); 
+                document.getElementById('detail-author-avatar-placeholder').classList.add('hidden'); 
+                document.getElementById('detail-author-avatar').onclick = () => openZoomModal(author.avatar_url);
+            } 
+            else { 
+                document.getElementById('detail-author-avatar').classList.add('hidden'); 
+                document.getElementById('detail-author-avatar-placeholder').classList.remove('hidden'); 
+                document.getElementById('detail-author-avatar-placeholder').innerText = (author?.full_name || 'А')[0].toUpperCase(); 
+            }
+            
             const img = document.getElementById('detail-image');
             if (project.image_url) { img.src = project.image_url; img.classList.remove('hidden'); } else { img.classList.add('hidden'); }
             const isAuthor = currentUser && String(project.user_id) === String(currentUser.id);
@@ -540,7 +579,7 @@
             data.forEach(task => {
                 const checked = task.is_completed ? 'checked' : '';
                 const line = task.is_completed ? 'line-through text-gray-400' : 'text-gray-700';
-                list.insertAdjacentHTML('beforeend', `<label class="flex items-center gap-2 cursor-pointer p-1 hover:bg-yellow-100 rounded"><input type="checkbox" ${checked} onchange="toggleTask(${task.id}, ${task.is_completed})" class="rounded text-yellow-600 focus:ring-yellow-500"><span class="text-sm ${line}">${task.title}</span></label>`);
+                list.insertAdjacentHTML('beforeend', `<label class="flex items-center gap-2 cursor-pointer p-1 hover:bg-yellow-100 rounded"><input type="checkbox" ${checked} onchange="toggleTask(${task.id}, ${task.is_completed})" class="rounded text-yellow-600 focus:ring-yellow-500"><span class="text-sm ${line}">${escapeHTML(task.title)}</span></label>`);
             });
         }
         document.getElementById('addTaskForm').addEventListener('submit', async (e) => {
@@ -579,7 +618,6 @@
         }
 
         function renderGroupMessage(msg) {
-            // ЗАЩИТА ОТ ДУБЛИКАТОВ
             if (msg.id && document.getElementById(`group-msg-${msg.id}`)) return; 
             const isMine = msg.sender_id === currentUser.id;
             const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -588,8 +626,8 @@
             document.getElementById('groupChatMessages').insertAdjacentHTML('beforeend', `
                 <div id="group-msg-${msg.id || Date.now()}" class="flex ${isMine ? 'justify-end' : 'justify-start'} mb-2">
                     <div class="max-w-[75%] p-3 rounded-xl text-sm ${isMine ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-white text-gray-800 border rounded-bl-none shadow-sm'}">
-                        ${!isMine ? `<div class="text-xs font-bold text-indigo-500 mb-1">${authorName}</div>` : ''}
-                        ${msg.content}
+                        ${!isMine ? `<div class="text-xs font-bold text-indigo-500 mb-1">${escapeHTML(authorName)}</div>` : ''}
+                        ${escapeHTML(msg.content)}
                         <div class="text-[10px] ${isMine ? 'text-indigo-200' : 'text-gray-400'} text-right mt-1">${time}</div>
                     </div>
                 </div>
@@ -602,7 +640,6 @@
             groupChatSubscription = supabaseClient.channel(channelName)
                 .on('broadcast', { event: 'new_group_msg' }, (payload) => {
                     const newMsg = payload.payload;
-                    // ЗАЩИТА ОТ ДУБЛИКАТОВ ДЛЯ ОТПРАВИТЕЛЯ
                     if (String(newMsg.sender_id) === String(currentUser.id)) return;
                     const container = document.getElementById('groupChatMessages');
                     if (container.innerHTML.includes('Сообщений пока нет')) container.innerHTML = '';
@@ -618,16 +655,11 @@
             if (!text) return;
             input.value = '';
             const { data, error } = await supabaseClient.from('group_messages').insert([{ project_id: currentDetailProjectId, sender_id: currentUser.id, content: text }]).select();
-            
             if (!error && data && data.length > 0) {
                 const msgData = data[0];
                 renderGroupMessage(msgData);
                 document.getElementById('groupChatMessages').scrollTop = document.getElementById('groupChatMessages').scrollHeight;
-                
-                if (groupChatSubscription) {
-                    groupChatSubscription.send({ type: 'broadcast', event: 'new_group_msg', payload: msgData });
-                }
-                
+                if (groupChatSubscription) { groupChatSubscription.send({ type: 'broadcast', event: 'new_group_msg', payload: msgData }); }
                 const { data: members } = await supabaseClient.from('join_requests').select('user_id').eq('project_id', currentDetailProjectId).eq('status', 'approved');
                 if (members) {
                     members.forEach(member => {
@@ -653,26 +685,21 @@
             alert("Отзыв сохранен!"); document.getElementById('reviewModal').classList.add('hidden'); document.getElementById('reviewModal').classList.remove('flex');
         });
 
-              async function openAdminPanel() {
+        // АДМИНКА
+        async function openAdminPanel() {
             const list = document.getElementById('adminList'); list.innerHTML = 'Загрузка...';
             document.getElementById('adminModal').classList.remove('hidden'); document.getElementById('adminModal').classList.add('flex');
-            
-            // Берем только те жалобы, которые еще не обработаны (status = 'pending')
             const { data } = await supabaseClient.from('reports').select('*').eq('status', 'pending').order('created_at', { ascending: false });
-            
             list.innerHTML = ''; 
             if (!data || data.length === 0) { list.innerHTML = '<p class="text-center mt-4">Новых жалоб нет. Все молодцы!</p>'; return; }
-            
             data.forEach(report => {
                 const reporter = allProfiles.find(p => p.id === report.reporter_id);
                 const badGuy = allProfiles.find(p => p.id === report.reported_user_id);
-                
                 list.insertAdjacentHTML('beforeend', `
                     <div class="bg-white p-4 rounded shadow border border-red-200 mb-2 text-sm">
                         <p>Жалоба от: <b>${reporter?.full_name || 'Аноним'}</b> (Варнов: ${reporter?.warnings || 0})</p>
                         <p>На пользователя: <b class="text-red-600">${badGuy?.full_name || 'Неизвестный'}</b></p>
-                        <div class="bg-red-50 p-2 rounded text-red-800 my-2"><strong>Причина:</strong> ${report.reason}</div>
-                        
+                        <div class="bg-red-50 p-2 rounded text-red-800 my-2"><strong>Причина:</strong> ${escapeHTML(report.reason)}</div>
                         <div class="flex flex-wrap gap-2 mt-3">
                             <button onclick="dismissReport(${report.id})" class="bg-gray-500 hover:bg-gray-600 text-white text-xs px-3 py-1.5 rounded">Игнорировать</button>
                             <button onclick="warnUser('${report.reporter_id}', '${reporter?.full_name || 'Пользователь'}', ${report.id})" class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-3 py-1.5 rounded">Предупредить автора</button>
@@ -683,45 +710,25 @@
             });
         }
 
-        // Игнорировать жалобу
-        window.dismissReport = async function(reportId) {
-            await supabaseClient.from('reports').update({ status: 'ignored' }).eq('id', reportId);
-            openAdminPanel(); // Обновляем список
-        }
+        window.dismissReport = async function(reportId) { await supabaseClient.from('reports').update({ status: 'ignored' }).eq('id', reportId); openAdminPanel(); }
 
-        // Выдать предупреждение автору жалобы
         window.warnUser = async function(userId, userName, reportId) {
             if (!confirm(`Выдать предупреждение пользователю ${userName} за спам жалобами?`)) return;
-            
-            // Получаем текущее количество варнов
             const profile = allProfiles.find(p => p.id === userId);
             const currentWarns = profile?.warnings || 0;
-
-            // Прибавляем 1
             await supabaseClient.from('profiles').update({ warnings: currentWarns + 1 }).eq('id', userId);
-            
-            // Саму жалобу помечаем как обработанную
             await supabaseClient.from('reports').update({ status: 'ignored' }).eq('id', reportId);
-            
             alert(`Пользователь ${userName} получил предупреждение. Всего: ${currentWarns + 1}`);
-            await loadProfiles(); // Обновляем профили в памяти
-            openAdminPanel(); 
+            await loadProfiles(); openAdminPanel(); 
         }
 
-        // Удаление данных нарушителя (наша старая кнопка "Бан")
         window.deleteBadUser = async function(userId, reportId) { 
             if (!confirm("Вы уверены? Все проекты и файлы этого пользователя будут удалены.")) return; 
             await supabaseClient.from('projects').delete().eq('user_id', userId); 
             await supabaseClient.from('profiles').delete().eq('id', userId); 
-            
-            // Помечаем жалобу как обработанную
             await supabaseClient.from('reports').update({ status: 'ignored' }).eq('id', reportId);
-            
-            alert("Данные пользователя удалены."); 
-            openAdminPanel(); 
-            loadProjects(); 
+            alert("Данные пользователя удалены."); openAdminPanel(); loadProjects(); 
         };
-        window.deleteBadUser = async function (userId) { if (!confirm("Удалить пользователя?")) return; await supabaseClient.from('projects').delete().eq('user_id', userId); await supabaseClient.from('profiles').delete().eq('id', userId); alert("Удален."); openAdminPanel(); loadProjects(); };
 
         // ОСТАЛЬНЫЕ ФУНКЦИИ
         async function loadMyApprovedProjects() { 
@@ -786,7 +793,7 @@
                 const name = profile?.full_name || 'Пользователь';
                 const kickBtn = isAuthor ? `<button onclick="kickMember(${projectId}, '${req.user_id}', '${name}')" class="ml-2 text-xs text-red-500 font-bold">✕</button>` : '';
                 const revBtn = isAuthor ? `<button onclick="openReviewModal('${req.user_id}')" class="ml-2 text-xs text-green-600 font-bold" title="Оценить">⭐</button>` : '';
-                list.insertAdjacentHTML('beforeend', `<span class="bg-gray-200 text-gray-800 text-sm px-3 py-1 rounded-full flex items-center mb-2 mr-2">${name} ${kickBtn} ${revBtn}</span>`);
+                list.insertAdjacentHTML('beforeend', `<span class="bg-gray-200 text-gray-800 text-sm px-3 py-1 rounded-full flex items-center mb-2 mr-2">${escapeHTML(name)} ${kickBtn} ${revBtn}</span>`);
             });
         }
 
@@ -801,7 +808,7 @@
                 let url = file.file_url;
                 if (!url.startsWith('http')) { const { data: u } = await supabaseClient.storage.from('project-documents').createSignedUrl(file.file_url, 3600); if (u) url = u.signedUrl; }
                 const author = allProfiles.find(p => p.id === file.user_id);
-                list.insertAdjacentHTML('beforeend', `<a href="${url}" target="_blank" class="flex justify-between items-center bg-white p-2 rounded border text-sm text-blue-700 mb-2"><span>📄 ${file.file_name}</span><span class="text-xs text-gray-400">от ${author?.full_name || 'Кто-то'}</span></a>`);
+                list.insertAdjacentHTML('beforeend', `<a href="${url}" target="_blank" class="flex justify-between items-center bg-white p-2 rounded border text-sm text-blue-700 mb-2"><span>📄 ${escapeHTML(file.file_name)}</span><span class="text-xs text-gray-400">от ${escapeHTML(author?.full_name || 'Кто-то')}</span></a>`);
             }
         }
 
@@ -837,7 +844,7 @@
                 const project = allProjects.find(p => String(p.id) === String(req.project_id)); const userProfile = allProfiles.find(p => p.id === req.user_id);
                 let statusBadge = req.status === 'approved' ? '<span class="text-green-600 font-bold">Принят</span>' : req.status === 'rejected' ? '<span class="text-red-600 font-bold">Отклонен</span>' : '<span class="text-yellow-600 font-bold">В ожидании</span>';
                 const btns = req.status === 'pending' ? `<div class="flex gap-2 mt-2"><button onclick="updateRequest(${req.id}, 'approved')" class="bg-green-500 text-white px-3 py-1 rounded text-sm">Принять</button><button onclick="updateRequest(${req.id}, 'rejected')" class="bg-red-500 text-white px-3 py-1 rounded text-sm">Отклонить</button></div>` : '';
-                list.insertAdjacentHTML('beforeend', `<div class="bg-white p-4 rounded-lg shadow-sm border mb-2"><div class="flex justify-between items-start mb-2"><div><p class="font-bold">${userProfile?.full_name || 'Пользователь'}</p><p class="text-xs text-gray-500">Проект: <span class="font-medium text-blue-600">${project?.title || 'Удален'}</span></p></div>${statusBadge}</div>${btns}</div>`);
+                list.insertAdjacentHTML('beforeend', `<div class="bg-white p-4 rounded-lg shadow-sm border mb-2"><div class="flex justify-between items-start mb-2"><div><p class="font-bold">${escapeHTML(userProfile?.full_name || 'Пользователь')}</p><p class="text-xs text-gray-500">Проект: <span class="font-medium text-blue-600">${escapeHTML(project?.title || 'Удален')}</span></p></div>${statusBadge}</div>${btns}</div>`);
             });
         }
         window.updateRequest = async function (reqId, newStatus) { await supabaseClient.from('join_requests').update({ status: newStatus }).eq('id', reqId); openRequests(); }
@@ -861,9 +868,33 @@
             const statusBadge = isApproved ? '<span class="bg-green-500 text-white text-xs px-2 py-1 rounded font-bold ml-2">Вы в проекте</span>' : '';
             const closedBadge = project.status === 'closed' ? '<span class="bg-red-500 text-white text-xs px-2 py-1 rounded font-bold ml-2">Набор закрыт</span>' : '';
             const favIcon = isFav ? '<span class="text-yellow-500 text-xl">⭐</span>' : '';
-            const avatarHTML = avatarUrl ? `<img src="${avatarUrl}" class="w-6 h-6 rounded-full object-cover inline-block mr-1">` : `<div class="w-6 h-6 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold text-xs inline-block mr-1">${authorName[0].toUpperCase()}</div>`;
+            
+            // ЗДЕСЬ ДОБАВЛЕНА ВОЗМОЖНОСТЬ УВЕЛИЧИТЬ АВАТАРКУ В КАРТОЧКЕ
+            const avatarHTML = avatarUrl 
+                ? `<img src="${avatarUrl}" onclick="event.stopPropagation(); openZoomModal('${avatarUrl}')" class="w-6 h-6 rounded-full object-cover inline-block mr-1 cursor-pointer hover:opacity-80 transition">` 
+                : `<div class="w-6 h-6 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold text-xs inline-block mr-1">${authorName[0].toUpperCase()}</div>`;
+            
             const unreadChatBadge = (unreadGroupCounts[project.id] > 0) ? `<span class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full ml-2 animate-pulse">💬 ${unreadGroupCounts[project.id]}</span>` : '';
-            return `<div onclick="openProjectDetail(${project.id})" class="rounded-xl shadow border ${cardBorderClass} hover:shadow-lg transition relative flex flex-col overflow-hidden cursor-pointer bg-white">${imageHTML}<div class="p-5 flex flex-col flex-grow"><div class="flex justify-between items-start mb-3"><div class="flex items-center flex-wrap gap-1"><span class="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded font-bold">${project.category || 'Другое'}</span>${statusBadge} ${closedBadge} ${unreadChatBadge}</div><div class="flex items-center gap-2">${favIcon}<span class="text-xs text-gray-400">${project.deadline}</span></div></div><h3 class="font-bold text-lg mb-1">${project.title}</h3><p class="text-xs text-gray-600 mb-3 flex items-center">${avatarHTML} ${authorName}</p><p class="text-sm text-gray-600 mb-4 line-clamp-3 flex-grow">${project.description || 'Описание не добавлено.'}</p><div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-100"><span class="text-xs font-medium text-gray-500">Нужен: ${project.role}</span><span class="text-blue-600 text-sm font-semibold">Подробнее &rarr;</span></div></div></div>`;
+            
+            return `<div onclick="openProjectDetail(${project.id})" class="rounded-xl shadow border ${cardBorderClass} hover:shadow-lg transition relative flex flex-col overflow-hidden cursor-pointer bg-white">
+                ${imageHTML}
+                <div class="p-5 flex flex-col flex-grow">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center flex-wrap gap-1">
+                            <span class="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded font-bold">${escapeHTML(project.category || 'Другое')}</span>
+                            ${statusBadge} ${closedBadge} ${unreadChatBadge}
+                        </div>
+                        <div class="flex items-center gap-2">${favIcon}<span class="text-xs text-gray-400">${escapeHTML(project.deadline)}</span></div>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">${escapeHTML(project.title)}</h3>
+                    <p class="text-xs text-gray-600 mb-3 flex items-center">${avatarHTML} ${escapeHTML(authorName)}</p>
+                    <p class="text-sm text-gray-600 mb-4 line-clamp-3 flex-grow">${escapeHTML(project.description || 'Описание не добавлено.')}</p>
+                    <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
+                        <span class="text-xs font-medium text-gray-500">Нужен: ${escapeHTML(project.role)}</span>
+                        <span class="text-blue-600 text-sm font-semibold">Подробнее &rarr;</span>
+                    </div>
+                </div>
+            </div>`;
         }
 
         document.getElementById('searchInput').addEventListener('input', renderProjects);
@@ -890,7 +921,7 @@
                 const otherName = otherProfile?.full_name || 'Пользователь'; const otherAvatar = otherProfile?.avatar_url;
                 const badgeHTML = chat.unreadCount > 0 ? `<span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full ml-2">${chat.unreadCount}</span>` : '';
                 const avatarHTML = otherAvatar ? `<img src="${otherAvatar}" class="w-8 h-8 rounded-full object-cover mr-2">` : `<div class="w-8 h-8 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold mr-2">${otherName[0].toUpperCase()}</div>`;
-                inboxList.insertAdjacentHTML('beforeend', `<div onclick="openChatFromInbox('${chat.otherId}', ${chat.projectId}, '${project?.title.replace(/'/g, "\\'")}')" class="bg-white p-3 rounded-lg shadow-sm border cursor-pointer hover:bg-gray-50 flex items-center mb-2">${avatarHTML}<div class="flex-grow overflow-hidden"><div class="flex justify-between items-center mb-1"><div class="flex items-center"><span class="font-bold text-sm">${otherName}</span>${badgeHTML}</div><span class="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded truncate max-w-[120px]">${project?.title || 'Удален'}</span></div><p class="text-xs text-gray-500 truncate">${chat.lastMessage}</p></div></div>`);
+                inboxList.insertAdjacentHTML('beforeend', `<div onclick="openChatFromInbox('${chat.otherId}', ${chat.projectId}, '${project?.title.replace(/'/g, "\\'")}')" class="bg-white p-3 rounded-lg shadow-sm border cursor-pointer hover:bg-gray-50 flex items-center mb-2">${avatarHTML}<div class="flex-grow overflow-hidden"><div class="flex justify-between items-center mb-1"><div class="flex items-center"><span class="font-bold text-sm">${escapeHTML(otherName)}</span>${badgeHTML}</div><span class="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded truncate max-w-[120px]">${escapeHTML(project?.title || 'Удален')}</span></div><p class="text-xs text-gray-500 truncate">${escapeHTML(chat.lastMessage)}</p></div></div>`);
             }
         }
         window.openChatFromInbox = function (receiverId, projectId, projectTitle) { document.getElementById('inboxModal').classList.add('hidden'); document.getElementById('inboxModal').classList.remove('flex'); openChat(receiverId, projectId, projectTitle); }
@@ -914,7 +945,7 @@
             if (msg.id && document.getElementById(`msg-${msg.id}`)) return; // Защита от дубликатов
             const isMine = msg.sender_id === currentUser.id;
             const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            document.getElementById('chatMessages').insertAdjacentHTML('beforeend', `<div id="msg-${msg.id || Date.now()}" class="flex ${isMine ? 'justify-end' : 'justify-start'} mb-2"><div class="max-w-[75%] p-3 rounded-xl text-sm ${isMine ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white text-gray-800 border rounded-bl-none shadow-sm'}">${msg.content}<div class="text-[10px] ${isMine ? 'text-blue-200' : 'text-gray-400'} text-right mt-1">${time}</div></div></div>`);
+            document.getElementById('chatMessages').insertAdjacentHTML('beforeend', `<div id="msg-${msg.id || Date.now()}" class="flex ${isMine ? 'justify-end' : 'justify-start'} mb-2"><div class="max-w-[75%] p-3 rounded-xl text-sm ${isMine ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white text-gray-800 border rounded-bl-none shadow-sm'}">${escapeHTML(msg.content)}<div class="text-[10px] ${isMine ? 'text-blue-200' : 'text-gray-400'} text-right mt-1">${time}</div></div></div>`);
         }
 
         function setupChatRealtime(receiverId, projectId) {
@@ -933,18 +964,13 @@
                 }).subscribe();
         }
 
-                document.getElementById('chatForm').addEventListener('submit', async (e) => {
+        document.getElementById('chatForm').addEventListener('submit', async (e) => {
             e.preventDefault(); const input = document.getElementById('chatInput'); const text = input.value.trim(); if (!text) return; input.value = '';
             const { data, error } = await supabaseClient.from('messages').insert([{ sender_id: currentUser.id, receiver_id: activeChat.receiverId, project_id: activeChat.projectId, content: text, is_read: false }]).select();
-            
             if (!error && data && data.length > 0) {
                 renderMessage(data[0]); document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
                 const notifyChannel = supabaseClient.channel(`user_notifications_${activeChat.receiverId}`);
                 notifyChannel.subscribe((status) => { if (status === 'SUBSCRIBED') { notifyChannel.send({ type: 'broadcast', event: 'new_message', payload: { message: 'new' } }); setTimeout(() => supabaseClient.removeChannel(notifyChannel), 1000); } });
-            } else if (error) {
-                // ЕСЛИ ОШИБКА, ПОКАЖЕМ ЕЕ НА ТЕЛЕФОНЕ
-                alert("Ошибка при отправке: " + error.message);
-                console.error(error);
             }
         });
 
