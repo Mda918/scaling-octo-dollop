@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Научный Соавтор | Поиск команды</title>
     <meta property="og:title" content="Научный Соавтор | Поиск команды">
     <meta property="og:description" content="Платформа для поиска соавторов.">
-    <meta property="og:image" content="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80">
+    <meta property="og:image"
+        content="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80">
     <script>
         tailwind = { darkMode: 'class' };
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -18,32 +20,41 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+
 <body class="bg-gray-100 dark:bg-gray-900 font-sans text-gray-800 dark:text-gray-200 transition-colors duration-300">
 
     <!-- ШАПКА -->
     <header class="bg-white dark:bg-gray-800 shadow sticky top-0 z-40 relative">
         <div class="max-w-5xl mx-auto px-4 py-3 md:py-4 flex justify-between items-center">
             <h1 class="text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-400">НаучныйСоавтор</h1>
-            
+
             <!-- Десктоп -->
             <div class="hidden md:flex items-center gap-4">
                 <div id="auth-block-desktop" class="flex items-center gap-2">
-                    <button id="loginBtn" class="text-blue-600 dark:text-blue-400 font-medium hover:underline">Войти / Регистрация</button>
+                    <button id="loginBtn" class="text-blue-600 dark:text-blue-400 font-medium hover:underline">Войти /
+                        Регистрация</button>
                 </div>
-                <button id="openModalBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">+ Создать</button>
+                <button id="openModalBtn"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">+
+                    Создать</button>
             </div>
 
             <!-- Мобилка -->
             <div class="flex md:hidden items-center gap-2">
-                <button id="openModalBtnMobile" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition">+ Создать</button>
-                <button id="mobileMenuBtn" class="text-2xl font-bold px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">⋮</button>
+                <button id="openModalBtnMobile"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition">+
+                    Создать</button>
+                <button id="mobileMenuBtn"
+                    class="text-2xl font-bold px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">⋮</button>
             </div>
         </div>
-        
+
         <!-- Выпадающее мобильное меню -->
-        <div id="mobileMenu" class="hidden md:hidden absolute top-full left-0 w-full bg-white dark:bg-gray-800 shadow-lg border-t dark:border-gray-700 z-50">
+        <div id="mobileMenu"
+            class="hidden md:hidden absolute top-full left-0 w-full bg-white dark:bg-gray-800 shadow-lg border-t dark:border-gray-700 z-50">
             <div id="auth-block-mobile" class="flex flex-col p-4 gap-3">
-                <button id="loginBtnMobile" class="text-blue-600 dark:text-blue-400 font-medium text-left py-1">Войти / Регистрация</button>
+                <button id="loginBtnMobile" class="text-blue-600 dark:text-blue-400 font-medium text-left py-1">Войти /
+                    Регистрация</button>
             </div>
         </div>
     </header>
@@ -58,8 +69,10 @@
             </label>
         </div>
         <div class="flex flex-col md:flex-row gap-3 mb-6">
-            <input type="text" id="searchInput" placeholder="Поиск по названию или навыку..." class="w-full md:w-1/3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-4 py-2 text-sm">
-            <select id="filterCategory" class="w-full md:w-1/3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-4 py-2 text-sm">
+            <input type="text" id="searchInput" placeholder="Поиск по названию или навыку..."
+                class="w-full md:w-1/3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-4 py-2 text-sm">
+            <select id="filterCategory"
+                class="w-full md:w-1/3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-4 py-2 text-sm">
                 <option value="">Все категории</option>
                 <option value="Медицина">Медицина</option>
                 <option value="IT">IT</option>
@@ -67,7 +80,8 @@
                 <option value="Гуманитарные науки">Гуманитарные науки</option>
                 <option value="Другое">Другое</option>
             </select>
-            <select id="filterRole" class="w-full md:w-1/3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-4 py-2 text-sm">
+            <select id="filterRole"
+                class="w-full md:w-1/3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-4 py-2 text-sm">
                 <option value="">Все роли (Кто нужен?)</option>
                 <option value="Теоретик">Теоретик</option>
                 <option value="Практик (врач)">Практик (врач)</option>
@@ -79,26 +93,37 @@
     </main>
 
     <!-- ДЕТАЛЬНЫЙ ПРОСМОТР -->
-    <div id="detailModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50 p-2 md:p-0">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-3xl relative max-h-[95vh] overflow-y-auto">
-            <button id="closeDetailBtn" class="absolute top-3 right-3 text-gray-500 hover:text-red-500 font-bold text-xl bg-white dark:bg-gray-700 dark:text-gray-300 rounded-full p-1 z-10">&times;</button>
+    <div id="detailModal"
+        class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50 p-2 md:p-0">
+        <div
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-3xl relative max-h-[95vh] overflow-y-auto">
+            <button id="closeDetailBtn"
+                class="absolute top-3 right-3 text-gray-500 hover:text-red-500 font-bold text-xl bg-white dark:bg-gray-700 dark:text-gray-300 rounded-full p-1 z-10">&times;</button>
             <img id="detail-image" src="" class="w-full h-48 md:h-64 object-cover rounded-t-xl hidden">
             <div class="p-4 md:p-6">
                 <div class="flex flex-wrap items-center gap-2 mb-2">
-                    <span id="detail-category" class="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs px-2 py-1 rounded font-bold"></span>
+                    <span id="detail-category"
+                        class="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs px-2 py-1 rounded font-bold"></span>
                     <span id="detail-status" class="text-xs px-2 py-1 rounded font-bold"></span>
                 </div>
                 <h2 id="detail-title" class="text-2xl md:text-3xl font-bold mb-2"></h2>
-                <p class="text-gray-500 dark:text-gray-400 text-sm mb-4">Нужен: <span id="detail-role" class="font-bold text-blue-600 dark:text-blue-400"></span> | Сроки: <span id="detail-deadline"></span></p>
-                
-                <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg mb-4 border border-gray-200 dark:border-gray-700">
+                <p class="text-gray-500 dark:text-gray-400 text-sm mb-4">Нужен: <span id="detail-role"
+                        class="font-bold text-blue-600 dark:text-blue-400"></span> | Сроки: <span
+                        id="detail-deadline"></span></p>
+
+                <div
+                    class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg mb-4 border border-gray-200 dark:border-gray-700">
                     <h3 class="font-bold text-gray-800 dark:text-gray-200 mb-2 text-sm">Описание:</h3>
                     <p id="detail-desc" class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap text-sm"></p>
                 </div>
 
-                <div class="flex items-center gap-3 mb-4 bg-blue-50 dark:bg-gray-700 p-3 rounded-lg border border-blue-100 dark:border-gray-600 cursor-pointer hover:bg-blue-100 transition" onclick="viewProfile(document.getElementById('detail-author').getAttribute('data-id'))">
-                    <img id="detail-author-avatar" src="" class="w-10 h-10 rounded-full object-cover bg-gray-300 hidden">
-                    <div id="detail-author-avatar-placeholder" class="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold"></div>
+                <div class="flex items-center gap-3 mb-4 bg-blue-50 dark:bg-gray-700 p-3 rounded-lg border border-blue-100 dark:border-gray-600 cursor-pointer hover:bg-blue-100 transition"
+                    onclick="viewProfile(document.getElementById('detail-author').getAttribute('data-id'))">
+                    <img id="detail-author-avatar" src=""
+                        class="w-10 h-10 rounded-full object-cover bg-gray-300 hidden">
+                    <div id="detail-author-avatar-placeholder"
+                        class="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold">
+                    </div>
                     <div>
                         <p class="text-xs text-gray-500 dark:text-gray-400">Автор проекта:</p>
                         <p id="detail-author" class="font-bold text-blue-700 dark:text-blue-400"></p>
@@ -111,22 +136,28 @@
                     <div id="detail-members-list" class="flex flex-wrap gap-2"></div>
                 </div>
 
-                <div id="tasks-block-container" class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg mb-4 border border-yellow-200 dark:border-yellow-700 hidden">
+                <div id="tasks-block-container"
+                    class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg mb-4 border border-yellow-200 dark:border-yellow-700 hidden">
                     <h3 class="font-bold text-yellow-800 dark:text-yellow-500 mb-2 text-sm">📋 Список задач</h3>
                     <div id="tasks-list" class="flex flex-col gap-2 mb-3"></div>
                     <form id="addTaskForm" class="flex gap-2">
-                        <input type="text" id="task-input" required placeholder="Новая задача..." class="flex-grow border border-yellow-300 dark:border-yellow-700 bg-white dark:bg-gray-800 rounded-lg px-3 py-1 text-sm">
-                        <button type="submit" class="bg-yellow-500 text-white text-sm px-3 py-1 rounded-lg font-bold">+</button>
+                        <input type="text" id="task-input" required placeholder="Новая задача..."
+                            class="flex-grow border border-yellow-300 dark:border-yellow-700 bg-white dark:bg-gray-800 rounded-lg px-3 py-1 text-sm">
+                        <button type="submit"
+                            class="bg-yellow-500 text-white text-sm px-3 py-1 rounded-lg font-bold">+</button>
                     </form>
                 </div>
 
-                <div id="files-block-container" class="bg-blue-50 dark:bg-gray-700 p-4 rounded-lg mb-4 border border-blue-200 dark:border-gray-600 hidden">
+                <div id="files-block-container"
+                    class="bg-blue-50 dark:bg-gray-700 p-4 rounded-lg mb-4 border border-blue-200 dark:border-gray-600 hidden">
                     <h3 class="font-bold text-blue-900 dark:text-blue-300 mb-2 text-sm">📁 Файлы</h3>
                     <div id="detail-files-list" class="flex flex-col gap-2 mb-3"></div>
                     <div id="upload-file-container" class="hidden border-t border-blue-200 dark:border-gray-600 pt-3">
                         <form id="uploadFileForm" class="flex flex-col sm:flex-row gap-2">
-                            <input type="file" id="project-file-input" required class="text-sm w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:bg-blue-600 file:text-white cursor-pointer">
-                            <button type="submit" id="uploadFileBtn" class="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg font-bold w-full sm:w-auto">Загрузить</button>
+                            <input type="file" id="project-file-input" required
+                                class="text-sm w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:bg-blue-600 file:text-white cursor-pointer">
+                            <button type="submit" id="uploadFileBtn"
+                                class="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg font-bold w-full sm:w-auto">Загрузить</button>
                         </form>
                     </div>
                     <p id="no-files-msg" class="text-sm text-gray-500 italic hidden">Файлов пока нет.</p>
@@ -138,20 +169,25 @@
     </div>
 
     <!-- НАСТРОЙКИ -->
-    <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50 p-4">
+    <div id="settingsModal"
+        class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50 p-4">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-sm relative">
-            <button id="closeSettingsBtn" class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
+            <button id="closeSettingsBtn"
+                class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
             <h2 class="text-xl font-bold mb-4">Настройки</h2>
             <div class="flex flex-col gap-4">
-                <button id="settingsThemeBtn" class="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-3 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                <button id="settingsThemeBtn"
+                    class="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-3 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition">
                     <span>Сменить тему</span>
                     <span id="settingsThemeIcon">🌙 / ☀️</span>
                 </button>
-                <button id="changePasswordBtn" class="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-3 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                <button id="changePasswordBtn"
+                    class="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-3 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition">
                     <span>Сменить пароль</span>
                     <span>🔑</span>
                 </button>
-                <button id="logoutBtnSettings" class="flex justify-between items-center bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-lg font-medium hover:bg-red-100 transition">
+                <button id="logoutBtnSettings"
+                    class="flex justify-between items-center bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-lg font-medium hover:bg-red-100 transition">
                     <span>Выйти из аккаунта</span>
                     <span>🚪</span>
                 </button>
@@ -160,46 +196,75 @@
     </div>
 
     <!-- СМЕНА ПАРОЛЯ -->
-    <div id="passwordModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-[60] p-4">
+    <div id="passwordModal"
+        class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-[60] p-4">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-sm relative">
-            <button id="closePasswordBtn" class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
+            <button id="closePasswordBtn"
+                class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
             <h2 class="text-xl font-bold mb-4">Смена пароля</h2>
             <form id="passwordForm" class="flex flex-col gap-4">
-                <input type="password" id="new-password-input" required placeholder="Новый пароль (мин. 6 символов)" class="w-full border rounded-lg px-3 py-2 dark:bg-gray-700 dark:border-gray-600">
+                <input type="password" id="new-password-input" required placeholder="Новый пароль (мин. 6 символов)"
+                    class="w-full border rounded-lg px-3 py-2 dark:bg-gray-700 dark:border-gray-600">
                 <button type="submit" class="bg-blue-600 text-white font-bold py-2 rounded-lg">Сохранить</button>
             </form>
         </div>
     </div>
 
     <!-- МОЙ ПРОФИЛЬ -->
-    <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50 p-2 md:p-0">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6 w-full max-w-md mx-auto relative max-h-[95vh] overflow-y-auto">
+    <div id="profileModal"
+        class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50 p-2 md:p-0">
+        <div
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6 w-full max-w-md mx-auto relative max-h-[95vh] overflow-y-auto">
             <button id="closeProfileBtn" class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
             <h2 class="text-xl font-bold mb-4">Мой профиль</h2>
             <form id="profileForm" class="flex flex-col gap-3">
                 <div class="flex items-center gap-4 mb-2">
-                    <img id="profile-avatar-preview" src="" class="w-14 h-14 rounded-full object-cover hidden cursor-pointer">
-                    <div id="profile-avatar-placeholder" class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 font-bold text-2xl">👤</div>
-                    <div class="flex-grow"><label class="block text-xs font-medium mb-1">Аватарка</label><input type="file" id="profile-avatar-input" accept="image/*" capture="environment" class="w-full text-xs"></div>
+                    <img id="profile-avatar-preview" src=""
+                        class="w-14 h-14 rounded-full object-cover hidden cursor-pointer">
+                    <div id="profile-avatar-placeholder"
+                        class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 font-bold text-2xl">
+                        👤</div>
+                    <div class="flex-grow"><label class="block text-xs font-medium mb-1">Аватарка</label><input
+                            type="file" id="profile-avatar-input" accept="image/*" capture="environment"
+                            class="w-full text-xs"></div>
                 </div>
-                <div><label class="block text-xs font-medium mb-1">Имя</label><input type="text" id="profile-name" required class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></div>
-                <div><label class="block text-xs font-medium mb-1">Навыки (через запятую)</label><input type="text" id="profile-skills" class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600" placeholder="Python, Дизайн..."></div>
-                <div><label class="block text-xs font-medium mb-1">Университет</label><input type="text" id="profile-university" class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></div>
-                <div><label class="block text-xs font-medium mb-1">Факультет / Курс</label><input type="text" id="profile-faculty" class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></div>
-                <div><label class="block text-xs font-medium mb-1">Научный руководитель</label><input type="text" id="profile-advisor" class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600" placeholder="Иванов И.И."></div>
-                <div><label class="block text-xs font-medium mb-1">О себе</label><textarea id="profile-bio" rows="3" class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></textarea></div>
+                <div><label class="block text-xs font-medium mb-1">Имя</label><input type="text" id="profile-name"
+                        required
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></div>
+                <div><label class="block text-xs font-medium mb-1">Навыки (через запятую)</label><input type="text"
+                        id="profile-skills"
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"
+                        placeholder="Python, Дизайн..."></div>
+                <div><label class="block text-xs font-medium mb-1">Университет</label><input type="text"
+                        id="profile-university"
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></div>
+                <div><label class="block text-xs font-medium mb-1">Факультет / Курс</label><input type="text"
+                        id="profile-faculty"
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></div>
+                <div><label class="block text-xs font-medium mb-1">Научный руководитель</label><input type="text"
+                        id="profile-advisor"
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"
+                        placeholder="Иванов И.И."></div>
+                <div><label class="block text-xs font-medium mb-1">О себе</label><textarea id="profile-bio" rows="3"
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></textarea>
+                </div>
                 <button type="submit" class="bg-green-600 text-white font-bold py-2 rounded-lg mt-2">Сохранить</button>
             </form>
         </div>
     </div>
 
     <!-- ЧУЖОЙ ПРОФИЛЬ -->
-    <div id="viewProfileModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50 p-2 md:p-0">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6 w-full max-w-md mx-auto relative max-h-[95vh] overflow-y-auto">
-            <button id="closeViewProfileBtn" class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
+    <div id="viewProfileModal"
+        class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50 p-2 md:p-0">
+        <div
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6 w-full max-w-md mx-auto relative max-h-[95vh] overflow-y-auto">
+            <button id="closeViewProfileBtn"
+                class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
             <div class="flex items-center gap-3 mb-4">
                 <img id="view-avatar" src="" class="w-14 h-14 rounded-full object-cover hidden cursor-pointer">
-                <div id="view-avatar-placeholder" class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 font-bold text-2xl"></div>
+                <div id="view-avatar-placeholder"
+                    class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 font-bold text-2xl">
+                </div>
                 <div>
                     <h2 id="view-name" class="text-xl font-bold text-gray-800 dark:text-gray-200"></h2>
                     <p id="view-skills" class="text-xs text-blue-600 font-medium"></p>
@@ -219,20 +284,27 @@
                 <p class="text-xs text-gray-500">О себе:</p>
                 <p id="view-bio" class="font-semibold text-gray-900 dark:text-gray-200 whitespace-pre-wrap"></p>
             </div>
-            <h3 class="font-bold text-gray-800 dark:text-gray-200 mb-2 border-b border-gray-200 dark:border-gray-700 pb-1 text-sm">Отзывы:</h3>
+            <h3
+                class="font-bold text-gray-800 dark:text-gray-200 mb-2 border-b border-gray-200 dark:border-gray-700 pb-1 text-sm">
+                Отзывы:</h3>
             <div id="view-reviews-list" class="flex flex-col gap-2 max-h-48 overflow-y-auto"></div>
         </div>
     </div>
 
     <!-- СОЗДАНИЕ ПРОЕКТА -->
-    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50 p-2 md:p-0">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6 w-full max-w-md mx-auto relative max-h-[95vh] overflow-y-auto">
+    <div id="modal"
+        class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50 p-2 md:p-0">
+        <div
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6 w-full max-w-md mx-auto relative max-h-[95vh] overflow-y-auto">
             <button id="closeModalBtn" class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
             <h2 id="modalTitle" class="text-xl font-bold mb-4">Новое объявление</h2>
-            
+
             <div class="flex flex-col sm:flex-row gap-2 mb-4">
-                <button type="button" id="ideaGeneratorBtn" class="bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300 px-3 py-2 rounded-lg text-sm font-bold flex-1">✨ Случайная идея</button>
-                <select id="templateSelect" class="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 px-3 py-2 rounded-lg text-sm font-bold flex-1 outline-none">
+                <button type="button" id="ideaGeneratorBtn"
+                    class="bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300 px-3 py-2 rounded-lg text-sm font-bold flex-1">✨
+                    Случайная идея</button>
+                <select id="templateSelect"
+                    class="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 px-3 py-2 rounded-lg text-sm font-bold flex-1 outline-none">
                     <option value="">📋 Выбрать шаблон</option>
                     <option value="case">Клинический случай</option>
                     <option value="review">Обзор литературы</option>
@@ -241,20 +313,49 @@
             </div>
 
             <form id="projectForm" class="flex flex-col gap-3">
-                <div><label class="block text-xs font-medium mb-1">Тема</label><input type="text" id="input-title" required class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></div>
+                <div><label class="block text-xs font-medium mb-1">Тема</label><input type="text" id="input-title"
+                        required
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></div>
                 <div class="flex gap-2">
-                    <div class="w-1/2"><label class="block text-xs font-medium mb-1">Категория</label><select id="input-category" class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"><option>Медицина</option><option>IT</option><option>Экономика</option><option>Гуманитарные науки</option><option>Другое</option></select></div>
-                    <div class="w-1/2"><label class="block text-xs font-medium mb-1">Статус</label><select id="input-status" class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"><option value="open">Открыт</option><option value="closed">Закрыт</option></select></div>
+                    <div class="w-1/2"><label class="block text-xs font-medium mb-1">Категория</label><select
+                            id="input-category"
+                            class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600">
+                            <option>Медицина</option>
+                            <option>IT</option>
+                            <option>Экономика</option>
+                            <option>Гуманитарные науки</option>
+                            <option>Другое</option>
+                        </select></div>
+                    <div class="w-1/2"><label class="block text-xs font-medium mb-1">Статус</label><select
+                            id="input-status"
+                            class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600">
+                            <option value="open">Открыт</option>
+                            <option value="closed">Закрыт</option>
+                        </select></div>
                 </div>
-                <div><label class="block text-xs font-medium mb-1">Сроки</label><input type="text" id="input-deadline" class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></div>
-                <div><label class="block text-xs font-medium mb-1">Кто нужен?</label><select id="input-role" class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"><option>Теоретик</option><option>Практик (врач)</option><option>Дизайнер</option><option>Гуманитарий</option></select></div>
-                <div><label class="block text-xs font-medium mb-1">Описание</label><textarea id="input-desc" rows="4" class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></textarea></div>
+                <div><label class="block text-xs font-medium mb-1">Сроки</label><input type="text" id="input-deadline"
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></div>
+                <div><label class="block text-xs font-medium mb-1">Кто нужен?</label><select id="input-role"
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600">
+                        <option>Теоретик</option>
+                        <option>Практик (врач)</option>
+                        <option>Дизайнер</option>
+                        <option>Гуманитарий</option>
+                    </select></div>
+                <div><label class="block text-xs font-medium mb-1">Описание</label><textarea id="input-desc" rows="4"
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></textarea>
+                </div>
                 <div class="border p-2 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
                     <label class="block text-xs font-medium mb-1">Обложка</label>
-                    <div id="current-image-container" class="hidden mb-2 flex items-center gap-3"><img id="current-image-preview" src="" class="h-12 w-12 object-cover rounded-lg"><label class="flex items-center gap-2 text-xs text-red-600 cursor-pointer"><input type="checkbox" id="delete-image-checkbox"> Удалить</label></div>
-                    <input type="file" id="input-image" accept="image/*" capture="environment" class="w-full text-xs text-gray-500">
+                    <div id="current-image-container" class="hidden mb-2 flex items-center gap-3"><img
+                            id="current-image-preview" src="" class="h-12 w-12 object-cover rounded-lg"><label
+                            class="flex items-center gap-2 text-xs text-red-600 cursor-pointer"><input type="checkbox"
+                                id="delete-image-checkbox"> Удалить</label></div>
+                    <input type="file" id="input-image" accept="image/*" capture="environment"
+                        class="w-full text-xs text-gray-500">
                 </div>
-                <button type="submit" id="submitBtn" class="bg-blue-600 text-white font-bold py-2 rounded-lg mt-2">Опубликовать</button>
+                <button type="submit" id="submitBtn"
+                    class="bg-blue-600 text-white font-bold py-2 rounded-lg mt-2">Опубликовать</button>
             </form>
         </div>
     </div>
@@ -262,38 +363,74 @@
     <!-- ОСТАЛЬНЫЕ ОКНА -->
     <div id="groupChatModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-lg relative flex flex-col h-[85vh]">
-            <div class="p-3 border-b flex justify-between items-center bg-indigo-50 dark:bg-gray-700 rounded-t-xl"><div><h3 class="font-bold text-indigo-800 dark:text-indigo-300" id="groupChatTitle">Чат</h3></div><button id="closeGroupChatBtn" class="text-gray-500 font-bold text-2xl">&times;</button></div>
-            <div id="groupChatMessages" class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-3"></div>
-            <div class="p-3 border-t bg-white dark:bg-gray-800 rounded-b-xl"><form id="groupChatForm" class="flex gap-2"><input type="text" id="groupChatInput" required placeholder="Сообщение..." class="flex-grow border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"><button type="submit" class="bg-indigo-600 text-white font-bold px-4 py-2 rounded-lg">➤</button></form></div>
+            <div class="p-3 border-b flex justify-between items-center bg-indigo-50 dark:bg-gray-700 rounded-t-xl">
+                <div>
+                    <h3 class="font-bold text-indigo-800 dark:text-indigo-300" id="groupChatTitle">Чат</h3>
+                </div><button id="closeGroupChatBtn" class="text-gray-500 font-bold text-2xl">&times;</button>
+            </div>
+            <div id="groupChatMessages"
+                class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-3"></div>
+            <div class="p-3 border-t bg-white dark:bg-gray-800 rounded-b-xl">
+                <form id="groupChatForm" class="flex gap-2"><input type="text" id="groupChatInput" required
+                        placeholder="Сообщение..."
+                        class="flex-grow border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"><button
+                        type="submit" class="bg-indigo-600 text-white font-bold px-4 py-2 rounded-lg">➤</button></form>
+            </div>
         </div>
     </div>
 
     <div id="chatModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-lg relative flex flex-col h-[85vh]">
-            <div class="p-3 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-700 rounded-t-xl"><div><h3 class="font-bold dark:text-gray-200" id="chatTitle">Чат</h3><p class="text-xs text-gray-500 dark:text-gray-400" id="chatSubtitle"></p></div><div class="flex items-center gap-4"><button id="reportBtn" class="text-orange-500 text-xl">🚩</button><button id="closeChatBtn" class="text-gray-500 font-bold text-2xl">&times;</button></div></div>
-            <div id="chatMessages" class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-3"></div>
-            <div class="p-3 border-t bg-white dark:bg-gray-800 rounded-b-xl"><form id="chatForm" class="flex gap-2"><input type="text" id="chatInput" required placeholder="Сообщение..." class="flex-grow border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"><button type="submit" class="bg-blue-600 text-white font-bold px-4 py-2 rounded-lg">➤</button></form></div>
+            <div class="p-3 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-700 rounded-t-xl">
+                <div>
+                    <h3 class="font-bold dark:text-gray-200" id="chatTitle">Чат</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400" id="chatSubtitle"></p>
+                </div>
+                <div class="flex items-center gap-4"><button id="reportBtn"
+                        class="text-orange-500 text-xl">🚩</button><button id="closeChatBtn"
+                        class="text-gray-500 font-bold text-2xl">&times;</button></div>
+            </div>
+            <div id="chatMessages"
+                class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-3"></div>
+            <div class="p-3 border-t bg-white dark:bg-gray-800 rounded-b-xl">
+                <form id="chatForm" class="flex gap-2"><input type="text" id="chatInput" required
+                        placeholder="Сообщение..."
+                        class="flex-grow border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"><button
+                        type="submit" class="bg-blue-600 text-white font-bold px-4 py-2 rounded-lg">➤</button></form>
+            </div>
         </div>
     </div>
 
     <div id="inboxModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-lg relative flex flex-col h-[85vh]">
-            <div class="p-3 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-700 rounded-t-xl"><h3 class="font-bold dark:text-gray-200">Мои чаты</h3><button id="closeInboxBtn" class="text-gray-500 font-bold text-2xl">&times;</button></div>
-            <div id="inboxList" class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-2"></div>
+            <div class="p-3 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-700 rounded-t-xl">
+                <h3 class="font-bold dark:text-gray-200">Мои чаты</h3><button id="closeInboxBtn"
+                    class="text-gray-500 font-bold text-2xl">&times;</button>
+            </div>
+            <div id="inboxList" class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-2">
+            </div>
         </div>
     </div>
 
     <div id="requestsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-lg relative flex flex-col h-[85vh]">
-            <div class="p-3 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-700 rounded-t-xl"><h3 class="font-bold dark:text-gray-200">Заявки</h3><button id="closeRequestsBtn" class="text-gray-500 font-bold text-2xl">&times;</button></div>
-            <div id="requestsList" class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-2"></div>
+            <div class="p-3 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-700 rounded-t-xl">
+                <h3 class="font-bold dark:text-gray-200">Заявки</h3><button id="closeRequestsBtn"
+                    class="text-gray-500 font-bold text-2xl">&times;</button>
+            </div>
+            <div id="requestsList"
+                class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-2"></div>
         </div>
     </div>
 
     <div id="adminModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-2xl relative flex flex-col h-[85vh]">
-            <div class="p-3 border-b flex justify-between items-center bg-red-50 dark:bg-red-900/30 rounded-t-xl"><h3 class="font-bold text-red-800 dark:text-red-400">Админ-панель</h3><button id="closeAdminBtn" class="text-gray-500 font-bold text-2xl">&times;</button></div>
-            <div id="adminList" class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-2"></div>
+            <div class="p-3 border-b flex justify-between items-center bg-red-50 dark:bg-red-900/30 rounded-t-xl">
+                <h3 class="font-bold text-red-800 dark:text-red-400">Админ-панель</h3><button id="closeAdminBtn"
+                    class="text-gray-500 font-bold text-2xl">&times;</button>
+            </div>
+            <div id="adminList" class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-2">
+            </div>
         </div>
     </div>
 
@@ -302,37 +439,70 @@
             <button id="closeAuthBtn" class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
             <h2 class="text-xl font-bold mb-4 dark:text-gray-200">Вход</h2>
             <form id="authForm" class="flex flex-col gap-4">
-                <div><input type="email" id="auth-email" required placeholder="Email" class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></div>
-                <div><input type="password" id="auth-password" required placeholder="Пароль" class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></div>
-                <div class="flex justify-end"><button type="button" id="forgotPasswordBtn" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Забыли пароль?</button></div>
-                <div class="flex gap-2 mt-2"><button type="submit" id="loginSubmitBtn" class="w-1/2 bg-blue-600 text-white font-bold py-2 rounded-lg text-sm">Войти</button><button type="button" id="signupSubmitBtn" class="w-1/2 bg-green-600 text-white font-bold py-2 rounded-lg text-sm">Регистрация</button></div>
+                <div><input type="email" id="auth-email" required placeholder="Email"
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></div>
+                <div><input type="password" id="auth-password" required placeholder="Пароль"
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></div>
+                <div class="flex justify-end"><button type="button" id="forgotPasswordBtn"
+                        class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Забыли пароль?</button></div>
+                <div class="flex gap-2 mt-2"><button type="submit" id="loginSubmitBtn"
+                        class="w-1/2 bg-blue-600 text-white font-bold py-2 rounded-lg text-sm">Войти</button><button
+                        type="button" id="signupSubmitBtn"
+                        class="w-1/2 bg-green-600 text-white font-bold py-2 rounded-lg text-sm">Регистрация</button>
+                </div>
             </form>
-            <div class="relative flex py-4 items-center"><div class="flex-grow border-t dark:border-gray-600"></div><span class="flex-shrink mx-4 text-gray-500 text-xs">или</span><div class="flex-grow border-t dark:border-gray-600"></div></div>
+            <div class="relative flex py-4 items-center">
+                <div class="flex-grow border-t dark:border-gray-600"></div><span
+                    class="flex-shrink mx-4 text-gray-500 text-xs">или</span>
+                <div class="flex-grow border-t dark:border-gray-600"></div>
+            </div>
             <div class="flex flex-col gap-2">
-                <button type="button" id="googleLoginBtn" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg text-sm">Google</button>
-                <button type="button" id="yandexLoginBtn" class="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-2 rounded-lg text-sm">Яндекс</button>
+                <button type="button" id="googleLoginBtn"
+                    class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg text-sm">Google</button>
+                <button type="button" id="yandexLoginBtn"
+                    class="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-2 rounded-lg text-sm">Яндекс</button>
             </div>
         </div>
     </div>
 
     <div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-sm relative"><button id="closeReviewBtn" class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button><h2 class="text-xl font-bold mb-4 dark:text-gray-200">Оценить</h2><form id="reviewForm" class="flex flex-col gap-4"><input type="hidden" id="review-target-id"><div><select id="review-rating" class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"><option value="5">5 (Отлично)</option><option value="4">4 (Хорошо)</option><option value="3">3</option><option value="2">2</option><option value="1">1</option></select></div><div><textarea id="review-text" rows="3" required placeholder="Отзыв..." class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></textarea></div><button type="submit" class="bg-green-600 text-white font-bold py-2 rounded-lg text-sm">Отправить</button></form></div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-sm relative"><button
+                id="closeReviewBtn" class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
+            <h2 class="text-xl font-bold mb-4 dark:text-gray-200">Оценить</h2>
+            <form id="reviewForm" class="flex flex-col gap-4"><input type="hidden" id="review-target-id">
+                <div><select id="review-rating"
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600">
+                        <option value="5">5 (Отлично)</option>
+                        <option value="4">4 (Хорошо)</option>
+                        <option value="3">3</option>
+                        <option value="2">2</option>
+                        <option value="1">1</option>
+                    </select></div>
+                <div><textarea id="review-text" rows="3" required placeholder="Отзыв..."
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></textarea>
+                </div><button type="submit"
+                    class="bg-green-600 text-white font-bold py-2 rounded-lg text-sm">Отправить</button>
+            </form>
+        </div>
     </div>
 
-    <div id="imageZoomModal" class="fixed inset-0 bg-black bg-opacity-90 hidden items-center justify-center z-[100] cursor-zoom-out" onclick="this.classList.add('hidden'); this.classList.remove('flex');"><img id="zoomedImage" src="" class="max-w-[90vw] max-h-[90vh] object-contain rounded-lg"></div>
+    <div id="imageZoomModal"
+        class="fixed inset-0 bg-black bg-opacity-90 hidden items-center justify-center z-[100] cursor-zoom-out"
+        onclick="this.classList.add('hidden'); this.classList.remove('flex');"><img id="zoomedImage" src=""
+            class="max-w-[90vw] max-h-[90vh] object-contain rounded-lg"></div>
 
     <script>
         // НАСТРОЙКА ТЕМЫ
         const themeIcon = document.getElementById('themeIcon');
         const settingsThemeIcon = document.getElementById('settingsThemeIcon');
-        
+
         function updateThemeIcon() {
             if (document.documentElement.classList.contains('dark')) {
-                if(themeIcon) themeIcon.innerText = '☀️';
-                if(settingsThemeIcon) settingsThemeIcon.innerText = '☀️ Светлая';
+                if (themeIcon) themeIcon.innerText = '☀️';
+                if (settingsThemeIcon) settingsThemeIcon.innerText = '☀️ Светлая';
             } else {
-                if(themeIcon) themeIcon.innerText = '🌙';
-                if(settingsThemeIcon) settingsThemeIcon.innerText = '🌙 Тёмная';
+                if (themeIcon) themeIcon.innerText = '🌙';
+                if (settingsThemeIcon) settingsThemeIcon.innerText = '🌙 Тёмная';
             }
         }
         updateThemeIcon();
@@ -346,7 +516,7 @@
             updateThemeIcon();
         }
 
-        document.getElementById('settingsThemeBtn').addEventListener('click', toggleTheme);
+        document.getElementById('settingsThemeBtn')?.addEventListener('click', toggleTheme);
 
         // ЛОГИКА САЙТА
         const supabaseUrl = 'https://afpqnklgtibofojlvjzm.supabase.co';
@@ -354,21 +524,21 @@
         const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
         const ADMIN_EMAIL = '3ildar.bikkuzhin@bk.ru';
 
-        let currentUser = null, allProjects = [], allProfiles = [], myApprovedProjectIds = [], myFavoriteProjectIds = [], unreadGroupCounts = {}; 
+        let currentUser = null, allProjects = [], allProfiles = [], myApprovedProjectIds = [], myFavoriteProjectIds = [], unreadGroupCounts = {};
         let editingProjectId = null, activeChat = { receiverId: null, projectId: null }, currentDetailProjectId = null;
         let groupChatSubscription = null, chatSubscription = null, globalSubscription = null;
         const grid = document.querySelector('.grid'), authBlockDesktop = document.getElementById('auth-block-desktop'), authBlockMobile = document.getElementById('auth-block-mobile');
         const mobileMenu = document.getElementById('mobileMenu');
 
         function escapeHTML(str) { if (!str) return ''; return str.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
-        window.openZoomModal = function(url) { if(!url) return; document.getElementById('zoomedImage').src = url; document.getElementById('imageZoomModal').classList.remove('hidden'); document.getElementById('imageZoomModal').classList.add('flex'); }
+        window.openZoomModal = function (url) { if (!url) return; document.getElementById('zoomedImage').src = url; document.getElementById('imageZoomModal').classList.remove('hidden'); document.getElementById('imageZoomModal').classList.add('flex'); }
 
         // Мобильное меню
-        document.getElementById('mobileMenuBtn').addEventListener('click', () => { mobileMenu.classList.toggle('hidden'); });
+        document.getElementById('mobileMenuBtn')?.addEventListener('click', () => { mobileMenu.classList.toggle('hidden'); });
 
         // Открытие модалок
         ['openModalBtn', 'openModalBtnMobile'].forEach(id => {
-            document.getElementById(id).addEventListener('click', () => {
+            document.getElementById(id)?.addEventListener('click', () => {
                 if (!currentUser) { alert("Войдите!"); document.getElementById('authModal').classList.remove('hidden'); document.getElementById('authModal').classList.add('flex'); mobileMenu.classList.add('hidden'); return; }
                 editingProjectId = null; document.getElementById('modalTitle').innerText = "Новое объявление"; document.getElementById('submitBtn').innerText = "Опубликовать"; document.getElementById('projectForm').reset(); document.getElementById('current-image-container').classList.add('hidden');
                 document.getElementById('modal').classList.remove('hidden'); document.getElementById('modal').classList.add('flex'); mobileMenu.classList.add('hidden');
@@ -387,7 +557,7 @@
                 currentUser = session.user;
                 let adminBtn = currentUser.email === ADMIN_EMAIL ? `<button onclick="openAdminPanel()" class="bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 px-3 py-1.5 rounded-lg text-sm font-medium w-full text-left md:w-auto">Админка 🚨</button>` : '';
                 let desktopHTML = `${adminBtn}<button onclick="openRequests()" class="relative bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-200 px-3 py-1.5 rounded-lg text-sm font-medium">Заявки <span id="requestsBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full hidden">0</span></button><button onclick="openInbox()" class="relative bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 px-3 py-1.5 rounded-lg text-sm font-medium">Чаты <span id="unreadBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full hidden">0</span></button><button onclick="openSettings()" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-800 dark:text-gray-200">Настройки ⚙️</button>`;
-                
+
                 let mobileHTML = `${adminBtn}<button onclick="openRequests()" class="bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 px-3 py-2 rounded-lg text-sm font-medium w-full text-left">Заявки <span id="requestsBadgeMob" class="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full ml-2 hidden">0</span></button><button onclick="openInbox()" class="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-3 py-2 rounded-lg text-sm font-medium w-full text-left">Чаты <span id="unreadBadgeMob" class="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full ml-2 hidden">0</span></button><button onclick="openProfile()" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 px-3 py-2 rounded-lg text-sm font-medium text-gray-800 dark:text-gray-200 w-full text-left">Профиль</button><button onclick="openSettings()" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 px-3 py-2 rounded-lg text-sm font-medium text-gray-800 dark:text-gray-200 w-full text-left">Настройки ⚙️</button>`;
 
                 authBlockDesktop.innerHTML = desktopHTML; authBlockMobile.innerHTML = mobileHTML;
@@ -409,7 +579,7 @@
         }
 
         // ОКНА ПРОФИЛЯ И НАСТРОЕК
-        window.openProfile = function() {
+        window.openProfile = function () {
             const myProfile = allProfiles.find(p => p.id === currentUser.id);
             document.getElementById('profile-name').value = myProfile?.full_name || '';
             document.getElementById('profile-skills').value = myProfile?.skills || '';
@@ -417,18 +587,18 @@
             document.getElementById('profile-faculty').value = myProfile?.faculty || '';
             document.getElementById('profile-advisor').value = myProfile?.academic_advisor || '';
             document.getElementById('profile-bio').value = myProfile?.bio || '';
-            if (myProfile?.avatar_url) { document.getElementById('profile-avatar-preview').src = myProfile.avatar_url; document.getElementById('profile-avatar-preview').classList.remove('hidden'); document.getElementById('profile-avatar-placeholder').classList.add('hidden'); document.getElementById('profile-avatar-preview').onclick = () => openZoomModal(myProfile.avatar_url); } 
+            if (myProfile?.avatar_url) { document.getElementById('profile-avatar-preview').src = myProfile.avatar_url; document.getElementById('profile-avatar-preview').classList.remove('hidden'); document.getElementById('profile-avatar-placeholder').classList.add('hidden'); document.getElementById('profile-avatar-preview').onclick = () => openZoomModal(myProfile.avatar_url); }
             else { document.getElementById('profile-avatar-preview').classList.add('hidden'); document.getElementById('profile-avatar-placeholder').classList.remove('hidden'); }
             document.getElementById('profileModal').classList.remove('hidden'); document.getElementById('profileModal').classList.add('flex'); mobileMenu.classList.add('hidden');
         }
 
-        window.openSettings = function() {
+        window.openSettings = function () {
             document.getElementById('settingsModal').classList.remove('hidden'); document.getElementById('settingsModal').classList.add('flex'); mobileMenu.classList.add('hidden');
         }
-        
-        document.getElementById('logoutBtnSettings').addEventListener('click', async () => { await supabaseClient.auth.signOut(); document.getElementById('settingsModal').classList.add('hidden'); });
-        document.getElementById('changePasswordBtn').addEventListener('click', () => { document.getElementById('passwordModal').classList.remove('hidden'); document.getElementById('passwordModal').classList.add('flex'); });
-        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+
+        document.getElementById('logoutBtnSettings')?.addEventListener('click', async () => { await supabaseClient.auth.signOut(); document.getElementById('settingsModal').classList.add('hidden'); });
+        document.getElementById('changePasswordBtn')?.addEventListener('click', () => { document.getElementById('passwordModal').classList.remove('hidden'); document.getElementById('passwordModal').classList.add('flex'); });
+        document.getElementById('passwordForm')?.addEventListener('submit', async (e) => {
             e.preventDefault(); const newPass = document.getElementById('new-password-input').value;
             if (newPass.length < 6) return alert("Пароль слишком короткий!");
             const { error } = await supabaseClient.auth.updateUser({ password: newPass });
@@ -436,7 +606,7 @@
         });
 
         // ФОРМА ПРОФИЛЯ
-        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+        document.getElementById('profileForm')?.addEventListener('submit', async (e) => {
             e.preventDefault(); const btn = e.target.querySelector('button[type="submit"]'); btn.disabled = true;
             const file = document.getElementById('profile-avatar-input').files[0]; let avatarUrl = null;
             if (file) {
@@ -459,11 +629,11 @@
             document.getElementById('view-faculty').innerText = p.faculty || '';
             document.getElementById('view-advisor').innerText = p.academic_advisor || 'Не указан';
             document.getElementById('view-bio').innerText = p.bio || 'Не заполнено.';
-            if (p.avatar_url) { document.getElementById('view-avatar').src = p.avatar_url; document.getElementById('view-avatar').classList.remove('hidden'); document.getElementById('view-avatar-placeholder').classList.add('hidden'); document.getElementById('view-avatar').onclick = () => openZoomModal(p.avatar_url); } 
+            if (p.avatar_url) { document.getElementById('view-avatar').src = p.avatar_url; document.getElementById('view-avatar').classList.remove('hidden'); document.getElementById('view-avatar-placeholder').classList.add('hidden'); document.getElementById('view-avatar').onclick = () => openZoomModal(p.avatar_url); }
             else { document.getElementById('view-avatar').classList.add('hidden'); document.getElementById('view-avatar-placeholder').classList.remove('hidden'); document.getElementById('view-avatar-placeholder').innerText = (p.full_name || 'А')[0].toUpperCase(); }
             const reviewsList = document.getElementById('view-reviews-list'); reviewsList.innerHTML = 'Загрузка...';
             const { data } = await supabaseClient.from('reviews').select('*').eq('target_id', userId);
-            if (!data || data.length === 0) { reviewsList.innerHTML = 'Отзывов пока нет.'; document.getElementById('view-rating').innerText = 'Нет рейтинга'; } 
+            if (!data || data.length === 0) { reviewsList.innerHTML = 'Отзывов пока нет.'; document.getElementById('view-rating').innerText = 'Нет рейтинга'; }
             else {
                 const avg = (data.reduce((acc, r) => acc + r.rating, 0) / data.length).toFixed(1); document.getElementById('view-rating').innerText = `⭐ ${avg} (${data.length})`; reviewsList.innerHTML = '';
                 data.forEach(r => { const author = allProfiles.find(a => a.id === r.author_id); reviewsList.insertAdjacentHTML('beforeend', `<div class="bg-gray-50 dark:bg-gray-700 p-2 rounded text-sm mb-2"><div class="flex justify-between font-bold"><span>${author?.full_name || 'Аноним'}</span><span class="text-yellow-500">${'★'.repeat(r.rating)}</span></div><p class="text-gray-600 dark:text-gray-400 mt-1">${escapeHTML(r.text)}</p></div>`); });
@@ -472,12 +642,12 @@
         }
 
         // ГЕНЕРАТОР ИДЕЙ И ШАБЛОНЫ
-        document.getElementById('ideaGeneratorBtn').addEventListener('click', () => {
+        document.getElementById('ideaGeneratorBtn')?.addEventListener('click', () => {
             const ideas = ["Влияние коротких видео на концентрацию студентов", "Анализ шовного материала в хирургии", "Применение ИИ в диагностике заболеваний", "Психология командной работы в научных проектах", "Экономика удаленной работы", "Социологический портрет современного студента"];
             document.getElementById('input-title').value = ideas[Math.floor(Math.random() * ideas.length)];
         });
 
-        document.getElementById('templateSelect').addEventListener('change', (e) => {
+        document.getElementById('templateSelect')?.addEventListener('change', (e) => {
             const val = e.target.value; const desc = document.getElementById('input-desc');
             if (val === 'case') desc.value = "1. Актуальность\n\n2. Описание клинического случая\n\n3. Диагностика\n\n4. Лечение\n\n5. Выводы";
             else if (val === 'review') desc.value = "1. Введение\n\n2. Обзор литературы (источники за последние 5 лет)\n\n3. Методология поиска\n\n4. Результаты\n\n5. Заключение";
@@ -530,7 +700,7 @@
         }
 
         // ОСТАЛЬНЫЕ ФУНКЦИИ
-        window.exportData = async function(projectId) {
+        window.exportData = async function (projectId) {
             const project = allProjects.find(p => String(p.id) === String(projectId)); const { data: requests } = await supabaseClient.from('join_requests').select('user_id').eq('project_id', projectId).eq('status', 'approved');
             if (!requests || requests.length === 0) return alert("Нет участников."); let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; csvContent += "Имя,Email,ВУЗ,Факультет\n";
             requests.forEach(req => { const p = allProfiles.find(prof => prof.id === req.user_id); if (p) csvContent += `"${p.full_name || ''}","${p.email || ''}","${p.university || ''}","${p.faculty || ''}"\n`; });
@@ -538,18 +708,18 @@
         }
         async function loadProfiles() { const { data } = await supabaseClient.from('profiles').select('*'); if (data) allProfiles = data; }
         async function loadTasks(projectId) { const list = document.getElementById('tasks-list'); list.innerHTML = ''; const { data } = await supabaseClient.from('tasks').select('*').eq('project_id', projectId).order('created_at', { ascending: true }); if (!data || data.length === 0) { list.innerHTML = '<p class="text-xs text-gray-500">Задач нет.</p>'; return; } data.forEach(task => { const checked = task.is_completed ? 'checked' : ''; const line = task.is_completed ? 'line-through text-gray-400' : ''; list.insertAdjacentHTML('beforeend', `<label class="flex items-center gap-2 cursor-pointer p-1"><input type="checkbox" ${checked} onchange="toggleTask(${task.id}, ${task.is_completed})" class="rounded text-yellow-600"><span class="text-xs ${line}">${escapeHTML(task.title)}</span></label>`); }); }
-        document.getElementById('addTaskForm').addEventListener('submit', async (e) => { e.preventDefault(); const input = document.getElementById('task-input'); if (!input.value.trim()) return; await supabaseClient.from('tasks').insert([{ project_id: currentDetailProjectId, title: input.value.trim() }]); input.value = ''; loadTasks(currentDetailProjectId); });
+        document.getElementById('addTaskForm')?.addEventListener('submit', async (e) => { e.preventDefault(); const input = document.getElementById('task-input'); if (!input.value.trim()) return; await supabaseClient.from('tasks').insert([{ project_id: currentDetailProjectId, title: input.value.trim() }]); input.value = ''; loadTasks(currentDetailProjectId); });
         window.toggleTask = async function (taskId, currentStatus) { await supabaseClient.from('tasks').update({ is_completed: !currentStatus }).eq('id', taskId); loadTasks(currentDetailProjectId); };
         window.openGroupChat = async function (projectId, projectTitle) { document.getElementById('groupChatTitle').innerText = `Команда: ${projectTitle}`; document.getElementById('groupChatMessages').innerHTML = 'Загрузка...'; document.getElementById('groupChatModal').classList.remove('hidden'); document.getElementById('groupChatModal').classList.add('flex'); await loadGroupMessages(projectId); setupGroupRealtime(projectId); document.getElementById('groupChatInput').focus(); await supabaseClient.from('join_requests').update({ last_read_group_at: new Date().toISOString() }).eq('project_id', projectId).eq('user_id', currentUser.id); if (unreadGroupCounts[projectId]) { delete unreadGroupCounts[projectId]; renderProjects(); } }
         async function loadGroupMessages(projectId) { const { data } = await supabaseClient.from('group_messages').select('*').eq('project_id', projectId).order('created_at', { ascending: true }); const container = document.getElementById('groupChatMessages'); container.innerHTML = ''; if (!data || data.length === 0) { container.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">Нет сообщений</p>'; return; } data.forEach(msg => renderGroupMessage(msg)); container.scrollTop = container.scrollHeight; }
         function renderGroupMessage(msg) { if (msg.id && document.getElementById(`group-msg-${msg.id}`)) return; const isMine = msg.sender_id === currentUser.id; const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); const author = allProfiles.find(p => p.id === msg.sender_id); document.getElementById('groupChatMessages').insertAdjacentHTML('beforeend', `<div id="group-msg-${msg.id || Date.now()}" class="flex ${isMine ? 'justify-end' : 'justify-start'} mb-2"><div class="max-w-[75%] p-3 rounded-xl text-sm ${isMine ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border dark:border-gray-600 rounded-bl-none shadow-sm'}">${!isMine ? `<div class="text-xs font-bold text-indigo-500 mb-1">${escapeHTML(author?.full_name || 'Кто-то')}</div>` : ''}${escapeHTML(msg.content)}<div class="text-[10px] ${isMine ? 'text-indigo-200' : 'text-gray-400'} text-right mt-1">${time}</div></div></div>`); }
         function setupGroupRealtime(projectId) { if (groupChatSubscription) supabaseClient.removeChannel(groupChatSubscription); groupChatSubscription = supabaseClient.channel(`project_group_${String(projectId)}`).on('broadcast', { event: 'new_group_msg' }, (payload) => { if (String(payload.payload.sender_id) === String(currentUser.id)) return; const container = document.getElementById('groupChatMessages'); if (container.innerHTML.includes('Нет сообщений')) container.innerHTML = ''; renderGroupMessage(payload.payload); container.scrollTop = container.scrollHeight; }).subscribe(); }
-        document.getElementById('groupChatForm').addEventListener('submit', async (e) => { e.preventDefault(); const input = document.getElementById('groupChatInput'); if (!input.value.trim()) return; const text = input.value.trim(); input.value = ''; const { data, error } = await supabaseClient.from('group_messages').insert([{ project_id: currentDetailProjectId, sender_id: currentUser.id, content: text }]).select(); if (!error && data && data.length > 0) { const msgData = data[0]; renderGroupMessage(msgData); document.getElementById('groupChatMessages').scrollTop = document.getElementById('groupChatMessages').scrollHeight; if (groupChatSubscription) groupChatSubscription.send({ type: 'broadcast', event: 'new_group_msg', payload: msgData }); const { data: members } = await supabaseClient.from('join_requests').select('user_id').eq('project_id', currentDetailProjectId).eq('status', 'approved'); if (members) { members.forEach(member => { if (member.user_id !== currentUser.id) { const notifyChannel = supabaseClient.channel(`user_notifications_${member.user_id}`); notifyChannel.subscribe((status) => { if (status === 'SUBSCRIBED') { notifyChannel.send({ type: 'broadcast', event: 'new_group_message_alert', payload: { project_id: currentDetailProjectId } }); setTimeout(() => supabaseClient.removeChannel(notifyChannel), 1000); } }); } }); } } });
+        document.getElementById('groupChatForm')?.addEventListener('submit', async (e) => { e.preventDefault(); const input = document.getElementById('groupChatInput'); if (!input.value.trim()) return; const text = input.value.trim(); input.value = ''; const { data, error } = await supabaseClient.from('group_messages').insert([{ project_id: currentDetailProjectId, sender_id: currentUser.id, content: text }]).select(); if (!error && data && data.length > 0) { const msgData = data[0]; renderGroupMessage(msgData); document.getElementById('groupChatMessages').scrollTop = document.getElementById('groupChatMessages').scrollHeight; if (groupChatSubscription) groupChatSubscription.send({ type: 'broadcast', event: 'new_group_msg', payload: msgData }); const { data: members } = await supabaseClient.from('join_requests').select('user_id').eq('project_id', currentDetailProjectId).eq('status', 'approved'); if (members) { members.forEach(member => { if (member.user_id !== currentUser.id) { const notifyChannel = supabaseClient.channel(`user_notifications_${member.user_id}`); notifyChannel.subscribe((status) => { if (status === 'SUBSCRIBED') { notifyChannel.send({ type: 'broadcast', event: 'new_group_message_alert', payload: { project_id: currentDetailProjectId } }); setTimeout(() => supabaseClient.removeChannel(notifyChannel), 1000); } }); } }); } } });
         window.openReviewModal = function (targetId) { document.getElementById('review-target-id').value = targetId; document.getElementById('review-text').value = ''; document.getElementById('reviewModal').classList.remove('hidden'); document.getElementById('reviewModal').classList.add('flex'); };
-        document.getElementById('reviewForm').addEventListener('submit', async (e) => { e.preventDefault(); await supabaseClient.from('reviews').insert([{ project_id: currentDetailProjectId, author_id: currentUser.id, target_id: document.getElementById('review-target-id').value, rating: parseInt(document.getElementById('review-rating').value), text: document.getElementById('review-text').value }]); alert("Сохранено!"); document.getElementById('reviewModal').classList.add('hidden'); });
+        document.getElementById('reviewForm')?.addEventListener('submit', async (e) => { e.preventDefault(); await supabaseClient.from('reviews').insert([{ project_id: currentDetailProjectId, author_id: currentUser.id, target_id: document.getElementById('review-target-id').value, rating: parseInt(document.getElementById('review-rating').value), text: document.getElementById('review-text').value }]); alert("Сохранено!"); document.getElementById('reviewModal').classList.add('hidden'); });
         async function openAdminPanel() { const list = document.getElementById('adminList'); list.innerHTML = 'Загрузка...'; document.getElementById('adminModal').classList.remove('hidden'); document.getElementById('adminModal').classList.add('flex'); const { data } = await supabaseClient.from('reports').select('*').eq('status', 'pending').order('created_at', { ascending: false }); list.innerHTML = ''; if (!data || data.length === 0) { list.innerHTML = '<p class="text-center mt-4">Жалоб нет.</p>'; return; } data.forEach(report => { const reporter = allProfiles.find(p => p.id === report.reporter_id); const badGuy = allProfiles.find(p => p.id === report.reported_user_id); list.insertAdjacentHTML('beforeend', `<div class="bg-white dark:bg-gray-700 p-3 rounded shadow border mb-2 text-xs"><p>От: <b>${reporter?.full_name || 'Аноним'}</b></p><p>На: <b class="text-red-500">${badGuy?.full_name || 'Неизвестный'}</b></p><div class="bg-red-50 dark:bg-red-900 p-2 rounded my-2">${escapeHTML(report.reason)}</div><button onclick="dismissReport(${report.id})" class="bg-gray-500 text-white px-2 py-1 rounded mr-1">Игнор</button><button onclick="deleteBadUser('${report.reported_user_id}', ${report.id})" class="bg-red-600 text-white px-2 py-1 rounded">Удалить</button></div>`); }); }
-        window.dismissReport = async function(id) { await supabaseClient.from('reports').update({ status: 'ignored' }).eq('id', id); openAdminPanel(); }
-        window.deleteBadUser = async function(userId, reportId) { if (!confirm("Удалить пользователя?")) return; await supabaseClient.from('projects').delete().eq('user_id', userId); await supabaseClient.from('profiles').delete().eq('id', userId); await supabaseClient.from('reports').update({ status: 'ignored' }).eq('id', reportId); openAdminPanel(); loadProjects(); }
+        window.dismissReport = async function (id) { await supabaseClient.from('reports').update({ status: 'ignored' }).eq('id', id); openAdminPanel(); }
+        window.deleteBadUser = async function (userId, reportId) { if (!confirm("Удалить пользователя?")) return; await supabaseClient.from('projects').delete().eq('user_id', userId); await supabaseClient.from('profiles').delete().eq('id', userId); await supabaseClient.from('reports').update({ status: 'ignored' }).eq('id', reportId); openAdminPanel(); loadProjects(); }
         async function loadMyApprovedProjects() { if (!currentUser) return; const { data } = await supabaseClient.from('join_requests').select('project_id, last_read_group_at').eq('user_id', currentUser.id).eq('status', 'approved'); if (data) { myApprovedProjectIds = data.map(d => String(d.project_id)); unreadGroupCounts = {}; for (let req of data) { const { count } = await supabaseClient.from('group_messages').select('*', { count: 'exact', head: true }).eq('project_id', req.project_id).gt('created_at', req.last_read_group_at).neq('sender_id', currentUser.id); if (count > 0) unreadGroupCounts[req.project_id] = count; } } }
         async function loadMyFavorites() { if (!currentUser) return; const { data } = await supabaseClient.from('favorites').select('project_id').eq('user_id', currentUser.id); if (data) myFavoriteProjectIds = data.map(d => String(d.project_id)); }
         async function updateUnreadBadge() { if (!currentUser) return; const { count } = await supabaseClient.from('messages').select('*', { count: 'exact', head: true }).eq('receiver_id', currentUser.id).eq('is_read', false); const b1 = document.getElementById('unreadBadge'), b2 = document.getElementById('unreadBadgeMob'); if (b1) { if (count > 0) { b1.innerText = count; b1.classList.remove('hidden'); } else b1.classList.add('hidden'); } if (b2) { if (count > 0) { b2.innerText = count; b2.classList.remove('hidden'); } else b2.classList.add('hidden'); } }
@@ -560,13 +730,13 @@
         window.kickMember = async function (pid, mid, mname) { if (!confirm(`Исключить?`)) return; await supabaseClient.from('join_requests').update({ status: 'rejected' }).eq('project_id', pid).eq('user_id', mid); await supabaseClient.from('project_files').delete().eq('project_id', pid).eq('user_id', mid); openProjectDetail(pid); }
         window.leaveProject = async function (pid) { if (!confirm('Покинуть проект?')) return; await supabaseClient.from('join_requests').update({ status: 'rejected' }).eq('project_id', pid).eq('user_id', currentUser.id); await supabaseClient.from('project_files').delete().eq('project_id', pid).eq('user_id', currentUser.id); await loadMyApprovedProjects(); loadProjects(); document.getElementById('detailModal').classList.add('hidden'); }
         async function loadProjectFiles(projectId) { const list = document.getElementById('detail-files-list'); const noMsg = document.getElementById('no-files-msg'); list.innerHTML = ''; noMsg.classList.add('hidden'); const { data } = await supabaseClient.from('project_files').select('*').eq('project_id', projectId).order('created_at', { ascending: false }); if (!data || data.length === 0) { noMsg.classList.remove('hidden'); return; } for (const file of data) { let url = file.file_url; if (!url.startsWith('http')) { const { data: u } = await supabaseClient.storage.from('project-documents').createSignedUrl(file.file_url, 3600); if (u) url = u.signedUrl; } list.insertAdjacentHTML('beforeend', `<a href="${url}" target="_blank" class="flex justify-between items-center bg-white dark:bg-gray-600 p-2 rounded border text-xs text-blue-700 dark:text-blue-300 mb-1"><span>📄 ${escapeHTML(file.file_name)}</span></a>`); } }
-        document.getElementById('uploadFileForm').addEventListener('submit', async (e) => { e.preventDefault(); const file = document.getElementById('project-file-input').files[0]; if (!file || !currentDetailProjectId) return; if (file.size > 10 * 1024 * 1024) return alert("Файл > 10 МБ."); const btn = document.getElementById('uploadFileBtn'); btn.disabled = true; const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.\s_-]/g, '_')}`; const { error } = await supabaseClient.storage.from('project-documents').upload(fileName, file); if (!error) { await supabaseClient.from('project_files').insert([{ project_id: currentDetailProjectId, user_id: currentUser.id, file_name: file.name, file_url: fileName }]); document.getElementById('project-file-input').value = ''; loadProjectFiles(currentDetailProjectId); } else alert("Ошибка!"); btn.disabled = false; });
-        window.sendJoinRequest = async function(pid, aid) { if (!currentUser) return alert("Войдите!"); const { data } = await supabaseClient.from('join_requests').select('*').eq('project_id', pid).eq('user_id', currentUser.id).maybeSingle(); if (data) { if (data.status === 'pending') return alert("Ждите."); if (data.status === 'approved') return alert("Вы приняты."); if (data.status === 'rejected') { await supabaseClient.from('join_requests').update({ status: 'pending' }).eq('id', data.id); } } else { await supabaseClient.from('join_requests').insert([{ project_id: pid, user_id: currentUser.id, status: 'pending' }]); } alert("Заявка отправлена!"); const ch = supabaseClient.channel(`user_notifications_${aid}`); ch.subscribe(s => { if (s === 'SUBSCRIBED') { ch.send({ type: 'broadcast', event: 'new_request', payload: {} }); setTimeout(() => supabaseClient.removeChannel(ch), 1000); } }); document.getElementById('detailModal').classList.add('hidden'); }
+        document.getElementById('uploadFileForm')?.addEventListener('submit', async (e) => { e.preventDefault(); const file = document.getElementById('project-file-input').files[0]; if (!file || !currentDetailProjectId) return; if (file.size > 10 * 1024 * 1024) return alert("Файл > 10 МБ."); const btn = document.getElementById('uploadFileBtn'); btn.disabled = true; const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.\s_-]/g, '_')}`; const { error } = await supabaseClient.storage.from('project-documents').upload(fileName, file); if (!error) { await supabaseClient.from('project_files').insert([{ project_id: currentDetailProjectId, user_id: currentUser.id, file_name: file.name, file_url: fileName }]); document.getElementById('project-file-input').value = ''; loadProjectFiles(currentDetailProjectId); } else alert("Ошибка!"); btn.disabled = false; });
+        window.sendJoinRequest = async function (pid, aid) { if (!currentUser) return alert("Войдите!"); const { data } = await supabaseClient.from('join_requests').select('*').eq('project_id', pid).eq('user_id', currentUser.id).maybeSingle(); if (data) { if (data.status === 'pending') return alert("Ждите."); if (data.status === 'approved') return alert("Вы приняты."); if (data.status === 'rejected') { await supabaseClient.from('join_requests').update({ status: 'pending' }).eq('id', data.id); } } else { await supabaseClient.from('join_requests').insert([{ project_id: pid, user_id: currentUser.id, status: 'pending' }]); } alert("Заявка отправлена!"); const ch = supabaseClient.channel(`user_notifications_${aid}`); ch.subscribe(s => { if (s === 'SUBSCRIBED') { ch.send({ type: 'broadcast', event: 'new_request', payload: {} }); setTimeout(() => supabaseClient.removeChannel(ch), 1000); } }); document.getElementById('detailModal').classList.add('hidden'); }
         async function openRequests() { const list = document.getElementById('requestsList'); list.innerHTML = 'Загрузка...'; document.getElementById('requestsModal').classList.remove('hidden'); document.getElementById('requestsModal').classList.add('flex'); mobileMenu.classList.add('hidden'); const myProjectIds = allProjects.filter(p => p.user_id === currentUser.id).map(p => p.id); if (myProjectIds.length === 0) return list.innerHTML = 'Нет проектов.'; const { data } = await supabaseClient.from('join_requests').select('*').in('project_id', myProjectIds).order('created_at', { ascending: false }); if (!data || data.length === 0) return list.innerHTML = 'Нет заявок.'; list.innerHTML = ''; data.forEach(req => { const project = allProjects.find(p => String(p.id) === String(req.project_id)); const userProfile = allProfiles.find(p => p.id === req.user_id); let statusBadge = req.status === 'approved' ? '<span class="text-green-600 font-bold text-xs">Принят</span>' : req.status === 'rejected' ? '<span class="text-red-600 font-bold text-xs">Отклонен</span>' : '<span class="text-yellow-600 font-bold text-xs">В ожидании</span>'; const btns = req.status === 'pending' ? `<div class="flex gap-1 mt-2"><button onclick="updateRequest(${req.id}, 'approved')" class="bg-green-500 text-white px-2 py-1 rounded text-xs">Принять</button><button onclick="updateRequest(${req.id}, 'rejected')" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Отклонить</button></div>` : ''; list.insertAdjacentHTML('beforeend', `<div class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm border dark:border-gray-600 mb-2"><div class="flex justify-between items-start mb-1"><div><p class="font-bold text-sm">${escapeHTML(userProfile?.full_name || 'Пользователь')}</p><p class="text-xs text-gray-500">Проект: <span class="font-medium text-blue-600">${escapeHTML(project?.title || 'Удален')}</span></p></div>${statusBadge}</div>${btns}</div>`); }); }
         window.updateRequest = async function (reqId, newStatus) { await supabaseClient.from('join_requests').update({ status: newStatus }).eq('id', reqId); openRequests(); }
         async function loadProjects() { const { data } = await supabaseClient.from('projects').select('*').order('id', { ascending: false }); if (data) { allProjects = data; renderProjects(); updateRequestsBadge(); } }
         function createCardHTML(p) { const img = p.image_url ? `<img src="${p.image_url}" class="w-full h-40 object-cover rounded-t-xl">` : ''; const a = allProfiles.find(pr => pr.id === p.user_id); const aName = a?.full_name || 'Аноним'; const avUrl = a?.avatar_url; const isApp = myApprovedProjectIds.includes(String(p.id)); const isFav = myFavoriteProjectIds.includes(String(p.id)); const cardBorder = isApp ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-gray-100 dark:border-gray-700'; const sBadge = isApp ? '<span class="bg-green-500 text-white text-[10px] px-2 py-0.5 rounded font-bold ml-1">В проекте</span>' : ''; const cBadge = p.status === 'closed' ? '<span class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded font-bold ml-1">Закрыт</span>' : ''; const fIcon = isFav ? '<span class="text-yellow-500 text-lg">⭐</span>' : ''; const av = avUrl ? `<img src="${avUrl}" onclick="event.stopPropagation(); openZoomModal('${avUrl}')" class="w-5 h-5 rounded-full object-cover inline-block mr-1 cursor-pointer">` : `<div class="w-5 h-5 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold text-[10px] inline-block mr-1">${aName[0].toUpperCase()}</div>`; const uBadge = (unreadGroupCounts[p.id] > 0) ? `<span class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1 animate-pulse">💬 ${unreadGroupCounts[p.id]}</span>` : ''; return `<div onclick="openProjectDetail(${p.id})" class="rounded-xl shadow border ${cardBorder} hover:shadow-lg transition relative flex flex-col overflow-hidden cursor-pointer bg-white dark:bg-gray-800"><div class="p-4 flex flex-col flex-grow"><div class="flex justify-between items-start mb-2"><div class="flex items-center flex-wrap gap-1"><span class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-[10px] px-2 py-0.5 rounded font-bold">${escapeHTML(p.category || 'Другое')}</span>${sBadge}${cBadge}${uBadge}</div><div class="flex items-center gap-1">${fIcon}<span class="text-[10px] text-gray-400">${escapeHTML(p.deadline)}</span></div></div><h3 class="font-bold text-base mb-1 text-gray-800 dark:text-gray-200">${escapeHTML(p.title)}</h3><p class="text-xs text-gray-600 dark:text-gray-400 mb-2 flex items-center">${av} ${escapeHTML(aName)}</p><p class="text-xs text-gray-600 dark:text-gray-400 mb-3 line-clamp-2 flex-grow">${escapeHTML(p.description || 'Нет описания.')}</p><div class="flex items-center justify-between mt-auto pt-2 border-t border-gray-100 dark:border-gray-700"><span class="text-[10px] font-medium text-gray-500">Нужен: ${escapeHTML(p.role)}</span><span class="text-blue-600 text-xs font-semibold">Подробнее &rarr;</span></div></div></div>`; }
-        document.getElementById('searchInput').addEventListener('input', renderProjects); document.getElementById('filterRole').addEventListener('change', renderProjects); document.getElementById('filterCategory').addEventListener('change', renderProjects); document.getElementById('filterFavorites').addEventListener('change', renderProjects);
+        document.getElementById('searchInput')?.addEventListener('input', renderProjects); document.getElementById('filterRole')?.addEventListener('change', renderProjects); document.getElementById('filterCategory')?.addEventListener('change', renderProjects); document.getElementById('filterFavorites')?.addEventListener('change', renderProjects);
         window.toggleFavorite = async function (pid) { if (!currentUser) return alert("Войдите!"); const isFav = myFavoriteProjectIds.includes(String(pid)); if (isFav) { await supabaseClient.from('favorites').delete().eq('user_id', currentUser.id).eq('project_id', pid); myFavoriteProjectIds = myFavoriteProjectIds.filter(id => id !== String(pid)); } else { await supabaseClient.from('favorites').insert([{ user_id: currentUser.id, project_id: pid }]); myFavoriteProjectIds.push(String(pid)); } openProjectDetail(pid); renderProjects(); }
         async function openInbox() { const inboxList = document.getElementById('inboxList'); inboxList.innerHTML = 'Загрузка...'; document.getElementById('inboxModal').classList.remove('hidden'); document.getElementById('inboxModal').classList.add('flex'); mobileMenu.classList.add('hidden'); const { data } = await supabaseClient.from('messages').select('*').or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`).order('created_at', { ascending: false }); if (!data || data.length === 0) return inboxList.innerHTML = '<p class="text-center mt-4">Нет сообщений.</p>'; const chatsMap = new Map(); data.forEach(msg => { const otherId = msg.sender_id === currentUser.id ? msg.receiver_id : msg.sender_id; const key = `${msg.project_id}_${otherId}`; if (!chatsMap.has(key)) chatsMap.set(key, { projectId: msg.project_id, otherId: otherId, lastMessage: msg.content, unreadCount: 0 }); if (msg.receiver_id === currentUser.id && msg.is_read === false) chatsMap.get(key).unreadCount++; }); inboxList.innerHTML = ''; for (const chat of chatsMap.values()) { const project = allProjects.find(p => String(p.id) === String(chat.projectId)); const otherProfile = allProfiles.find(p => p.id === chat.otherId); const otherName = otherProfile?.full_name || 'Пользователь'; const otherAvatar = otherProfile?.avatar_url; const badgeHTML = chat.unreadCount > 0 ? `<span class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-2">${chat.unreadCount}</span>` : ''; const avatarHTML = otherAvatar ? `<img src="${otherAvatar}" class="w-8 h-8 rounded-full object-cover mr-2">` : `<div class="w-8 h-8 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold mr-2 text-xs">${otherName[0].toUpperCase()}</div>`; inboxList.insertAdjacentHTML('beforeend', `<div onclick="openChatFromInbox('${chat.otherId}', ${chat.projectId}, '${project?.title.replace(/'/g, "\\'")}')" class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm border dark:border-gray-600 cursor-pointer flex items-center mb-2">${avatarHTML}<div class="flex-grow overflow-hidden"><div class="flex justify-between items-center mb-1"><div class="flex items-center"><span class="font-bold text-sm">${escapeHTML(otherName)}</span>${badgeHTML}</div><span class="text-[10px] text-blue-600 bg-blue-50 dark:bg-blue-900 px-2 py-0.5 rounded truncate max-w-[100px]">${escapeHTML(project?.title || 'Удален')}</span></div><p class="text-xs text-gray-500 truncate">${escapeHTML(chat.lastMessage)}</p></div></div>`); } }
         window.openChatFromInbox = function (rid, pid, ptitle) { document.getElementById('inboxModal').classList.add('hidden'); openChat(rid, pid, ptitle); }
@@ -574,20 +744,18 @@
         async function loadMessages() { if (!activeChat.receiverId) return; const { data } = await supabaseClient.from('messages').select('*').or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${activeChat.receiverId}),and(sender_id.eq.${activeChat.receiverId},receiver_id.eq.${currentUser.id})`).order('created_at', { ascending: true }); const cm = document.getElementById('chatMessages'); cm.innerHTML = ''; const pms = data ? data.filter(m => String(m.project_id) === String(activeChat.projectId)) : []; if (pms.length === 0) cm.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">Нет сообщений!</p>'; else { pms.forEach(m => renderMessage(m)); cm.scrollTop = cm.scrollHeight; } }
         function renderMessage(m) { if (m.id && document.getElementById(`msg-${m.id}`)) return; const mine = m.sender_id === currentUser.id; const t = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); document.getElementById('chatMessages').insertAdjacentHTML('beforeend', `<div id="msg-${m.id || Date.now()}" class="flex ${mine ? 'justify-end' : 'justify-start'} mb-2"><div class="max-w-[75%] p-3 rounded-xl text-sm ${mine ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border dark:border-gray-600 rounded-bl-none shadow-sm'}">${escapeHTML(m.content)}<div class="text-[10px] ${mine ? 'text-blue-200' : 'text-gray-400'} text-right mt-1">${t}</div></div></div>`); }
         function setupChatRealtime(rid, pid) { if (chatSubscription) supabaseClient.removeChannel(chatSubscription); chatSubscription = supabaseClient.channel('chat-realtime').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => { const m = payload.new; if (String(m.project_id) !== String(pid) || String(m.sender_id) === String(currentUser.id)) return; if ((String(m.sender_id) === String(currentUser.id) && String(m.receiver_id) === String(rid)) || (String(m.sender_id) === String(rid) && String(m.receiver_id) === String(currentUser.id))) { const cm = document.getElementById('chatMessages'); if (cm.innerHTML.includes('Нет сообщений')) cm.innerHTML = ''; renderMessage(m); cm.scrollTop = cm.scrollHeight; if (String(m.receiver_id) === String(currentUser.id)) markMessagesAsRead(rid, pid); } }).subscribe(); }
-        document.getElementById('chatForm').addEventListener('submit', async (e) => { e.preventDefault(); const inp = document.getElementById('chatInput'); const txt = inp.value.trim(); if (!txt) return; inp.value = ''; const { data, error } = await supabaseClient.from('messages').insert([{ sender_id: currentUser.id, receiver_id: activeChat.receiverId, project_id: activeChat.projectId, content: txt, is_read: false }]).select(); if (!error && data && data.length > 0) { renderMessage(data[0]); document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight; const ch = supabaseClient.channel(`user_notifications_${activeChat.receiverId}`); ch.subscribe(s => { if (s === 'SUBSCRIBED') { ch.send({ type: 'broadcast', event: 'new_message', payload: {} }); setTimeout(() => supabaseClient.removeChannel(ch), 1000); } }); } });
-        document.getElementById('reportBtn').addEventListener('click', () => { document.getElementById('report-reason').value = ''; document.getElementById('reportModal').classList.remove('hidden'); document.getElementById('reportModal').classList.add('flex'); });
-        document.getElementById('reportForm').addEventListener('submit', async (e) => { e.preventDefault(); await supabaseClient.from('reports').insert([{ reporter_id: currentUser.id, reported_user_id: activeChat.receiverId, project_id: activeChat.projectId, reason: document.getElementById('report-reason').value }]); alert("Жалоба отправлена!"); document.getElementById('reportModal').classList.add('hidden'); });
+        document.getElementById('chatForm')?.addEventListener('submit', async (e) => { e.preventDefault(); const inp = document.getElementById('chatInput'); const txt = inp.value.trim(); if (!txt) return; inp.value = ''; const { data, error } = await supabaseClient.from('messages').insert([{ sender_id: currentUser.id, receiver_id: activeChat.receiverId, project_id: activeChat.projectId, content: txt, is_read: false }]).select(); if (!error && data && data.length > 0) { renderMessage(data[0]); document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight; const ch = supabaseClient.channel(`user_notifications_${activeChat.receiverId}`); ch.subscribe(s => { if (s === 'SUBSCRIBED') { ch.send({ type: 'broadcast', event: 'new_message', payload: {} }); setTimeout(() => supabaseClient.removeChannel(ch), 1000); } }); } });
+        document.getElementById('reportBtn')?.addEventListener('click', () => { document.getElementById('report-reason').value = ''; document.getElementById('reportModal').classList.remove('hidden'); document.getElementById('reportModal').classList.add('flex'); });
+        document.getElementById('reportForm')?.addEventListener('submit', async (e) => { e.preventDefault(); await supabaseClient.from('reports').insert([{ reporter_id: currentUser.id, reported_user_id: activeChat.receiverId, project_id: activeChat.projectId, reason: document.getElementById('report-reason').value }]); alert("Жалоба отправлена!"); document.getElementById('reportModal').classList.add('hidden'); });
         window.editProject = function (id) { const p = allProjects.find(x => String(x.id) === String(id)); if (!p) return; editingProjectId = id; document.getElementById('modalTitle').innerText = "Редактировать"; document.getElementById('submitBtn').innerText = "Сохранить"; document.getElementById('input-title').value = p.title; document.getElementById('input-category').value = p.category || 'Другое'; document.getElementById('input-status').value = p.status || 'open'; document.getElementById('input-deadline').value = p.deadline; document.getElementById('input-role').value = p.role; document.getElementById('input-desc').value = p.description || ''; document.getElementById('input-image').value = ''; if (p.image_url) { document.getElementById('current-image-preview').src = p.image_url; document.getElementById('current-image-container').classList.remove('hidden'); } else document.getElementById('current-image-container').classList.add('hidden'); document.getElementById('modal').classList.remove('hidden'); document.getElementById('modal').classList.add('flex'); document.getElementById('detailModal').classList.add('hidden'); }
         window.deleteProject = async function (id) { if (confirm('Удалить?')) { await supabaseClient.from('projects').delete().eq('id', id); loadProjects(); document.getElementById('detailModal').classList.add('hidden'); } }
-        document.getElementById('projectForm').addEventListener('submit', async (e) => { e.preventDefault(); const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerText = "Ждите..."; const file = document.getElementById('input-image').files[0]; let imageUrl = null; if (file) { if (file.size > 10 * 1024 * 1024) { alert("Картинка > 10 МБ."); btn.disabled = false; btn.innerText = "Опубликовать"; return; } const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`; const { error } = await supabaseClient.storage.from('project-images').upload(fileName, file); if (!error) imageUrl = supabaseClient.storage.from('project-images').getPublicUrl(fileName).data.publicUrl; } const projectData = { title: document.getElementById('input-title').value, category: document.getElementById('input-category').value, status: document.getElementById('input-status').value, deadline: document.getElementById('input-deadline').value, role: document.getElementById('input-role').value, description: document.getElementById('input-desc').value }; if (editingProjectId) { const cur = allProjects.find(p => String(p.id) === String(editingProjectId)); let finalImg = document.getElementById('delete-image-checkbox').checked ? null : cur.image_url; if (file) finalImg = imageUrl; await supabaseClient.from('projects').update({ ...projectData, image_url: finalImg }).eq('id', editingProjectId); } else { await supabaseClient.from('projects').insert([{ ...projectData, user_id: currentUser.id, image_url: imageUrl }]); } btn.disabled = false; btn.innerText = "Опубликовать"; document.getElementById('modal').classList.add('hidden'); document.getElementById('projectForm').reset(); editingProjectId = null; loadProjects(); });
-        document.getElementById('authForm').addEventListener('submit', async (e) => { e.preventDefault(); const { error } = await supabaseClient.auth.signInWithPassword({ email: document.getElementById('auth-email').value, password: document.getElementById('auth-password').value }); if (!error) { document.getElementById('authModal').classList.add('hidden'); document.getElementById('authForm').reset(); } else alert(error.message); });
-        document.getElementById('signupSubmitBtn').addEventListener('click', async (e) => { e.preventDefault(); const email = document.getElementById('auth-email').value; const pass = document.getElementById('auth-password').value; const { error: e1 } = await supabaseClient.auth.signUp({ email, password: pass }); if (e1) return alert(e1.message); const { error: e2 } = await supabaseClient.auth.signInWithPassword({ email, password: pass }); if (!e2) { document.getElementById('authModal').classList.add('hidden'); document.getElementById('authForm').reset(); } });
-        document.getElementById('forgotPasswordBtn').addEventListener('click', async () => { const email = document.getElementById('auth-email').value; if (!email) return alert("Введите email!"); const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin }); if (error) alert(error.message); else alert("Письмо отправлено на " + email); });
+        document.getElementById('projectForm')?.addEventListener('submit', async (e) => { e.preventDefault(); const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerText = "Ждите..."; const file = document.getElementById('input-image').files[0]; let imageUrl = null; if (file) { if (file.size > 10 * 1024 * 1024) { alert("Картинка > 10 МБ."); btn.disabled = false; btn.innerText = "Опубликовать"; return; } const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`; const { error } = await supabaseClient.storage.from('project-images').upload(fileName, file); if (!error) imageUrl = supabaseClient.storage.from('project-images').getPublicUrl(fileName).data.publicUrl; } const projectData = { title: document.getElementById('input-title').value, category: document.getElementById('input-category').value, status: document.getElementById('input-status').value, deadline: document.getElementById('input-deadline').value, role: document.getElementById('input-role').value, description: document.getElementById('input-desc').value }; if (editingProjectId) { const cur = allProjects.find(p => String(p.id) === String(editingProjectId)); let finalImg = document.getElementById('delete-image-checkbox').checked ? null : cur.image_url; if (file) finalImg = imageUrl; await supabaseClient.from('projects').update({ ...projectData, image_url: finalImg }).eq('id', editingProjectId); } else { await supabaseClient.from('projects').insert([{ ...projectData, user_id: currentUser.id, image_url: imageUrl }]); } btn.disabled = false; btn.innerText = "Опубликовать"; document.getElementById('modal').classList.add('hidden'); document.getElementById('projectForm').reset(); editingProjectId = null; loadProjects(); });
+        document.getElementById('authForm')?.addEventListener('submit', async (e) => { e.preventDefault(); const { error } = await supabaseClient.auth.signInWithPassword({ email: document.getElementById('auth-email').value, password: document.getElementById('auth-password').value }); if (!error) { document.getElementById('authModal').classList.add('hidden'); document.getElementById('authForm').reset(); } else alert(error.message); });
+        document.getElementById('signupSubmitBtn')?.addEventListener('click', async (e) => { e.preventDefault(); const email = document.getElementById('auth-email').value; const pass = document.getElementById('auth-password').value; const { error: e1 } = await supabaseClient.auth.signUp({ email, password: pass }); if (e1) return alert(e1.message); const { error: e2 } = await supabaseClient.auth.signInWithPassword({ email, password: pass }); if (!e2) { document.getElementById('authModal').classList.add('hidden'); document.getElementById('authForm').reset(); } });
+        document.getElementById('forgotPasswordBtn')?.addEventListener('click', async () => { const email = document.getElementById('auth-email').value; if (!email) return alert("Введите email!"); const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin }); if (error) alert(error.message); else alert("Письмо отправлено на " + email); });
         const handleOAuth = async (p) => { const { error } = await supabaseClient.auth.signInWithOAuth({ provider: p, options: { redirectTo: window.location.origin } }); if (error) alert(error.message); };
-        document.getElementById('googleLoginBtn').addEventListener('click', () => handleOAuth('google'));
-        document.getElementById('yandexLoginBtn').addEventListener('click', () => handleOAuth('custom:yandex'));
+        document.getElementById('googleLoginBtn')?.addEventListener('click', () => handleOAuth('google'));
+        document.getElementById('yandexLoginBtn')?.addEventListener('click', () => handleOAuth('custom:yandex'));
 
         checkUser();
     </script>
-</body>
-</html>
