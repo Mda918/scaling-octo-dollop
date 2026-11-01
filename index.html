@@ -1,17 +1,14 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Научный Соавтор | Поиск команды</title>
-    
-    <!-- OpenGraph для красивого превью в мессенджерах -->
     <meta property="og:title" content="Научный Соавтор | Поиск команды">
-    <meta property="og:description" content="Платформа для поиска соавторов, совместных научных статей и проектов. Найди свою команду!">
-    <meta property="og:image" content="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80">
-    <meta property="og:type" content="website">
-
-    <!-- Настройка темной темы в Tailwind -->
+    <meta property="og:description" content="Платформа для поиска соавторов.">
+    <meta property="og:image"
+        content="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80">
     <script>
         tailwind = { darkMode: 'class' };
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -23,38 +20,59 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+
 <body class="bg-gray-100 dark:bg-gray-900 font-sans text-gray-800 dark:text-gray-200 transition-colors duration-300">
 
-    <!-- Шапка сайта -->
-    <header class="bg-white dark:bg-gray-800 shadow sticky top-0 z-40 transition-colors duration-300">
-        <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-blue-600 dark:text-blue-400">НаучныйСоавтор</h1>
-            <div class="flex items-center gap-4">
-                <button id="themeToggle" class="text-xl p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                    <span id="themeIcon">🌙</span>
-                </button>
-                <div id="auth-block" class="flex items-center gap-2">
-                    <button id="loginBtn" class="text-blue-600 dark:text-blue-400 font-medium hover:underline">Войти / Регистрация</button>
+    <!-- ШАПКА -->
+    <header class="bg-white dark:bg-gray-800 shadow sticky top-0 z-40 relative">
+        <div class="max-w-5xl mx-auto px-4 py-3 md:py-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-400">НаучныйСоавтор</h1>
+
+            <!-- Десктоп -->
+            <div class="hidden md:flex items-center gap-4">
+                <div id="auth-block-desktop" class="flex items-center gap-2">
+                    <button id="loginBtn" class="text-blue-600 dark:text-blue-400 font-medium hover:underline">Войти /
+                        Регистрация</button>
                 </div>
-                <button id="openModalBtn" class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition">
-                    + Создать объявление
-                </button>
+                <button id="openModalBtn"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">+
+                    Создать</button>
+            </div>
+
+            <!-- Мобилка -->
+            <div class="flex md:hidden items-center gap-2">
+                <button id="openModalBtnMobile"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition">+
+                    Создать</button>
+                <button id="mobileMenuBtn"
+                    class="text-2xl font-bold px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">⋮</button>
+            </div>
+        </div>
+
+        <!-- Выпадающее мобильное меню -->
+        <div id="mobileMenu"
+            class="hidden md:hidden absolute top-full left-0 w-full bg-white dark:bg-gray-800 shadow-lg border-t dark:border-gray-700 z-50">
+            <div id="auth-block-mobile" class="flex flex-col p-4 gap-3">
+                <button id="loginBtnMobile" class="text-blue-600 dark:text-blue-400 font-medium text-left py-1">Войти /
+                    Регистрация</button>
             </div>
         </div>
     </header>
 
-    <!-- Основная часть -->
-    <main class="max-w-5xl mx-auto px-4 py-8">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-semibold">Ищу соавтора</h2>
+    <!-- ОСНОВНАЯ ЧАСТЬ -->
+    <main class="max-w-5xl mx-auto px-4 py-6 md:py-8">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+            <h2 class="text-lg md:text-xl font-semibold">Ищу соавтора</h2>
             <label class="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300">
-                <input type="checkbox" id="filterFavorites" class="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 dark:bg-gray-700 dark:border-gray-600">
+                <input type="checkbox" id="filterFavorites" class="rounded text-blue-600 w-4 h-4 dark:bg-gray-700">
                 Только избранное (⭐)
             </label>
         </div>
-        <div class="flex flex-col md:flex-row gap-4 mb-6">
-            <input type="text" id="searchInput" placeholder="Поиск по названию..." class="w-full md:w-1/3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-4 py-2">
-            <select id="filterCategory" class="w-full md:w-1/3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-4 py-2">
+        <div class="flex flex-col md:flex-row gap-3 mb-6">
+            <input type="text" id="searchInput" placeholder="Поиск по названию или навыку..."
+                class="w-full md:w-1/3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-4 py-2 text-sm">
+            <select id="filterCategory"
+                class="w-full md:w-1/3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-4 py-2 text-sm">
                 <option value="">Все категории</option>
                 <option value="Медицина">Медицина</option>
                 <option value="IT">IT</option>
@@ -62,7 +80,8 @@
                 <option value="Гуманитарные науки">Гуманитарные науки</option>
                 <option value="Другое">Другое</option>
             </select>
-            <select id="filterRole" class="w-full md:w-1/3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-4 py-2">
+            <select id="filterRole"
+                class="w-full md:w-1/3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-4 py-2 text-sm">
                 <option value="">Все роли (Кто нужен?)</option>
                 <option value="Теоретик">Теоретик</option>
                 <option value="Практик (врач)">Практик (врач)</option>
@@ -70,910 +89,680 @@
                 <option value="Гуманитарий">Гуманитарий</option>
             </select>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"></div>
     </main>
 
-    <!-- МОДАЛЬНОЕ ОКНО ДЕТАЛЬНОГО ПРОСМОТРА ПРОЕКТА -->
-    <div id="detailModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-3xl mx-4 relative max-h-[90vh] overflow-y-auto">
-            <button id="closeDetailBtn" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl bg-white dark:bg-gray-700 dark:text-gray-300 rounded-full p-1 z-10">&times;</button>
-            <img id="detail-image" src="" class="w-full h-64 object-cover rounded-t-xl hidden">
-            <div class="p-6">
-                <div class="flex items-center gap-2 mb-2">
-                    <span id="detail-category" class="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs px-2 py-1 rounded font-bold"></span>
+    <!-- ДЕТАЛЬНЫЙ ПРОСМОТР -->
+    <div id="detailModal"
+        class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50 p-2 md:p-0">
+        <div
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-3xl relative max-h-[95vh] overflow-y-auto">
+            <button id="closeDetailBtn"
+                class="absolute top-3 right-3 text-gray-500 hover:text-red-500 font-bold text-xl bg-white dark:bg-gray-700 dark:text-gray-300 rounded-full p-1 z-10">&times;</button>
+            <img id="detail-image" src="" class="w-full h-48 md:h-64 object-cover rounded-t-xl hidden">
+            <div class="p-4 md:p-6">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
+                    <span id="detail-category"
+                        class="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs px-2 py-1 rounded font-bold"></span>
                     <span id="detail-status" class="text-xs px-2 py-1 rounded font-bold"></span>
                 </div>
-                <h2 id="detail-title" class="text-3xl font-bold mb-2"></h2>
-                <p class="text-gray-500 dark:text-gray-400 mb-4">Нужен: <span id="detail-role" class="font-bold text-blue-600 dark:text-blue-400"></span> | Сроки: <span id="detail-deadline"></span></p>
-                
-                <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg mb-4 border border-gray-200 dark:border-gray-700">
-                    <h3 class="font-bold text-gray-800 dark:text-gray-200 mb-2">Описание:</h3>
-                    <p id="detail-desc" class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap"></p>
+                <h2 id="detail-title" class="text-2xl md:text-3xl font-bold mb-2"></h2>
+                <p class="text-gray-500 dark:text-gray-400 text-sm mb-4">Нужен: <span id="detail-role"
+                        class="font-bold text-blue-600 dark:text-blue-400"></span> | Сроки: <span
+                        id="detail-deadline"></span></p>
+
+                <div
+                    class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg mb-4 border border-gray-200 dark:border-gray-700">
+                    <h3 class="font-bold text-gray-800 dark:text-gray-200 mb-2 text-sm">Описание:</h3>
+                    <p id="detail-desc" class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap text-sm"></p>
                 </div>
 
-                <!-- БЛОК АВТОРА -->
-                <div class="flex items-center gap-3 mb-6 bg-blue-50 dark:bg-gray-700 p-3 rounded-lg border border-blue-100 dark:border-gray-600 cursor-pointer hover:bg-blue-100 dark:hover:bg-gray-600 transition" onclick="viewProfile(document.getElementById('detail-author').getAttribute('data-id'))">
-                    <img id="detail-author-avatar" src="" class="w-12 h-12 rounded-full object-cover bg-gray-300 dark:bg-gray-600 hidden hover:opacity-80 transition">
-                    <div id="detail-author-avatar-placeholder" class="w-12 h-12 rounded-full bg-blue-200 dark:bg-blue-900 flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold text-lg"></div>
+                <div class="flex items-center gap-3 mb-4 bg-blue-50 dark:bg-gray-700 p-3 rounded-lg border border-blue-100 dark:border-gray-600 cursor-pointer hover:bg-blue-100 transition"
+                    onclick="viewProfile(document.getElementById('detail-author').getAttribute('data-id'))">
+                    <img id="detail-author-avatar" src=""
+                        class="w-10 h-10 rounded-full object-cover bg-gray-300 hidden">
+                    <div id="detail-author-avatar-placeholder"
+                        class="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold">
+                    </div>
                     <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Автор проекта:</p>
-                        <p id="detail-author" class="font-bold text-lg text-blue-700 dark:text-blue-400"></p>
-                        <p id="detail-author-skills" class="text-xs text-blue-600 dark:text-blue-300 font-medium"></p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Автор проекта:</p>
+                        <p id="detail-author" class="font-bold text-blue-700 dark:text-blue-400"></p>
+                        <p id="detail-author-skills" class="text-xs text-blue-600 dark:text-blue-300"></p>
                     </div>
                 </div>
 
-                <!-- БЛОК УЧАСТНИКОВ -->
-                <div class="mb-6 border-b border-gray-200 dark:border-gray-700 pb-4">
-                    <h3 class="font-bold text-gray-800 dark:text-gray-200 mb-2">Участники проекта:</h3>
+                <div class="mb-4 border-b border-gray-200 dark:border-gray-700 pb-4">
+                    <h3 class="font-bold text-gray-800 dark:text-gray-200 mb-2 text-sm">Участники:</h3>
                     <div id="detail-members-list" class="flex flex-wrap gap-2"></div>
                 </div>
 
-                <!-- БЛОК ЗАДАЧ (TO-DO) -->
-                <div id="tasks-block-container" class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg mb-6 border border-yellow-200 dark:border-yellow-700/50 hidden">
-                    <h3 class="font-bold text-yellow-800 dark:text-yellow-500 mb-2 flex items-center gap-2">📋 Список задач (To-Do)</h3>
+                <div id="tasks-block-container"
+                    class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg mb-4 border border-yellow-200 dark:border-yellow-700 hidden">
+                    <h3 class="font-bold text-yellow-800 dark:text-yellow-500 mb-2 text-sm">📋 Список задач</h3>
                     <div id="tasks-list" class="flex flex-col gap-2 mb-3"></div>
                     <form id="addTaskForm" class="flex gap-2">
-                        <input type="text" id="task-input" required placeholder="Новая задача..." class="flex-grow border border-yellow-300 dark:border-yellow-700 bg-white dark:bg-gray-800 rounded-lg px-3 py-1 text-sm focus:outline-none focus:border-yellow-500">
-                        <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-4 py-1 rounded-lg font-bold">+</button>
+                        <input type="text" id="task-input" required placeholder="Новая задача..."
+                            class="flex-grow border border-yellow-300 dark:border-yellow-700 bg-white dark:bg-gray-800 rounded-lg px-3 py-1 text-sm">
+                        <button type="submit"
+                            class="bg-yellow-500 text-white text-sm px-3 py-1 rounded-lg font-bold">+</button>
                     </form>
                 </div>
 
-                <!-- БЛОК ФАЙЛОВ ПРОЕКТА -->
-                <div id="files-block-container" class="bg-blue-50 dark:bg-gray-700 p-4 rounded-lg mb-6 border border-blue-200 dark:border-gray-600 hidden">
-                    <h3 class="font-bold text-blue-900 dark:text-blue-300 mb-2 flex items-center gap-2">📁 Файлы проекта</h3>
+                <div id="files-block-container"
+                    class="bg-blue-50 dark:bg-gray-700 p-4 rounded-lg mb-4 border border-blue-200 dark:border-gray-600 hidden">
+                    <h3 class="font-bold text-blue-900 dark:text-blue-300 mb-2 text-sm">📁 Файлы</h3>
                     <div id="detail-files-list" class="flex flex-col gap-2 mb-3"></div>
-                    <div id="upload-file-container" class="hidden border-t border-blue-200 dark:border-gray-600 pt-3 mt-3">
-                        <form id="uploadFileForm" class="flex gap-2 items-center">
-                            <input type="file" id="project-file-input" required class="text-sm text-gray-600 dark:text-gray-400 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
-                            <button type="submit" id="uploadFileBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg font-bold transition whitespace-nowrap">Загрузить (макс 10МБ)</button>
+                    <div id="upload-file-container" class="hidden border-t border-blue-200 dark:border-gray-600 pt-3">
+                        <form id="uploadFileForm" class="flex flex-col sm:flex-row gap-2">
+                            <input type="file" id="project-file-input" required
+                                class="text-sm w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:bg-blue-600 file:text-white cursor-pointer">
+                            <button type="submit" id="uploadFileBtn"
+                                class="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg font-bold w-full sm:w-auto">Загрузить</button>
                         </form>
                     </div>
-                    <p id="no-files-msg" class="text-sm text-gray-500 dark:text-gray-400 italic">Файлов пока нет.</p>
+                    <p id="no-files-msg" class="text-sm text-gray-500 italic hidden">Файлов пока нет.</p>
                 </div>
 
-                <div class="flex justify-between items-center border-t border-gray-200 dark:border-gray-700 pt-4">
-                    <div id="detail-actions" class="flex flex-wrap gap-3"></div>
-                </div>
+                <div id="detail-actions" class="flex flex-wrap gap-2 border-t dark:border-gray-700 pt-4"></div>
             </div>
         </div>
     </div>
 
-    <!-- ОСТАЛЬНЫЕ МОДАЛЬНЫЕ ОКНА -->
-    <div id="groupChatModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-lg mx-4 relative flex flex-col h-[80vh]">
-            <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-indigo-50 dark:bg-gray-700 rounded-t-xl">
-                <div>
-                    <h3 class="font-bold text-lg text-indigo-800 dark:text-indigo-300" id="groupChatTitle">Чат команды</h3>
-                    <p class="text-xs text-indigo-500 dark:text-indigo-400">Все участники проекта</p>
-                </div>
-                <button id="closeGroupChatBtn" class="text-gray-500 hover:text-red-500 font-bold text-2xl">&times;</button>
-            </div>
-            <div id="groupChatMessages" class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-3"></div>
-            <div class="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-b-xl">
-                <form id="groupChatForm" class="flex gap-2">
-                    <input type="text" id="groupChatInput" required placeholder="Сообщение команде..." class="flex-grow border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500">
-                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-lg transition">➤</button>
-                </form>
+    <!-- НАСТРОЙКИ -->
+    <div id="settingsModal"
+        class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-sm relative">
+            <button id="closeSettingsBtn"
+                class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
+            <h2 class="text-xl font-bold mb-4">Настройки</h2>
+            <div class="flex flex-col gap-4">
+                <button id="settingsThemeBtn"
+                    class="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-3 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                    <span>Сменить тему</span>
+                    <span id="settingsThemeIcon">🌙 / ☀️</span>
+                </button>
+                <button id="changePasswordBtn"
+                    class="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-3 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                    <span>Сменить пароль</span>
+                    <span>🔑</span>
+                </button>
+                <button id="logoutBtnSettings"
+                    class="flex justify-between items-center bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-lg font-medium hover:bg-red-100 transition">
+                    <span>Выйти из аккаунта</span>
+                    <span>🚪</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md mx-4 relative">
-            <button id="closeReviewBtn" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
-            <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">Оценить соавтора</h2>
-            <form id="reviewForm" class="flex flex-col gap-4">
-                <input type="hidden" id="review-target-id">
-                <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Оценка (1-5)</label>
-                    <select id="review-rating" class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-3 py-2">
-                        <option value="5">5 (Отлично)</option>
-                        <option value="4">4 (Хорошо)</option>
-                        <option value="3">3 (Нормально)</option>
-                        <option value="2">2 (Плохо)</option>
-                        <option value="1">1 (Ужасно)</option>
-                    </select>
-                </div>
-                <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Текст отзыва</label><textarea id="review-text" rows="3" required placeholder="Как человек работал?" class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-3 py-2"></textarea></div>
-                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Отправить</button>
+    <!-- СМЕНА ПАРОЛЯ -->
+    <div id="passwordModal"
+        class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-[60] p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-sm relative">
+            <button id="closePasswordBtn"
+                class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
+            <h2 class="text-xl font-bold mb-4">Смена пароля</h2>
+            <form id="passwordForm" class="flex flex-col gap-4">
+                <input type="password" id="new-password-input" required placeholder="Новый пароль (мин. 6 символов)"
+                    class="w-full border rounded-lg px-3 py-2 dark:bg-gray-700 dark:border-gray-600">
+                <button type="submit" class="bg-blue-600 text-white font-bold py-2 rounded-lg">Сохранить</button>
             </form>
         </div>
     </div>
 
-    <div id="adminModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-2xl mx-4 relative flex flex-col h-[80vh]">
-            <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-red-50 dark:bg-red-900/30 rounded-t-xl">
-                <h3 class="font-bold text-lg text-red-800 dark:text-red-400">Админ-панель (Жалобы)</h3>
-                <button id="closeAdminBtn" class="text-gray-500 hover:text-red-500 font-bold text-2xl">&times;</button>
-            </div>
-            <div id="adminList" class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-2"></div>
+    <!-- МОЙ ПРОФИЛЬ -->
+    <div id="profileModal"
+        class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50 p-2 md:p-0">
+        <div
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6 w-full max-w-md mx-auto relative max-h-[95vh] overflow-y-auto">
+            <button id="closeProfileBtn" class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
+            <h2 class="text-xl font-bold mb-4">Мой профиль</h2>
+            <form id="profileForm" class="flex flex-col gap-3">
+                <div class="flex items-center gap-4 mb-2">
+                    <img id="profile-avatar-preview" src=""
+                        class="w-14 h-14 rounded-full object-cover hidden cursor-pointer">
+                    <div id="profile-avatar-placeholder"
+                        class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 font-bold text-2xl">
+                        👤</div>
+                    <div class="flex-grow"><label class="block text-xs font-medium mb-1">Аватарка (с камеры или
+                            галереи)</label><input type="file" id="profile-avatar-input" accept="image/*"
+                            capture="environment" class="w-full text-xs"></div>
+                </div>
+                <div><label class="block text-xs font-medium mb-1">Имя</label><input type="text" id="profile-name"
+                        required
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></div>
+                <div><label class="block text-xs font-medium mb-1">Навыки (через запятую)</label><input type="text"
+                        id="profile-skills"
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"
+                        placeholder="Python, Дизайн..."></div>
+                <div><label class="block text-xs font-medium mb-1">Университет</label><input type="text"
+                        id="profile-university"
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></div>
+                <div><label class="block text-xs font-medium mb-1">Факультет / Курс</label><input type="text"
+                        id="profile-faculty"
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></div>
+                <div><label class="block text-xs font-medium mb-1">Научный руководитель</label><input type="text"
+                        id="profile-advisor"
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"
+                        placeholder="Иванов И.И."></div>
+                <div><label class="block text-xs font-medium mb-1">О себе (умение работать в команде и
+                        т.д.)</label><textarea id="profile-bio" rows="3"
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></textarea>
+                </div>
+                <button type="submit" class="bg-green-600 text-white font-bold py-2 rounded-lg mt-2">Сохранить</button>
+            </form>
         </div>
     </div>
 
-    <div id="viewProfileModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md mx-4 relative max-h-[90vh] overflow-y-auto">
-            <button id="closeViewProfileBtn" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
-            <div class="flex items-center gap-4 mb-4">
-                <img id="view-avatar" src="" class="w-16 h-16 rounded-full object-cover bg-gray-200 dark:bg-gray-600 hidden cursor-pointer hover:opacity-80 transition">
-                <div id="view-avatar-placeholder" class="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-500 dark:text-blue-300 font-bold text-2xl"></div>
+    <!-- ЧУЖОЙ ПРОФИЛЬ -->
+    <div id="viewProfileModal"
+        class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50 p-2 md:p-0">
+        <div
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6 w-full max-w-md mx-auto relative max-h-[95vh] overflow-y-auto">
+            <button id="closeViewProfileBtn"
+                class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
+            <div class="flex items-center gap-3 mb-4">
+                <img id="view-avatar" src="" class="w-14 h-14 rounded-full object-cover hidden cursor-pointer">
+                <div id="view-avatar-placeholder"
+                    class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 font-bold text-2xl">
+                </div>
                 <div>
-                    <h2 id="view-name" class="text-2xl font-bold text-gray-800 dark:text-gray-200"></h2>
-                    <p id="view-skills" class="text-sm text-blue-600 dark:text-blue-400 font-medium"></p>
-                    <div id="view-rating" class="text-yellow-500 font-bold text-sm mt-1"></div>
+                    <h2 id="view-name" class="text-xl font-bold text-gray-800 dark:text-gray-200"></h2>
+                    <p id="view-skills" class="text-xs text-blue-600 font-medium"></p>
+                    <div id="view-rating" class="text-yellow-500 font-bold text-xs mt-1"></div>
                 </div>
             </div>
-            <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg mb-4">
-                <p class="text-sm text-gray-500 dark:text-gray-400">Вуз / Факультет:</p>
+            <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg mb-3 text-sm">
+                <p class="text-xs text-gray-500">Вуз / Факультет:</p>
                 <p id="view-university" class="font-semibold text-gray-900 dark:text-gray-200"></p>
                 <p id="view-faculty" class="font-semibold text-gray-900 dark:text-gray-200"></p>
             </div>
-            <h3 class="font-bold text-gray-800 dark:text-gray-200 mb-2 border-b border-gray-200 dark:border-gray-700 pb-1">Отзывы:</h3>
+            <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg mb-3 text-sm">
+                <p class="text-xs text-gray-500">Научный руководитель:</p>
+                <p id="view-advisor" class="font-semibold text-gray-900 dark:text-gray-200"></p>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg mb-4 text-sm">
+                <p class="text-xs text-gray-500">О себе:</p>
+                <p id="view-bio" class="font-semibold text-gray-900 dark:text-gray-200 whitespace-pre-wrap"></p>
+            </div>
+            <h3
+                class="font-bold text-gray-800 dark:text-gray-200 mb-2 border-b border-gray-200 dark:border-gray-700 pb-1 text-sm">
+                Отзывы:</h3>
             <div id="view-reviews-list" class="flex flex-col gap-2 max-h-48 overflow-y-auto"></div>
         </div>
     </div>
 
-    <div id="requestsModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-lg mx-4 relative flex flex-col h-[80vh]">
-            <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700 rounded-t-xl">
-                <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200">Заявки</h3><button id="closeRequestsBtn" class="text-gray-500 font-bold text-2xl">&times;</button>
-            </div>
-            <div id="requestsList" class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-2"></div>
-        </div>
-    </div>
-    <div id="inboxModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-lg mx-4 relative flex flex-col h-[80vh]">
-            <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700 rounded-t-xl">
-                <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200">Мои чаты</h3><button id="closeInboxBtn" class="text-gray-500 font-bold text-2xl">&times;</button>
-            </div>
-            <div id="inboxList" class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-2"></div>
-        </div>
-    </div>
-    <div id="chatModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-lg mx-4 relative flex flex-col h-[80vh]">
-            <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700 rounded-t-xl">
-                <div>
-                    <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200" id="chatTitle">Чат</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400" id="chatSubtitle">Проект</p>
-                </div>
-                <div class="flex items-center gap-4"><button id="reportBtn" class="text-orange-500 hover:text-orange-700 text-xl">🚩</button><button id="closeChatBtn" class="text-gray-500 font-bold text-2xl">&times;</button></div>
-            </div>
-            <div id="chatMessages" class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-3"></div>
-            <div class="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-b-xl">
-                <form id="chatForm" class="flex gap-2"><input type="text" id="chatInput" required placeholder="Сообщение..." class="flex-grow border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-3 py-2"><button type="submit" class="bg-blue-600 text-white font-bold px-4 py-2 rounded-lg">➤</button></form>
-            </div>
-        </div>
-    </div>
-    <div id="reportModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md mx-4 relative"><button id="closeReportBtn" class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
-            <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">Пожаловаться</h2>
-            <form id="reportForm" class="flex flex-col gap-4"><textarea id="report-reason" rows="3" required placeholder="Что случилось?" class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-3 py-2"></textarea><button type="submit" class="bg-red-600 text-white font-bold py-2 rounded-lg">Отправить</button></form>
-        </div>
-    </div>
-    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md mx-4 relative max-h-[90vh] overflow-y-auto">
+    <!-- СОЗДАНИЕ ПРОЕКТА -->
+    <div id="modal"
+        class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50 p-2 md:p-0">
+        <div
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6 w-full max-w-md mx-auto relative max-h-[95vh] overflow-y-auto">
             <button id="closeModalBtn" class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
-            <h2 id="modalTitle" class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">Новое объявление</h2>
-            <form id="projectForm" class="flex flex-col gap-4">
-                <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Тема</label><input type="text" id="input-title" required class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-3 py-2"></div>
+            <h2 id="modalTitle" class="text-xl font-bold mb-4">Новое объявление</h2>
+
+            <!-- Генератор идей и Шаблоны -->
+            <div class="flex flex-col sm:flex-row gap-2 mb-4">
+                <button type="button" id="ideaGeneratorBtn"
+                    class="bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300 px-3 py-2 rounded-lg text-sm font-bold flex-1">✨
+                    Случайная идея</button>
+                <select id="templateSelect"
+                    class="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 px-3 py-2 rounded-lg text-sm font-bold flex-1 outline-none">
+                    <option value="">📋 Выбрать шаблон</option>
+                    <option value="case">Клинический случай</option>
+                    <option value="review">Обзор литературы</option>
+                    <option value="survey">Социологический опрос</option>
+                </select>
+            </div>
+
+            <form id="projectForm" class="flex flex-col gap-3">
+                <div><label class="block text-xs font-medium mb-1">Тема</label><input type="text" id="input-title"
+                        required
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></div>
                 <div class="flex gap-2">
-                    <div class="w-1/2"><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Категория</label><select id="input-category" class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-3 py-2"><option>Медицина</option><option>IT</option><option>Экономика</option><option>Гуманитарные науки</option><option>Другое</option></select></div>
-                    <div class="w-1/2"><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Статус</label><select id="input-status" class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-3 py-2"><option value="open">Открыт</option><option value="closed">Закрыт</option></select></div>
+                    <div class="w-1/2"><label class="block text-xs font-medium mb-1">Категория</label><select
+                            id="input-category"
+                            class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600">
+                            <option>Медицина</option>
+                            <option>IT</option>
+                            <option>Экономика</option>
+                            <option>Гуманитарные науки</option>
+                            <option>Другое</option>
+                        </select></div>
+                    <div class="w-1/2"><label class="block text-xs font-medium mb-1">Статус</label><select
+                            id="input-status"
+                            class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600">
+                            <option value="open">Открыт</option>
+                            <option value="closed">Закрыт</option>
+                        </select></div>
                 </div>
-                <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Сроки</label><input type="text" id="input-deadline" class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-3 py-2"></div>
-                <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Кто нужен?</label><select id="input-role" class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-3 py-2"><option>Теоретик</option><option>Практик (врач)</option><option>Дизайнер</option><option>Гуманитарий</option></select></div>
-                <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Описание</label><textarea id="input-desc" rows="3" class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-3 py-2"></textarea></div>
-                <div class="border border-gray-200 dark:border-gray-600 p-3 rounded-lg bg-gray-50 dark:bg-gray-700"><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Картинка (макс 10МБ)</label>
-                    <div id="current-image-container" class="hidden mb-3 flex items-center gap-3"><img id="current-image-preview" src="" class="h-16 w-16 object-cover rounded-lg"><label class="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 cursor-pointer"><input type="checkbox" id="delete-image-checkbox"> Удалить</label></div><input type="file" id="input-image" accept="image/*" class="w-full text-sm text-gray-500 dark:text-gray-400">
-                </div><button type="submit" id="submitBtn" class="bg-blue-600 text-white font-bold py-2 rounded-lg mt-2">Опубликовать</button>
+                <div><label class="block text-xs font-medium mb-1">Сроки</label><input type="text" id="input-deadline"
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></div>
+                <div><label class="block text-xs font-medium mb-1">Кто нужен?</label><select id="input-role"
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600">
+                        <option>Теоретик</option>
+                        <option>Практик (врач)</option>
+                        <option>Дизайнер</option>
+                        <option>Гуманитарий</option>
+                    </select></div>
+                <div><label class="block text-xs font-medium mb-1">Описание</label><textarea id="input-desc" rows="4"
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></textarea>
+                </div>
+                <div class="border p-2 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
+                    <label class="block text-xs font-medium mb-1">Обложка (камера/галерея)</label>
+                    <div id="current-image-container" class="hidden mb-2 flex items-center gap-3"><img
+                            id="current-image-preview" src="" class="h-12 w-12 object-cover rounded-lg"><label
+                            class="flex items-center gap-2 text-xs text-red-600 cursor-pointer"><input type="checkbox"
+                                id="delete-image-checkbox"> Удалить</label></div>
+                    <input type="file" id="input-image" accept="image/*" capture="environment"
+                        class="w-full text-xs text-gray-500">
+                </div>
+                <button type="submit" id="submitBtn"
+                    class="bg-blue-600 text-white font-bold py-2 rounded-lg mt-2">Опубликовать</button>
             </form>
         </div>
     </div>
-    <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md mx-4 relative"><button id="closeProfileBtn" class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
-            <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">Мой профиль</h2>
-            <form id="profileForm" class="flex flex-col gap-4">
-                <div class="flex items-center gap-4 mb-2"><img id="profile-avatar-preview" src="" class="w-16 h-16 rounded-full object-cover hidden cursor-pointer hover:opacity-80 transition">
-                    <div id="profile-avatar-placeholder" class="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-500 dark:text-blue-300 font-bold text-2xl">👤</div>
-                    <div class="flex-grow"><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Аватарка (макс 10МБ)</label><input type="file" id="profile-avatar-input" accept="image/*" class="w-full text-sm text-gray-500 dark:text-gray-400"></div>
-                </div>
-                <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Имя</label><input type="text" id="profile-name" required class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-3 py-2"></div>
-                <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Навыки</label><input type="text" id="profile-skills" class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-3 py-2" placeholder="Python, Дизайн..."></div>
-                <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Университет</label><input type="text" id="profile-university" class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-3 py-2"></div>
-                <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Факультет</label><input type="text" id="profile-faculty" class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-3 py-2"></div><button type="submit" class="bg-green-600 text-white font-bold py-2 rounded-lg mt-2">Сохранить</button>
-            </form>
+
+    <!-- ОСТАЛЬНЫЕ ОКНА (Чаты, Заявки, Админка, Авторизация, Зум) -->
+    <div id="groupChatModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-lg relative flex flex-col h-[85vh]">
+            <div class="p-3 border-b flex justify-between items-center bg-indigo-50 dark:bg-gray-700 rounded-t-xl">
+                <div>
+                    <h3 class="font-bold text-indigo-800 dark:text-indigo-300" id="groupChatTitle">Чат</h3>
+                </div><button id="closeGroupChatBtn" class="text-gray-500 font-bold text-2xl">&times;</button>
+            </div>
+            <div id="groupChatMessages"
+                class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-3"></div>
+            <div class="p-3 border-t bg-white dark:bg-gray-800 rounded-b-xl">
+                <form id="groupChatForm" class="flex gap-2"><input type="text" id="groupChatInput" required
+                        placeholder="Сообщение..."
+                        class="flex-grow border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"><button
+                        type="submit" class="bg-indigo-600 text-white font-bold px-4 py-2 rounded-lg">➤</button></form>
+            </div>
         </div>
     </div>
-    <div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md mx-4 relative">
+
+    <div id="chatModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-lg relative flex flex-col h-[85vh]">
+            <div class="p-3 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-700 rounded-t-xl">
+                <div>
+                    <h3 class="font-bold dark:text-gray-200" id="chatTitle">Чат</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400" id="chatSubtitle"></p>
+                </div>
+                <div class="flex items-center gap-4"><button id="reportBtn"
+                        class="text-orange-500 text-xl">🚩</button><button id="closeChatBtn"
+                        class="text-gray-500 font-bold text-2xl">&times;</button></div>
+            </div>
+            <div id="chatMessages"
+                class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-3"></div>
+            <div class="p-3 border-t bg-white dark:bg-gray-800 rounded-b-xl">
+                <form id="chatForm" class="flex gap-2"><input type="text" id="chatInput" required
+                        placeholder="Сообщение..."
+                        class="flex-grow border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"><button
+                        type="submit" class="bg-blue-600 text-white font-bold px-4 py-2 rounded-lg">➤</button></form>
+            </div>
+        </div>
+    </div>
+
+    <div id="inboxModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-lg relative flex flex-col h-[85vh]">
+            <div class="p-3 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-700 rounded-t-xl">
+                <h3 class="font-bold dark:text-gray-200">Мои чаты</h3><button id="closeInboxBtn"
+                    class="text-gray-500 font-bold text-2xl">&times;</button>
+            </div>
+            <div id="inboxList" class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-2">
+            </div>
+        </div>
+    </div>
+
+    <div id="requestsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-lg relative flex flex-col h-[85vh]">
+            <div class="p-3 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-700 rounded-t-xl">
+                <h3 class="font-bold dark:text-gray-200">Заявки</h3><button id="closeRequestsBtn"
+                    class="text-gray-500 font-bold text-2xl">&times;</button>
+            </div>
+            <div id="requestsList"
+                class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-2"></div>
+        </div>
+    </div>
+
+    <div id="adminModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-2xl relative flex flex-col h-[85vh]">
+            <div class="p-3 border-b flex justify-between items-center bg-red-50 dark:bg-red-900/30 rounded-t-xl">
+                <h3 class="font-bold text-red-800 dark:text-red-400">Админ-панель</h3><button id="closeAdminBtn"
+                    class="text-gray-500 font-bold text-2xl">&times;</button>
+            </div>
+            <div id="adminList" class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-2">
+            </div>
+        </div>
+    </div>
+
+    <div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-sm relative">
             <button id="closeAuthBtn" class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
-            <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">Вход</h2>
+            <h2 class="text-xl font-bold mb-4 dark:text-gray-200">Вход</h2>
             <form id="authForm" class="flex flex-col gap-4">
-                <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label><input type="email" id="auth-email" required class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-3 py-2"></div>
-                <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Пароль</label><input type="password" id="auth-password" required class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-3 py-2"></div>
-                <div class="flex justify-end">
-                    <button type="button" id="forgotPasswordBtn" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">Забыли пароль?</button>
-                </div>
-                <div class="flex gap-2 mt-2">
-                    <button type="submit" id="loginSubmitBtn" class="w-1/2 bg-blue-600 text-white font-bold py-2 rounded-lg">Войти</button>
-                    <button type="button" id="signupSubmitBtn" class="w-1/2 bg-green-600 text-white font-bold py-2 rounded-lg">Регистрация</button>
+                <div><input type="email" id="auth-email" required placeholder="Email"
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></div>
+                <div><input type="password" id="auth-password" required placeholder="Пароль"
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></div>
+                <div class="flex justify-end"><button type="button" id="forgotPasswordBtn"
+                        class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Забыли пароль?</button></div>
+                <div class="flex gap-2 mt-2"><button type="submit" id="loginSubmitBtn"
+                        class="w-1/2 bg-blue-600 text-white font-bold py-2 rounded-lg text-sm">Войти</button><button
+                        type="button" id="signupSubmitBtn"
+                        class="w-1/2 bg-green-600 text-white font-bold py-2 rounded-lg text-sm">Регистрация</button>
                 </div>
             </form>
-            
-            <div class="relative flex py-5 items-center">
-                <div class="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
-                <span class="flex-shrink mx-4 text-gray-500 dark:text-gray-400 text-sm">или войдите через</span>
-                <div class="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+            <div class="relative flex py-4 items-center">
+                <div class="flex-grow border-t dark:border-gray-600"></div><span
+                    class="flex-shrink mx-4 text-gray-500 text-xs">или</span>
+                <div class="flex-grow border-t dark:border-gray-600"></div>
             </div>
-
             <div class="flex flex-col gap-2">
-                <button type="button" id="googleLoginBtn" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2">Google</button>
-                <button type="button" id="yandexLoginBtn" class="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2">Яндекс</button>
+                <button type="button" id="googleLoginBtn"
+                    class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg text-sm">Google</button>
+                <button type="button" id="yandexLoginBtn"
+                    class="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-2 rounded-lg text-sm">Яндекс</button>
             </div>
         </div>
     </div>
 
-    <div id="imageZoomModal" class="fixed inset-0 bg-black bg-opacity-80 hidden items-center justify-center z-[100] cursor-zoom-out" onclick="this.classList.add('hidden'); this.classList.remove('flex');">
-        <img id="zoomedImage" src="" class="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl">
+    <div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-sm relative"><button
+                id="closeReviewBtn" class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
+            <h2 class="text-xl font-bold mb-4 dark:text-gray-200">Оценить</h2>
+            <form id="reviewForm" class="flex flex-col gap-4"><input type="hidden" id="review-target-id">
+                <div><select id="review-rating"
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600">
+                        <option value="5">5 (Отлично)</option>
+                        <option value="4">4 (Хорошо)</option>
+                        <option value="3">3</option>
+                        <option value="2">2</option>
+                        <option value="1">1</option>
+                    </select></div>
+                <div><textarea id="review-text" rows="3" required placeholder="Отзыв..."
+                        class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></textarea>
+                </div><button type="submit"
+                    class="bg-green-600 text-white font-bold py-2 rounded-lg text-sm">Отправить</button>
+            </form>
+        </div>
     </div>
+
+    <div id="imageZoomModal"
+        class="fixed inset-0 bg-black bg-opacity-90 hidden items-center justify-center z-[100] cursor-zoom-out"
+        onclick="this.classList.add('hidden'); this.classList.remove('flex');"><img id="zoomedImage" src=""
+            class="max-w-[90vw] max-h-[90vh] object-contain rounded-lg"></div>
 
     <script>
-        // --- НАСТРОЙКА ТЕМНОЙ ТЕМЫ ---
+        // НАСТРОЙКА ТЕМЫ
         const themeToggleBtn = document.getElementById('themeToggle');
         const themeIcon = document.getElementById('themeIcon');
-        
+        const settingsThemeIcon = document.getElementById('settingsThemeIcon');
+
         function updateThemeIcon() {
             if (document.documentElement.classList.contains('dark')) {
-                themeIcon.innerText = '☀️';
+                if (themeIcon) themeIcon.innerText = '☀️';
+                if (settingsThemeIcon) settingsThemeIcon.innerText = '☀️ Светлая';
             } else {
-                themeIcon.innerText = '🌙';
+                if (themeIcon) themeIcon.innerText = '🌙';
+                if (settingsThemeIcon) settingsThemeIcon.innerText = '🌙 Тёмная';
             }
         }
         updateThemeIcon();
 
-        themeToggleBtn.addEventListener('click', () => {
+        function toggleTheme() {
             if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.theme = 'light';
+                document.documentElement.classList.remove('dark'); localStorage.theme = 'light';
             } else {
-                document.documentElement.classList.add('dark');
-                localStorage.theme = 'dark';
+                document.documentElement.classList.add('dark'); localStorage.theme = 'dark';
             }
             updateThemeIcon();
-        });
+        }
 
-        // --- ОСТАЛЬНАЯ ЛОГИКА ---
+        if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
+
+        // ЛОГИКА САЙТА
         const supabaseUrl = 'https://afpqnklgtibofojlvjzm.supabase.co';
         const supabaseKey = 'sb_publishable_E023w2ojf9VIqr78rN5VWQ_jOu9uKDQ';
         const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
         const ADMIN_EMAIL = '3ildar.bikkuzhin@bk.ru';
 
-        let currentUser = null;
-        let allProjects = [];
-        let allProfiles = [];
-        let myApprovedProjectIds = [];
-        let myFavoriteProjectIds = [];
-        let unreadGroupCounts = {}; 
-        let editingProjectId = null;
-        let activeChat = { receiverId: null, projectId: null, receiverName: '' };
-        let currentDetailProjectId = null;
-        let groupChatSubscription = null;
-        let chatSubscription = null;
-        let globalSubscription = null;
+        let currentUser = null, allProjects = [], allProfiles = [], myApprovedProjectIds = [], myFavoriteProjectIds = [], unreadGroupCounts = {};
+        let editingProjectId = null, activeChat = { receiverId: null, projectId: null }, currentDetailProjectId = null;
+        let groupChatSubscription = null, chatSubscription = null, globalSubscription = null;
+        const grid = document.querySelector('.grid'), authBlockDesktop = document.getElementById('auth-block-desktop'), authBlockMobile = document.getElementById('auth-block-mobile');
+        const mobileMenu = document.getElementById('mobileMenu');
 
-        const grid = document.querySelector('.grid');
-        const authBlock = document.getElementById('auth-block');
+        function escapeHTML(str) { if (!str) return ''; return str.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
+        window.openZoomModal = function (url) { if (!url) return; document.getElementById('zoomedImage').src = url; document.getElementById('imageZoomModal').classList.remove('hidden'); document.getElementById('imageZoomModal').classList.add('flex'); }
 
-        function escapeHTML(str) {
-            if (!str) return '';
-            return str.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-        }
+        // Мобильное меню
+        document.getElementById('mobileMenuBtn').addEventListener('click', () => { mobileMenu.classList.toggle('hidden'); });
 
-        window.openZoomModal = function(imageUrl) {
-            if (!imageUrl) return;
-            document.getElementById('zoomedImage').src = imageUrl;
-            document.getElementById('imageZoomModal').classList.remove('hidden');
-            document.getElementById('imageZoomModal').classList.add('flex');
-        }
-
-        document.getElementById('openModalBtn').addEventListener('click', () => {
-            if (!currentUser) { alert("Войдите!"); document.getElementById('authModal').classList.remove('hidden'); document.getElementById('authModal').classList.add('flex'); return; }
-            editingProjectId = null; document.getElementById('modalTitle').innerText = "Новое объявление"; 
-            document.getElementById('submitBtn').innerText = "Опубликовать"; document.getElementById('projectForm').reset(); document.getElementById('current-image-container').classList.add('hidden');
-            document.getElementById('modal').classList.remove('hidden'); document.getElementById('modal').classList.add('flex');
+        // Открытие модалок
+        ['openModalBtn', 'openModalBtnMobile'].forEach(id => {
+            document.getElementById(id).addEventListener('click', () => {
+                if (!currentUser) { alert("Войдите!"); document.getElementById('authModal').classList.remove('hidden'); document.getElementById('authModal').classList.add('flex'); mobileMenu.classList.add('hidden'); return; }
+                editingProjectId = null; document.getElementById('modalTitle').innerText = "Новое объявление"; document.getElementById('submitBtn').innerText = "Опубликовать"; document.getElementById('projectForm').reset(); document.getElementById('current-image-container').classList.add('hidden');
+                document.getElementById('modal').classList.remove('hidden'); document.getElementById('modal').classList.add('flex'); mobileMenu.classList.add('hidden');
+            });
         });
 
-        const closeBtnIds = ['closeModalBtn', 'closeDetailBtn', 'closeAuthBtn', 'closeProfileBtn', 'closeReportBtn', 'closeRequestsBtn', 'closeInboxBtn', 'closeChatBtn', 'closeGroupChatBtn', 'closeReviewBtn', 'closeAdminBtn', 'closeViewProfileBtn'];
-        closeBtnIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.addEventListener('click', () => {
-                    const modal = el.closest('.fixed');
-                    modal.classList.add('hidden'); modal.classList.remove('flex');
-                    if (id === 'closeChatBtn' && chatSubscription) { supabaseClient.removeChannel(chatSubscription); chatSubscription = null; }
-                    if (id === 'closeGroupChatBtn' && groupChatSubscription) { supabaseClient.removeChannel(groupChatSubscription); groupChatSubscription = null; }
-                });
-            }
-        });
+        const closeBtnIds = ['closeModalBtn', 'closeDetailBtn', 'closeAuthBtn', 'closeProfileBtn', 'closeReportBtn', 'closeRequestsBtn', 'closeInboxBtn', 'closeChatBtn', 'closeGroupChatBtn', 'closeReviewBtn', 'closeAdminBtn', 'closeViewProfileBtn', 'closeSettingsBtn', 'closePasswordBtn'];
+        closeBtnIds.forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('click', () => { const modal = el.closest('.fixed'); modal.classList.add('hidden'); modal.classList.remove('flex'); if (id === 'closeChatBtn' && chatSubscription) { supabaseClient.removeChannel(chatSubscription); chatSubscription = null; } if (id === 'closeGroupChatBtn' && groupChatSubscription) { supabaseClient.removeChannel(groupChatSubscription); groupChatSubscription = null; } }); });
 
-        async function checkUser() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            updateAuthUI(session);
-            supabaseClient.auth.onAuthStateChange((_event, session) => { updateAuthUI(session); });
-        }
+        // АВТОРИЗАЦИЯ
+        async function checkUser() { const { data: { session } } = await supabaseClient.auth.getSession(); updateAuthUI(session); supabaseClient.auth.onAuthStateChange((_event, session) => { updateAuthUI(session); }); }
 
         async function updateAuthUI(session) {
+            mobileMenu.classList.add('hidden');
             if (session) {
                 currentUser = session.user;
-                let adminBtn = currentUser.email === ADMIN_EMAIL ? `<button id="adminPanelBtn" class="bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 px-3 py-1.5 rounded-lg text-sm font-medium transition">Админка 🚨</button>` : '';
-                authBlock.innerHTML = `
-                    ${adminBtn}
-                    <button id="myRequestsBtn" class="relative bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-200 px-3 py-1.5 rounded-lg text-sm font-medium transition">Заявки <span id="requestsBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full hidden">0</span></button>
-                    <button id="myInboxBtn" class="relative bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 px-3 py-1.5 rounded-lg text-sm font-medium transition">Чаты <span id="unreadBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full hidden">0</span></button>
-                    <button id="myProfileBtn" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 px-3 py-1.5 rounded-lg text-sm font-medium transition">Профиль</button>
-                    <button id="logoutBtn" class="text-red-500 font-medium hover:underline text-sm ml-2">Выйти</button>
-                `;
-                if (currentUser.email === ADMIN_EMAIL) document.getElementById('adminPanelBtn').addEventListener('click', openAdminPanel);
-                document.getElementById('myRequestsBtn').addEventListener('click', openRequests);
-                document.getElementById('myInboxBtn').addEventListener('click', openInbox);
-                document.getElementById('myProfileBtn').addEventListener('click', () => {
-                    const myProfile = allProfiles.find(p => p.id === currentUser.id);
-                    document.getElementById('profile-name').value = myProfile?.full_name || '';
-                    document.getElementById('profile-skills').value = myProfile?.skills || '';
-                    document.getElementById('profile-university').value = myProfile?.university || '';
-                    document.getElementById('profile-faculty').value = myProfile?.faculty || '';
-                    if (myProfile?.avatar_url) {
-                        document.getElementById('profile-avatar-preview').src = myProfile.avatar_url;
-                        document.getElementById('profile-avatar-preview').classList.remove('hidden');
-                        document.getElementById('profile-avatar-placeholder').classList.add('hidden');
-                        document.getElementById('profile-avatar-preview').onclick = () => openZoomModal(myProfile.avatar_url);
-                    } else {
-                        document.getElementById('profile-avatar-preview').classList.add('hidden');
-                        document.getElementById('profile-avatar-placeholder').classList.remove('hidden');
-                    }
-                    document.getElementById('profileModal').classList.remove('hidden'); document.getElementById('profileModal').classList.add('flex');
-                });
-                document.getElementById('logoutBtn').addEventListener('click', async () => { await supabaseClient.auth.signOut(); });
+                let adminBtn = currentUser.email === ADMIN_EMAIL ? `<button onclick="openAdminPanel()" class="bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 px-3 py-1.5 rounded-lg text-sm font-medium w-full text-left md:w-auto">Админка 🚨</button>` : '';
+                let desktopHTML = `${adminBtn}<button onclick="openRequests()" class="relative bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-200 px-3 py-1.5 rounded-lg text-sm font-medium">Заявки <span id="requestsBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full hidden">0</span></button><button onclick="openInbox()" class="relative bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 px-3 py-1.5 rounded-lg text-sm font-medium">Чаты <span id="unreadBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full hidden">0</span></button><button onclick="openSettings()" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-800 dark:text-gray-200">Настройки ⚙️</button>`;
+
+                let mobileHTML = `${adminBtn}<button onclick="openRequests()" class="bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 px-3 py-2 rounded-lg text-sm font-medium w-full text-left">Заявки <span id="requestsBadgeMob" class="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full ml-2 hidden">0</span></button><button onclick="openInbox()" class="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-3 py-2 rounded-lg text-sm font-medium w-full text-left">Чаты <span id="unreadBadgeMob" class="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full ml-2 hidden">0</span></button><button onclick="openProfile()" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 px-3 py-2 rounded-lg text-sm font-medium text-gray-800 dark:text-gray-200 w-full text-left">Профиль</button><button onclick="openSettings()" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 px-3 py-2 rounded-lg text-sm font-medium text-gray-800 dark:text-gray-200 w-full text-left">Настройки ⚙️</button>`;
+
+                authBlockDesktop.innerHTML = desktopHTML; authBlockMobile.innerHTML = mobileHTML;
 
                 await loadProfiles();
-                
                 const myProfile = allProfiles.find(p => p.id === currentUser.id);
-                if (!myProfile) {
-                    await supabaseClient.from('profiles').insert([{ id: currentUser.id, email: currentUser.email, full_name: 'Пользователь ' + currentUser.email.split('@')[0] }]);
-                    await loadProfiles();
-                }
+                if (!myProfile) { await supabaseClient.from('profiles').insert([{ id: currentUser.id, email: currentUser.email, full_name: 'Пользователь ' + currentUser.email.split('@')[0] }]); await loadProfiles(); }
 
-                await loadMyApprovedProjects();
-                await loadMyFavorites();
-                await updateUnreadBadge();
-                setupGlobalRealtime();
+                await loadMyApprovedProjects(); await loadMyFavorites(); await updateUnreadBadge(); setupGlobalRealtime();
             } else {
                 currentUser = null; myApprovedProjectIds = []; myFavoriteProjectIds = []; unreadGroupCounts = {};
                 if (globalSubscription) supabaseClient.removeChannel(globalSubscription);
-                authBlock.innerHTML = `<button id="loginBtn" class="text-blue-600 dark:text-blue-400 font-medium hover:underline">Войти / Регистрация</button>`;
-                document.getElementById('loginBtn').addEventListener('click', () => { document.getElementById('authModal').classList.remove('hidden'); document.getElementById('authModal').classList.add('flex'); });
+                authBlockDesktop.innerHTML = `<button id="loginBtn" class="text-blue-600 font-medium hover:underline">Войти / Регистрация</button>`;
+                authBlockMobile.innerHTML = `<button id="loginBtnMobile" class="text-blue-600 font-medium py-2 text-left">Войти / Регистрация</button>`;
+                document.getElementById('loginBtn')?.addEventListener('click', () => { document.getElementById('authModal').classList.remove('hidden'); document.getElementById('authModal').classList.add('flex'); });
+                document.getElementById('loginBtnMobile')?.addEventListener('click', () => { document.getElementById('authModal').classList.remove('hidden'); document.getElementById('authModal').classList.add('flex'); mobileMenu.classList.add('hidden'); });
             }
             loadProjects();
         }
 
-        document.getElementById('authForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const { error } = await supabaseClient.auth.signInWithPassword({ email: document.getElementById('auth-email').value, password: document.getElementById('auth-password').value });
-            if (!error) { document.getElementById('authModal').classList.add('hidden'); document.getElementById('authModal').classList.remove('flex'); document.getElementById('authForm').reset(); } else alert(error.message);
-        });
-
-        document.getElementById('signupSubmitBtn').addEventListener('click', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('auth-email').value;
-            const password = document.getElementById('auth-password').value;
-            const { error: signUpError } = await supabaseClient.auth.signUp({ email, password });
-            if (signUpError) { alert(signUpError.message); return; }
-            const { error: signInError } = await supabaseClient.auth.signInWithPassword({ email, password });
-            if (signInError) { alert("Ошибка входа: " + signInError.message); } 
-            else { document.getElementById('authModal').classList.add('hidden'); document.getElementById('authModal').classList.remove('flex'); document.getElementById('authForm').reset(); }
-        });
-
-        // ОБРАБОТЧИК ВОССТАНОВЛЕНИЯ ПАРОЛЯ
-        document.getElementById('forgotPasswordBtn').addEventListener('click', async () => {
-            const email = document.getElementById('auth-email').value;
-            if (!email) { alert("Введите ваш email в поле выше, чтобы мы могли отправить ссылку."); return; }
-            
-            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.origin // Ссылка вернет на главную
-            });
-            
-            if (error) alert("Ошибка: " + error.message);
-            else alert("Письмо для сброса пароля отправлено на " + email + ". Проверьте почту!");
-        });
-
-        const handleOAuthLogin = async (provider) => {
-            const { data, error } = await supabaseClient.auth.signInWithOAuth({ provider: provider, options: { redirectTo: window.location.origin } });
-            if (error) { alert(`Ошибка входа через ${provider}: ${error.message}`); console.error(error); }
-        };
-
-        document.getElementById('googleLoginBtn')?.addEventListener('click', () => handleOAuthLogin('google'));
-        document.getElementById('yandexLoginBtn')?.addEventListener('click', () => handleOAuthLogin('custom:yandex'));
-
-        async function loadProfiles() {
-            const { data } = await supabaseClient.from('profiles').select('*');
-            if (data) allProfiles = data;
+        // ОКНА ПРОФИЛЯ И НАСТРОЕК
+        window.openProfile = function () {
+            const myProfile = allProfiles.find(p => p.id === currentUser.id);
+            document.getElementById('profile-name').value = myProfile?.full_name || '';
+            document.getElementById('profile-skills').value = myProfile?.skills || '';
+            document.getElementById('profile-university').value = myProfile?.university || '';
+            document.getElementById('profile-faculty').value = myProfile?.faculty || '';
+            document.getElementById('profile-advisor').value = myProfile?.academic_advisor || '';
+            document.getElementById('profile-bio').value = myProfile?.bio || '';
+            if (myProfile?.avatar_url) { document.getElementById('profile-avatar-preview').src = myProfile.avatar_url; document.getElementById('profile-avatar-preview').classList.remove('hidden'); document.getElementById('profile-avatar-placeholder').classList.add('hidden'); document.getElementById('profile-avatar-preview').onclick = () => openZoomModal(myProfile.avatar_url); }
+            else { document.getElementById('profile-avatar-preview').classList.add('hidden'); document.getElementById('profile-avatar-placeholder').classList.remove('hidden'); }
+            document.getElementById('profileModal').classList.remove('hidden'); document.getElementById('profileModal').classList.add('flex'); mobileMenu.classList.add('hidden');
         }
 
+        window.openSettings = function () {
+            document.getElementById('settingsModal').classList.remove('hidden'); document.getElementById('settingsModal').classList.add('flex'); mobileMenu.classList.add('hidden');
+        }
+        document.getElementById('settingsThemeBtn').addEventListener('click', toggleTheme);
+        document.getElementById('logoutBtnSettings').addEventListener('click', async () => { await supabaseClient.auth.signOut(); document.getElementById('settingsModal').classList.add('hidden'); });
+        document.getElementById('changePasswordBtn').addEventListener('click', () => { document.getElementById('passwordModal').classList.remove('hidden'); document.getElementById('passwordModal').classList.add('flex'); });
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); const newPass = document.getElementById('new-password-input').value;
+            if (newPass.length < 6) return alert("Пароль слишком короткий!");
+            const { error } = await supabaseClient.auth.updateUser({ password: newPass });
+            if (error) alert(error.message); else { alert("Пароль изменен!"); document.getElementById('passwordModal').classList.add('hidden'); document.getElementById('new-password-input').value = ''; }
+        });
+
+        // ФОРМА ПРОФИЛЯ
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]'); btn.disabled = true;
-            const file = document.getElementById('profile-avatar-input').files[0];
-            let avatarUrl = null;
+            e.preventDefault(); const btn = e.target.querySelector('button[type="submit"]'); btn.disabled = true;
+            const file = document.getElementById('profile-avatar-input').files[0]; let avatarUrl = null;
             if (file) {
-                if (file.size > 10 * 1024 * 1024) { alert("Файл слишком большой! Максимум 10 МБ."); btn.disabled = false; return; }
-                const fileName = `avatars/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-                const { error: uploadError } = await supabaseClient.storage.from('project-images').upload(fileName, file);
-                if (!uploadError) avatarUrl = supabaseClient.storage.from('project-images').getPublicUrl(fileName).data.publicUrl;
+                if (file.size > 10 * 1024 * 1024) { alert("Файл > 10 МБ."); btn.disabled = false; return; }
+                const fileName = `avatars/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`; const { error } = await supabaseClient.storage.from('project-images').upload(fileName, file);
+                if (!error) avatarUrl = supabaseClient.storage.from('project-images').getPublicUrl(fileName).data.publicUrl;
             }
-            const updateData = { id: currentUser.id, email: currentUser.email, full_name: document.getElementById('profile-name').value, skills: document.getElementById('profile-skills').value, university: document.getElementById('profile-university').value, faculty: document.getElementById('profile-faculty').value };
+            const updateData = { id: currentUser.id, email: currentUser.email, full_name: document.getElementById('profile-name').value, skills: document.getElementById('profile-skills').value, university: document.getElementById('profile-university').value, faculty: document.getElementById('profile-faculty').value, academic_advisor: document.getElementById('profile-advisor').value, bio: document.getElementById('profile-bio').value };
             if (avatarUrl) updateData.avatar_url = avatarUrl;
             const { error } = await supabaseClient.from('profiles').upsert(updateData);
-            if (!error) { 
-                if (avatarUrl) {
-                    document.getElementById('profile-avatar-preview').src = avatarUrl;
-                    document.getElementById('profile-avatar-preview').classList.remove('hidden');
-                    document.getElementById('profile-avatar-placeholder').classList.add('hidden');
-                }
-                alert("Сохранено!"); 
-                document.getElementById('profileModal').classList.add('hidden'); document.getElementById('profileModal').classList.remove('flex'); 
-                await loadProfiles(); loadProjects(); document.getElementById('profile-avatar-input').value = ''; 
-            }
+            if (!error) { if (avatarUrl) { document.getElementById('profile-avatar-preview').src = avatarUrl; document.getElementById('profile-avatar-preview').classList.remove('hidden'); document.getElementById('profile-avatar-placeholder').classList.add('hidden'); } alert("Сохранено!"); document.getElementById('profileModal').classList.add('hidden'); document.getElementById('profileModal').classList.remove('flex'); await loadProfiles(); loadProjects(); document.getElementById('profile-avatar-input').value = ''; }
             btn.disabled = false;
         });
 
         window.viewProfile = async function (userId) {
-            if (!userId) return;
-            const p = allProfiles.find(prof => prof.id === userId); if (!p) return;
+            if (!userId) return; const p = allProfiles.find(prof => prof.id === userId); if (!p) return;
             document.getElementById('view-name').innerText = p.full_name || 'Пользователь';
             document.getElementById('view-skills').innerText = p.skills ? `Навыки: ${escapeHTML(p.skills)}` : '';
             document.getElementById('view-university').innerText = p.university || 'Не указан';
             document.getElementById('view-faculty').innerText = p.faculty || '';
-            if (p.avatar_url) { 
-                document.getElementById('view-avatar').src = p.avatar_url; document.getElementById('view-avatar').classList.remove('hidden'); document.getElementById('view-avatar-placeholder').classList.add('hidden'); document.getElementById('view-avatar').onclick = () => openZoomModal(p.avatar_url);
-            } else { 
-                document.getElementById('view-avatar').classList.add('hidden'); document.getElementById('view-avatar-placeholder').classList.remove('hidden'); document.getElementById('view-avatar-placeholder').innerText = (p.full_name || 'А')[0].toUpperCase(); 
-            }
+            document.getElementById('view-advisor').innerText = p.academic_advisor || 'Не указан';
+            document.getElementById('view-bio').innerText = p.bio || 'Не заполнено.';
+            if (p.avatar_url) { document.getElementById('view-avatar').src = p.avatar_url; document.getElementById('view-avatar').classList.remove('hidden'); document.getElementById('view-avatar-placeholder').classList.add('hidden'); document.getElementById('view-avatar').onclick = () => openZoomModal(p.avatar_url); }
+            else { document.getElementById('view-avatar').classList.add('hidden'); document.getElementById('view-avatar-placeholder').classList.remove('hidden'); document.getElementById('view-avatar-placeholder').innerText = (p.full_name || 'А')[0].toUpperCase(); }
             const reviewsList = document.getElementById('view-reviews-list'); reviewsList.innerHTML = 'Загрузка...';
             const { data } = await supabaseClient.from('reviews').select('*').eq('target_id', userId);
-            if (!data || data.length === 0) { reviewsList.innerHTML = 'Отзывов пока нет.'; document.getElementById('view-rating').innerText = 'Нет рейтинга'; } 
+            if (!data || data.length === 0) { reviewsList.innerHTML = 'Отзывов пока нет.'; document.getElementById('view-rating').innerText = 'Нет рейтинга'; }
             else {
-                const avg = (data.reduce((acc, r) => acc + r.rating, 0) / data.length).toFixed(1);
-                document.getElementById('view-rating').innerText = `⭐ ${avg} (${data.length})`;
-                reviewsList.innerHTML = '';
-                data.forEach(r => {
-                    const author = allProfiles.find(a => a.id === r.author_id);
-                    reviewsList.insertAdjacentHTML('beforeend', `<div class="bg-gray-50 dark:bg-gray-700 p-2 rounded border border-gray-200 dark:border-gray-600 text-sm mb-2"><div class="flex justify-between font-bold text-gray-700 dark:text-gray-300"><span>${author?.full_name || 'Аноним'}</span><span class="text-yellow-500">${'★'.repeat(r.rating)}</span></div><p class="text-gray-600 dark:text-gray-400 mt-1">${escapeHTML(r.text)}</p></div>`);
-                });
+                const avg = (data.reduce((acc, r) => acc + r.rating, 0) / data.length).toFixed(1); document.getElementById('view-rating').innerText = `⭐ ${avg} (${data.length})`; reviewsList.innerHTML = '';
+                data.forEach(r => { const author = allProfiles.find(a => a.id === r.author_id); reviewsList.insertAdjacentHTML('beforeend', `<div class="bg-gray-50 dark:bg-gray-700 p-2 rounded text-sm mb-2"><div class="flex justify-between font-bold"><span>${author?.full_name || 'Аноним'}</span><span class="text-yellow-500">${'★'.repeat(r.rating)}</span></div><p class="text-gray-600 dark:text-gray-400 mt-1">${escapeHTML(r.text)}</p></div>`); });
             }
             document.getElementById('viewProfileModal').classList.remove('hidden'); document.getElementById('viewProfileModal').classList.add('flex');
         }
 
+        // ГЕНЕРАТОР ИДЕЙ И ШАБЛОНЫ
+        document.getElementById('ideaGeneratorBtn').addEventListener('click', () => {
+            const ideas = ["Влияние коротких видео на концентрацию студентов", "Анализ шовного материала в хирургии", "Применение ИИ в диагностике заболеваний", "Психология командной работы в научных проектах", "Экономика удаленной работы", "Социологический портрет современного студента"];
+            document.getElementById('input-title').value = ideas[Math.floor(Math.random() * ideas.length)];
+        });
+
+        document.getElementById('templateSelect').addEventListener('change', (e) => {
+            const val = e.target.value; const desc = document.getElementById('input-desc');
+            if (val === 'case') desc.value = "1. Актуальность\n\n2. Описание клинического случая\n\n3. Диагностика\n\n4. Лечение\n\n5. Выводы";
+            else if (val === 'review') desc.value = "1. Введение\n\n2. Обзор литературы (источники за последние 5 лет)\n\n3. Методология поиска\n\n4. Результаты\n\n5. Заключение";
+            else if (val === 'survey') desc.value = "1. Цель исследования\n\n2. Целевая аудитория\n\n3. Вопросы для анкеты\n\n4. Методы сбора данных\n\n5. Ожидаемые результаты";
+            else desc.value = "";
+        });
+
+        // ДЕТАЛЬНЫЙ ПРОСМОТР ПРОЕКТА
         window.openProjectDetail = async function (id) {
             const project = allProjects.find(p => String(p.id) === String(id)); if (!project) return;
-            currentDetailProjectId = id;
-            document.getElementById('detail-title').innerText = project.title;
-            document.getElementById('detail-role').innerText = project.role;
-            document.getElementById('detail-deadline').innerText = project.deadline;
-            document.getElementById('detail-desc').innerText = project.description || 'Описание не добавлено.';
-            document.getElementById('detail-category').innerText = project.category || 'Другое';
-            const statusEl = document.getElementById('detail-status');
-            if (project.status === 'closed') { statusEl.innerText = 'Набор закрыт'; statusEl.className = 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 text-xs px-2 py-1 rounded font-bold'; } 
-            else { statusEl.innerText = 'Открыт набор'; statusEl.className = 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 text-xs px-2 py-1 rounded font-bold'; }
-            
-            const author = allProfiles.find(p => p.id === project.user_id);
-            document.getElementById('detail-author').innerText = author?.full_name || 'Аноним';
-            document.getElementById('detail-author').setAttribute('data-id', project.user_id);
-            document.getElementById('detail-author-skills').innerText = author?.skills ? `Навыки: ${escapeHTML(author.skills)}` : '';
-            
-            if (author?.avatar_url) { 
-                document.getElementById('detail-author-avatar').src = author.avatar_url; document.getElementById('detail-author-avatar').classList.remove('hidden'); document.getElementById('detail-author-avatar-placeholder').classList.add('hidden'); document.getElementById('detail-author-avatar').onclick = () => openZoomModal(author.avatar_url);
-            } else { 
-                document.getElementById('detail-author-avatar').classList.add('hidden'); document.getElementById('detail-author-avatar-placeholder').classList.remove('hidden'); document.getElementById('detail-author-avatar-placeholder').innerText = (author?.full_name || 'А')[0].toUpperCase(); 
-            }
-            
-            const img = document.getElementById('detail-image');
-            if (project.image_url) { img.src = project.image_url; img.classList.remove('hidden'); } else { img.classList.add('hidden'); }
-            const isAuthor = currentUser && String(project.user_id) === String(currentUser.id);
-            const isApproved = myApprovedProjectIds.includes(String(project.id));
-            let buttonsHTML = '';
+            currentDetailProjectId = id; document.getElementById('detail-title').innerText = project.title; document.getElementById('detail-role').innerText = project.role; document.getElementById('detail-deadline').innerText = project.deadline; document.getElementById('detail-desc').innerText = project.description || 'Нет описания.'; document.getElementById('detail-category').innerText = project.category || 'Другое';
+            const statusEl = document.getElementById('detail-status'); if (project.status === 'closed') { statusEl.innerText = 'Набор закрыт'; statusEl.className = 'bg-red-100 text-red-700 text-xs px-2 py-1 rounded font-bold'; } else { statusEl.innerText = 'Открыт'; statusEl.className = 'bg-green-100 text-green-700 text-xs px-2 py-1 rounded font-bold'; }
+            const author = allProfiles.find(p => p.id === project.user_id); document.getElementById('detail-author').innerText = author?.full_name || 'Аноним'; document.getElementById('detail-author').setAttribute('data-id', project.user_id); document.getElementById('detail-author-skills').innerText = author?.skills ? `Навыки: ${escapeHTML(author.skills)}` : '';
+            if (author?.avatar_url) { document.getElementById('detail-author-avatar').src = author.avatar_url; document.getElementById('detail-author-avatar').classList.remove('hidden'); document.getElementById('detail-author-avatar-placeholder').classList.add('hidden'); document.getElementById('detail-author-avatar').onclick = () => openZoomModal(author.avatar_url); } else { document.getElementById('detail-author-avatar').classList.add('hidden'); document.getElementById('detail-author-avatar-placeholder').classList.remove('hidden'); document.getElementById('detail-author-avatar-placeholder').innerText = (author?.full_name || 'А')[0].toUpperCase(); }
+            const img = document.getElementById('detail-image'); if (project.image_url) { img.src = project.image_url; img.classList.remove('hidden'); } else { img.classList.add('hidden'); }
+            const isAuthor = currentUser && String(project.user_id) === String(currentUser.id); const isApproved = myApprovedProjectIds.includes(String(project.id)); let buttonsHTML = '';
             if (isAuthor) {
-                buttonsHTML += `<button onclick="openRequests()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-bold">Заявки</button>`;
-                buttonsHTML += `<button onclick="exportData(${project.id})" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-bold">Скачать CSV</button>`;
-                buttonsHTML += `<button onclick="editProject(${project.id})" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-bold">Изменить</button>`;
-                buttonsHTML += `<button onclick="deleteProject(${project.id})" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold">Удалить</button>`;
+                buttonsHTML += `<button onclick="openRequests()" class="bg-yellow-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Заявки</button>`;
+                buttonsHTML += `<button onclick="exportData(${project.id})" class="bg-green-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold">CSV</button>`;
+                buttonsHTML += `<button onclick="editProject(${project.id})" class="bg-blue-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Изменить</button>`;
+                buttonsHTML += `<button onclick="deleteProject(${project.id})" class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Удалить</button>`;
             } else if (isApproved) {
-                buttonsHTML += `<button onclick="leaveProject(${project.id})" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold">Покинуть</button>`;
-                buttonsHTML += `<button onclick="openChat('${project.user_id}', ${project.id}, '${project.title.replace(/'/g, "\\'")}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold">Написать автору</button>`;
+                buttonsHTML += `<button onclick="leaveProject(${project.id})" class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Покинуть</button>`;
+                buttonsHTML += `<button onclick="openChat('${project.user_id}', ${project.id}, '${project.title.replace(/'/g, "\\'")}')" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Написать</button>`;
             } else {
-                if (project.status !== 'closed') buttonsHTML += `<button onclick="sendJoinRequest(${project.id}, '${project.user_id}')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold">Подать заявку</button>`;
-                else buttonsHTML += `<span class="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-4 py-2 rounded-lg font-bold cursor-not-allowed">Набор закрыт</span>`;
-                buttonsHTML += `<button onclick="openChat('${project.user_id}', ${project.id}, '${project.title.replace(/'/g, "\\'")}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold">Написать</button>`;
+                if (project.status !== 'closed') buttonsHTML += `<button onclick="sendJoinRequest(${project.id}, '${project.user_id}')" class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Заявка</button>`;
+                else buttonsHTML += `<span class="bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-sm font-bold cursor-not-allowed">Закрыт</span>`;
+                buttonsHTML += `<button onclick="openChat('${project.user_id}', ${project.id}, '${project.title.replace(/'/g, "\\'")}')" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Написать</button>`;
             }
-            if (isAuthor || isApproved) buttonsHTML += `<button onclick="openGroupChat(${project.id}, '${project.title.replace(/'/g, "\\'")}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-bold">Чат команды 💬</button>`;
-            if (!isAuthor && currentUser) {
-                const isFav = myFavoriteProjectIds.includes(String(project.id));
-                buttonsHTML += `<button onclick="toggleFavorite(${project.id})" class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg font-bold border border-gray-300 dark:border-gray-600">${isFav ? '⭐ В избранном' : '☆ В избранное'}</button>`;
-            }
+            if (isAuthor || isApproved) buttonsHTML += `<button onclick="openGroupChat(${project.id}, '${project.title.replace(/'/g, "\\'")}')" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Чат 💬</button>`;
+            if (!isAuthor && currentUser) { const isFav = myFavoriteProjectIds.includes(String(project.id)); buttonsHTML += `<button onclick="toggleFavorite(${project.id})" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-lg text-sm font-bold border dark:border-gray-600">${isFav ? '⭐' : '☆'}</button>`; }
             document.getElementById('detail-actions').innerHTML = buttonsHTML;
-            const canViewFiles = isAuthor || isApproved;
-            document.getElementById('files-block-container').classList.toggle('hidden', !canViewFiles);
-            document.getElementById('upload-file-container').classList.toggle('hidden', !canViewFiles);
-            document.getElementById('tasks-block-container').classList.toggle('hidden', !canViewFiles);
-            loadProjectMembers(id, isAuthor);
-            if (canViewFiles) { loadProjectFiles(id); loadTasks(id); }
+            const canViewFiles = isAuthor || isApproved; document.getElementById('files-block-container').classList.toggle('hidden', !canViewFiles); document.getElementById('upload-file-container').classList.toggle('hidden', !canViewFiles); document.getElementById('tasks-block-container').classList.toggle('hidden', !canViewFiles);
+            loadProjectMembers(id, isAuthor); if (canViewFiles) { loadProjectFiles(id); loadTasks(id); }
             document.getElementById('detailModal').classList.remove('hidden'); document.getElementById('detailModal').classList.add('flex');
         }
 
-        // ФУНКЦИЯ ЭКСПОРТА ДАННЫХ В CSV
-        window.exportData = async function(projectId) {
-            const project = allProjects.find(p => String(p.id) === String(projectId));
-            const { data: requests } = await supabaseClient.from('join_requests').select('user_id, status').eq('project_id', projectId).eq('status', 'approved');
-            
-            if (!requests || requests.length === 0) { alert("В проекте пока нет участников для экспорта."); return; }
-
-            let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // BOM для Excel
-            csvContent += "Имя,Email,Университет,Факультет,Роль в проекте\n";
-
-            requests.forEach(req => {
-                const p = allProfiles.find(prof => prof.id === req.user_id);
-                if (p) {
-                    const row = `"${p.full_name || ''}","${p.email || ''}","${p.university || ''}","${p.faculty || ''}","${project.role}"\n`;
-                    csvContent += row;
-                }
-            });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Участники_${project.title.replace(/\s+/g, '_')}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        async function loadTasks(projectId) {
-            const list = document.getElementById('tasks-list'); list.innerHTML = 'Загрузка...';
-            const { data } = await supabaseClient.from('tasks').select('*').eq('project_id', projectId).order('created_at', { ascending: true });
-            list.innerHTML = '';
-            if (!data || data.length === 0) { list.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400 italic">Задач пока нет</p>'; return; }
-            data.forEach(task => {
-                const checked = task.is_completed ? 'checked' : '';
-                const line = task.is_completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300';
-                list.insertAdjacentHTML('beforeend', `<label class="flex items-center gap-2 cursor-pointer p-1 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 rounded"><input type="checkbox" ${checked} onchange="toggleTask(${task.id}, ${task.is_completed})" class="rounded text-yellow-600 focus:ring-yellow-500 dark:bg-gray-700"><span class="text-sm ${line}">${escapeHTML(task.title)}</span></label>`);
-            });
-        }
-        document.getElementById('addTaskForm').addEventListener('submit', async (e) => {
-            e.preventDefault(); const input = document.getElementById('task-input'); const text = input.value.trim(); if (!text) return;
-            await supabaseClient.from('tasks').insert([{ project_id: currentDetailProjectId, title: text }]);
-            input.value = ''; loadTasks(currentDetailProjectId);
-        });
-        window.toggleTask = async function (taskId, currentStatus) { await supabaseClient.from('tasks').update({ is_completed: !currentStatus }).eq('id', taskId); loadTasks(currentDetailProjectId); };
-
-        window.openGroupChat = async function (projectId, projectTitle) {
-            document.getElementById('groupChatTitle').innerText = `Команда: ${projectTitle}`;
-            document.getElementById('groupChatMessages').innerHTML = 'Загрузка...';
-            document.getElementById('groupChatModal').classList.remove('hidden'); document.getElementById('groupChatModal').classList.add('flex');
-            await loadGroupMessages(projectId); setupGroupRealtime(projectId); document.getElementById('groupChatInput').focus();
-            await supabaseClient.from('join_requests').update({ last_read_group_at: new Date().toISOString() }).eq('project_id', projectId).eq('user_id', currentUser.id);
-            if (unreadGroupCounts[projectId]) { delete unreadGroupCounts[projectId]; renderProjects(); }
-        }
-
-        async function loadGroupMessages(projectId) {
-            const { data } = await supabaseClient.from('group_messages').select('*').eq('project_id', projectId).order('created_at', { ascending: true });
-            const container = document.getElementById('groupChatMessages'); container.innerHTML = '';
-            if (!data || data.length === 0) { container.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">Сообщений пока нет</p>'; return; }
-            data.forEach(msg => renderGroupMessage(msg)); container.scrollTop = container.scrollHeight;
-        }
-
-        function renderGroupMessage(msg) {
-            if (msg.id && document.getElementById(`group-msg-${msg.id}`)) return; 
-            const isMine = msg.sender_id === currentUser.id;
-            const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const author = allProfiles.find(p => p.id === msg.sender_id);
-            const authorName = author?.full_name || 'Кто-то';
-            document.getElementById('groupChatMessages').insertAdjacentHTML('beforeend', `
-                <div id="group-msg-${msg.id || Date.now()}" class="flex ${isMine ? 'justify-end' : 'justify-start'} mb-2">
-                    <div class="max-w-[75%] p-3 rounded-xl text-sm ${isMine ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-bl-none shadow-sm'}">
-                        ${!isMine ? `<div class="text-xs font-bold text-indigo-500 dark:text-indigo-400 mb-1">${escapeHTML(authorName)}</div>` : ''}
-                        ${escapeHTML(msg.content)}
-                        <div class="text-[10px] ${isMine ? 'text-indigo-200' : 'text-gray-400 dark:text-gray-500'} text-right mt-1">${time}</div>
-                    </div>
-                </div>
-            `);
-        }
-
-        function setupGroupRealtime(projectId) {
-            if (groupChatSubscription) supabaseClient.removeChannel(groupChatSubscription);
-            const channelName = `project_group_${String(projectId)}`;
-            groupChatSubscription = supabaseClient.channel(channelName)
-                .on('broadcast', { event: 'new_group_msg' }, (payload) => {
-                    const newMsg = payload.payload;
-                    if (String(newMsg.sender_id) === String(currentUser.id)) return;
-                    const container = document.getElementById('groupChatMessages');
-                    if (container.innerHTML.includes('Сообщений пока нет')) container.innerHTML = '';
-                    renderGroupMessage(newMsg); container.scrollTop = container.scrollHeight;
-                }).subscribe();
-        }
-
-        document.getElementById('groupChatForm').addEventListener('submit', async (e) => {
-            e.preventDefault(); const input = document.getElementById('groupChatInput'); const text = input.value.trim(); if (!text) return; input.value = '';
-            const { data, error } = await supabaseClient.from('group_messages').insert([{ project_id: currentDetailProjectId, sender_id: currentUser.id, content: text }]).select();
-            if (!error && data && data.length > 0) {
-                const msgData = data[0]; renderGroupMessage(msgData); document.getElementById('groupChatMessages').scrollTop = document.getElementById('groupChatMessages').scrollHeight;
-                if (groupChatSubscription) { groupChatSubscription.send({ type: 'broadcast', event: 'new_group_msg', payload: msgData }); }
-                const { data: members } = await supabaseClient.from('join_requests').select('user_id').eq('project_id', currentDetailProjectId).eq('status', 'approved');
-                if (members) {
-                    members.forEach(member => {
-                        if (member.user_id !== currentUser.id) {
-                            const notifyChannel = supabaseClient.channel(`user_notifications_${member.user_id}`);
-                            notifyChannel.subscribe((status) => {
-                                if (status === 'SUBSCRIBED') {
-                                    notifyChannel.send({ type: 'broadcast', event: 'new_group_message_alert', payload: { project_id: currentDetailProjectId } });
-                                    setTimeout(() => supabaseClient.removeChannel(notifyChannel), 1000);
-                                }
-                            });
-                        }
-                    });
-                }
-            }
-        });
-
-        window.openReviewModal = function (targetId) { document.getElementById('review-target-id').value = targetId; document.getElementById('review-text').value = ''; document.getElementById('reviewModal').classList.remove('hidden'); document.getElementById('reviewModal').classList.add('flex'); };
-        document.getElementById('reviewForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await supabaseClient.from('reviews').insert([{ project_id: currentDetailProjectId, author_id: currentUser.id, target_id: document.getElementById('review-target-id').value, rating: parseInt(document.getElementById('review-rating').value), text: document.getElementById('review-text').value }]);
-            alert("Отзыв сохранен!"); document.getElementById('reviewModal').classList.add('hidden'); document.getElementById('reviewModal').classList.remove('flex');
-        });
-
-        async function openAdminPanel() {
-            const list = document.getElementById('adminList'); list.innerHTML = 'Загрузка...'; document.getElementById('adminModal').classList.remove('hidden'); document.getElementById('adminModal').classList.add('flex');
-            const { data } = await supabaseClient.from('reports').select('*').eq('status', 'pending').order('created_at', { ascending: false });
-            list.innerHTML = ''; 
-            if (!data || data.length === 0) { list.innerHTML = '<p class="text-center mt-4">Новых жалоб нет. Все молодцы!</p>'; return; }
-            data.forEach(report => {
-                const reporter = allProfiles.find(p => p.id === report.reporter_id); const badGuy = allProfiles.find(p => p.id === report.reported_user_id);
-                list.insertAdjacentHTML('beforeend', `<div class="bg-white dark:bg-gray-700 p-4 rounded shadow border border-red-200 dark:border-red-900 mb-2 text-sm"><p>Жалоба от: <b>${reporter?.full_name || 'Аноним'}</b> (Варнов: ${reporter?.warnings || 0})</p><p>На: <b class="text-red-600 dark:text-red-400">${badGuy?.full_name || 'Неизвестный'}</b></p><div class="bg-red-50 dark:bg-red-900/50 p-2 rounded text-red-800 dark:text-red-300 my-2"><strong>Причина:</strong> ${escapeHTML(report.reason)}</div><div class="flex flex-wrap gap-2 mt-3"><button onclick="dismissReport(${report.id})" class="bg-gray-500 hover:bg-gray-600 text-white text-xs px-3 py-1.5 rounded">Игнорировать</button><button onclick="warnUser('${report.reporter_id}', '${reporter?.full_name || 'Пользователь'}', ${report.id})" class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-3 py-1.5 rounded">Предупредить</button><button onclick="deleteBadUser('${report.reported_user_id}', ${report.id})" class="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded">Удалить данные</button></div></div>`);
-            });
-        }
-        window.dismissReport = async function(reportId) { await supabaseClient.from('reports').update({ status: 'ignored' }).eq('id', reportId); openAdminPanel(); }
-        window.warnUser = async function(userId, userName, reportId) { if (!confirm(`Выдать предупреждение?`)) return; const profile = allProfiles.find(p => p.id === userId); const currentWarns = profile?.warnings || 0; await supabaseClient.from('profiles').update({ warnings: currentWarns + 1 }).eq('id', userId); await supabaseClient.from('reports').update({ status: 'ignored' }).eq('id', reportId); alert(`Выдано предупреждение. Всего: ${currentWarns + 1}`); await loadProfiles(); openAdminPanel(); }
-        window.deleteBadUser = async function(userId, reportId) { if (!confirm("Удалить все данные пользователя?")) return; await supabaseClient.from('projects').delete().eq('user_id', userId); await supabaseClient.from('profiles').delete().eq('id', userId); await supabaseClient.from('reports').update({ status: 'ignored' }).eq('id', reportId); alert("Удалено."); openAdminPanel(); loadProjects(); }
-
-        async function loadMyApprovedProjects() { 
-            if (!currentUser) return; 
-            const { data } = await supabaseClient.from('join_requests').select('project_id, last_read_group_at').eq('user_id', currentUser.id).eq('status', 'approved'); 
-            if (data) {
-                myApprovedProjectIds = data.map(d => String(d.project_id)); unreadGroupCounts = {}; 
-                for (let req of data) { const { count } = await supabaseClient.from('group_messages').select('*', { count: 'exact', head: true }).eq('project_id', req.project_id).gt('created_at', req.last_read_group_at).neq('sender_id', currentUser.id); if (count > 0) unreadGroupCounts[req.project_id] = count; }
-            } 
-        }
-        async function loadMyFavorites() { if (!currentUser) return; const { data } = await supabaseClient.from('favorites').select('project_id').eq('user_id', currentUser.id); if (data) myFavoriteProjectIds = data.map(d => String(d.project_id)); }
-        async function updateUnreadBadge() { if (!currentUser) return; const { count } = await supabaseClient.from('messages').select('*', { count: 'exact', head: true }).eq('receiver_id', currentUser.id).eq('is_read', false); const badge = document.getElementById('unreadBadge'); if (badge) { if (count > 0) { badge.innerText = count > 99 ? '99+' : count; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); } } }
-        async function updateRequestsBadge() { if (!currentUser) return; const myProjectIds = allProjects.filter(p => p.user_id === currentUser.id).map(p => p.id); const badge = document.getElementById('requestsBadge'); if (!badge) return; if (myProjectIds.length === 0) { badge.classList.add('hidden'); return; } const { count } = await supabaseClient.from('join_requests').select('*', { count: 'exact', head: true }).in('project_id', myProjectIds).eq('status', 'pending'); if (count > 0) { badge.innerText = count > 99 ? '99+' : count; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); } }
-
-        function setupGlobalRealtime() { 
-            if (globalSubscription) supabaseClient.removeChannel(globalSubscription); 
-            globalSubscription = supabaseClient.channel(`user_notifications_${currentUser.id}`)
-                .on('broadcast', { event: 'new_message' }, (payload) => { updateUnreadBadge(); if (!document.getElementById('inboxModal').classList.contains('hidden')) openInbox(); })
-                .on('broadcast', { event: 'new_request' }, (payload) => { updateRequestsBadge(); if (!document.getElementById('requestsModal').classList.contains('hidden')) openRequests(); })
-                .on('broadcast', { event: 'new_group_message_alert' }, (payload) => { const projectId = payload.payload.project_id; if (String(currentDetailProjectId) === String(projectId) && !document.getElementById('groupChatModal').classList.contains('hidden')) return; if (!unreadGroupCounts[projectId]) unreadGroupCounts[projectId] = 0; unreadGroupCounts[projectId]++; renderProjects(); })
-                .subscribe(); 
-        }
-
-        async function markMessagesAsRead(senderId, projectId) { await supabaseClient.from('messages').update({ is_read: true }).eq('receiver_id', currentUser.id).eq('sender_id', senderId).eq('project_id', projectId); updateUnreadBadge(); }
-        
-        async function loadProjectMembers(projectId, isAuthor) {
-            const list = document.getElementById('detail-members-list'); list.innerHTML = '';
-            const { data } = await supabaseClient.from('join_requests').select('user_id').eq('project_id', projectId).eq('status', 'approved');
-            if (!data || data.length === 0) { list.innerHTML = '<span class="text-sm text-gray-500 italic">Нет участников</span>'; return; }
-            data.forEach(req => {
-                const profile = allProfiles.find(p => p.id === req.user_id); const name = profile?.full_name || 'Пользователь';
-                const kickBtn = isAuthor ? `<button onclick="kickMember(${projectId}, '${req.user_id}', '${name}')" class="ml-2 text-xs text-red-500 font-bold">✕</button>` : '';
-                const revBtn = isAuthor ? `<button onclick="openReviewModal('${req.user_id}')" class="ml-2 text-xs text-green-600 font-bold" title="Оценить">⭐</button>` : '';
-                list.insertAdjacentHTML('beforeend', `<span class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm px-3 py-1 rounded-full flex items-center mb-2 mr-2">${escapeHTML(name)} ${kickBtn} ${revBtn}</span>`);
-            });
-        }
-
-        window.kickMember = async function (projectId, memberId, memberName) { if (!confirm(`Исключить?`)) return; await supabaseClient.from('join_requests').update({ status: 'rejected' }).eq('project_id', projectId).eq('user_id', memberId); await supabaseClient.from('project_files').delete().eq('project_id', projectId).eq('user_id', memberId); alert('Исключен.'); openProjectDetail(projectId); }
-        window.leaveProject = async function (projectId) { if (!confirm('Покинуть проект?')) return; await supabaseClient.from('join_requests').update({ status: 'rejected' }).eq('project_id', projectId).eq('user_id', currentUser.id); await supabaseClient.from('project_files').delete().eq('project_id', projectId).eq('user_id', currentUser.id); await loadMyApprovedProjects(); loadProjects(); document.getElementById('detailModal').classList.add('hidden'); document.getElementById('detailModal').classList.remove('flex'); }
-
-        async function loadProjectFiles(projectId) {
-            const list = document.getElementById('detail-files-list'); const noMsg = document.getElementById('no-files-msg'); list.innerHTML = ''; noMsg.classList.add('hidden');
-            const { data } = await supabaseClient.from('project_files').select('*').eq('project_id', projectId).order('created_at', { ascending: false });
-            if (!data || data.length === 0) { noMsg.classList.remove('hidden'); return; }
-            for (const file of data) {
-                let url = file.file_url;
-                if (!url.startsWith('http')) { const { data: u } = await supabaseClient.storage.from('project-documents').createSignedUrl(file.file_url, 3600); if (u) url = u.signedUrl; }
-                const author = allProfiles.find(p => p.id === file.user_id);
-                list.insertAdjacentHTML('beforeend', `<a href="${url}" target="_blank" class="flex justify-between items-center bg-white dark:bg-gray-600 p-2 rounded border border-gray-200 dark:border-gray-500 text-sm text-blue-700 dark:text-blue-300 mb-2"><span>📄 ${escapeHTML(file.file_name)}</span><span class="text-xs text-gray-400 dark:text-gray-400">от ${escapeHTML(author?.full_name || 'Кто-то')}</span></a>`);
-            }
-        }
-
-        document.getElementById('uploadFileForm').addEventListener('submit', async (e) => {
-            e.preventDefault(); const file = document.getElementById('project-file-input').files[0]; if (!file || !currentDetailProjectId) return;
-            if (file.size > 10 * 1024 * 1024) { alert("Файл слишком большой! Максимум 10 МБ."); return; }
-            const btn = document.getElementById('uploadFileBtn'); btn.disabled = true;
-            const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.\s_-]/g, '_')}`;
-            const { error } = await supabaseClient.storage.from('project-documents').upload(fileName, file);
-            if (!error) { await supabaseClient.from('project_files').insert([{ project_id: currentDetailProjectId, user_id: currentUser.id, file_name: file.name, file_url: fileName }]); document.getElementById('project-file-input').value = ''; loadProjectFiles(currentDetailProjectId); } else alert("Ошибка!");
-            btn.disabled = false;
-        });
-
-        window.sendJoinRequest = async function(projectId, authorId) { 
-            if (!currentUser) return alert("Войдите!"); 
-            const { data } = await supabaseClient.from('join_requests').select('*').eq('project_id', projectId).eq('user_id', currentUser.id).maybeSingle(); 
-            if (data) { 
-                if (data.status === 'pending') return alert("Ждите."); if (data.status === 'approved') return alert("Вы приняты."); 
-                if (data.status === 'rejected') { await supabaseClient.from('join_requests').update({ status: 'pending' }).eq('id', data.id); } 
-            } else { await supabaseClient.from('join_requests').insert([{ project_id: projectId, user_id: currentUser.id, status: 'pending' }]); }
-            alert("Заявка отправлена!"); 
-            const notifyChannel = supabaseClient.channel(`user_notifications_${authorId}`);
-            notifyChannel.subscribe((status) => { if (status === 'SUBSCRIBED') { notifyChannel.send({ type: 'broadcast', event: 'new_request', payload: { message: 'new' } }); setTimeout(() => supabaseClient.removeChannel(notifyChannel), 1000); } });
-            document.getElementById('detailModal').classList.add('hidden'); document.getElementById('detailModal').classList.remove('flex'); 
-        }
-
-        async function openRequests() {
-            const list = document.getElementById('requestsList'); list.innerHTML = 'Загрузка...'; document.getElementById('requestsModal').classList.remove('hidden'); document.getElementById('requestsModal').classList.add('flex');
-            const myProjectIds = allProjects.filter(p => p.user_id === currentUser.id).map(p => p.id); if (myProjectIds.length === 0) return list.innerHTML = 'Нет проектов.';
-            const { data } = await supabaseClient.from('join_requests').select('*').in('project_id', myProjectIds).order('created_at', { ascending: false }); if (!data || data.length === 0) return list.innerHTML = 'Нет заявок.';
-            list.innerHTML = '';
-            data.forEach(req => {
-                const project = allProjects.find(p => String(p.id) === String(req.project_id)); const userProfile = allProfiles.find(p => p.id === req.user_id);
-                let statusBadge = req.status === 'approved' ? '<span class="text-green-600 font-bold">Принят</span>' : req.status === 'rejected' ? '<span class="text-red-600 font-bold">Отклонен</span>' : '<span class="text-yellow-600 font-bold">В ожидании</span>';
-                const btns = req.status === 'pending' ? `<div class="flex gap-2 mt-2"><button onclick="updateRequest(${req.id}, 'approved')" class="bg-green-500 text-white px-3 py-1 rounded text-sm">Принять</button><button onclick="updateRequest(${req.id}, 'rejected')" class="bg-red-500 text-white px-3 py-1 rounded text-sm">Отклонить</button></div>` : '';
-                list.insertAdjacentHTML('beforeend', `<div class="bg-white dark:bg-gray-700 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 mb-2"><div class="flex justify-between items-start mb-2"><div><p class="font-bold">${escapeHTML(userProfile?.full_name || 'Пользователь')}</p><p class="text-xs text-gray-500 dark:text-gray-400">Проект: <span class="font-medium text-blue-600 dark:text-blue-400">${escapeHTML(project?.title || 'Удален')}</span></p></div>${statusBadge}</div>${btns}</div>`);
-            });
-        }
-        window.updateRequest = async function (reqId, newStatus) { await supabaseClient.from('join_requests').update({ status: newStatus }).eq('id', reqId); openRequests(); }
-        async function loadProjects() { const { data } = await supabaseClient.from('projects').select('*').order('id', { ascending: false }); if (data) { allProjects = data; renderProjects(); updateRequestsBadge(); } }
-
+        // ПОИСК ПО НАВЫКАМ
         function renderProjects() {
             const searchText = document.getElementById('searchInput').value.toLowerCase(); const selectedRole = document.getElementById('filterRole').value; const selectedCategory = document.getElementById('filterCategory').value; const showOnlyFavorites = document.getElementById('filterFavorites').checked;
             const filtered = allProjects.filter(p => {
-                const matchSearch = p.title.toLowerCase().includes(searchText) || (p.description && p.description.toLowerCase().includes(searchText)); const matchRole = selectedRole === "" || p.role === selectedRole; const matchCategory = selectedCategory === "" || p.category === selectedCategory; const matchFav = !showOnlyFavorites || myFavoriteProjectIds.includes(String(p.id));
+                const author = allProfiles.find(prof => prof.id === p.user_id);
+                const skillsText = author?.skills ? author.skills.toLowerCase() : '';
+                const matchSearch = p.title.toLowerCase().includes(searchText) || (p.description && p.description.toLowerCase().includes(searchText)) || skillsText.includes(searchText);
+                const matchRole = selectedRole === "" || p.role === selectedRole; const matchCategory = selectedCategory === "" || p.category === selectedCategory; const matchFav = !showOnlyFavorites || myFavoriteProjectIds.includes(String(p.id));
                 return matchSearch && matchRole && matchCategory && matchFav;
             });
             grid.innerHTML = ''; if (filtered.length === 0) { grid.innerHTML = '<p class="text-gray-500 dark:text-gray-400 col-span-3 text-center py-8">Ничего не найдено.</p>'; return; }
             filtered.forEach(p => { grid.insertAdjacentHTML('beforeend', createCardHTML(p)); });
         }
 
-        function createCardHTML(project) {
-            const imageHTML = project.image_url ? `<img src="${project.image_url}" class="w-full h-48 object-cover rounded-t-xl">` : '';
-            const author = allProfiles.find(p => p.id === project.user_id); const authorName = author?.full_name || 'Аноним'; const avatarUrl = author?.avatar_url;
-            const isApproved = myApprovedProjectIds.includes(String(project.id)); const isFav = myFavoriteProjectIds.includes(String(project.id));
-            const cardBorderClass = isApproved ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-gray-100 dark:border-gray-700';
-            const statusBadge = isApproved ? '<span class="bg-green-500 text-white text-xs px-2 py-1 rounded font-bold ml-2">Вы в проекте</span>' : '';
-            const closedBadge = project.status === 'closed' ? '<span class="bg-red-500 text-white text-xs px-2 py-1 rounded font-bold ml-2">Набор закрыт</span>' : '';
-            const favIcon = isFav ? '<span class="text-yellow-500 text-xl">⭐</span>' : '';
-            const avatarHTML = avatarUrl ? `<img src="${avatarUrl}" onclick="event.stopPropagation(); openZoomModal('${avatarUrl}')" class="w-6 h-6 rounded-full object-cover inline-block mr-1 cursor-pointer hover:opacity-80 transition">` : `<div class="w-6 h-6 rounded-full bg-blue-200 dark:bg-blue-900 text-blue-700 dark:text-blue-300 flex items-center justify-center font-bold text-xs inline-block mr-1">${authorName[0].toUpperCase()}</div>`;
-            const unreadChatBadge = (unreadGroupCounts[project.id] > 0) ? `<span class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full ml-2 animate-pulse">💬 ${unreadGroupCounts[project.id]}</span>` : '';
-            
-            return `<div onclick="openProjectDetail(${project.id})" class="rounded-xl shadow border ${cardBorderClass} hover:shadow-lg transition relative flex flex-col overflow-hidden cursor-pointer bg-white dark:bg-gray-800">
-                ${imageHTML}
-                <div class="p-5 flex flex-col flex-grow">
-                    <div class="flex justify-between items-start mb-3">
-                        <div class="flex items-center flex-wrap gap-1">
-                            <span class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs px-2 py-1 rounded font-bold">${escapeHTML(project.category || 'Другое')}</span>
-                            ${statusBadge} ${closedBadge} ${unreadChatBadge}
-                        </div>
-                        <div class="flex items-center gap-2">${favIcon}<span class="text-xs text-gray-400">${escapeHTML(project.deadline)}</span></div>
-                    </div>
-                    <h3 class="font-bold text-lg mb-1 text-gray-800 dark:text-gray-200">${escapeHTML(project.title)}</h3>
-                    <p class="text-xs text-gray-600 dark:text-gray-400 mb-3 flex items-center">${avatarHTML} ${escapeHTML(authorName)}</p>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-3 flex-grow">${escapeHTML(project.description || 'Описание не добавлено.')}</p>
-                    <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
-                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Нужен: ${escapeHTML(project.role)}</span>
-                        <span class="text-blue-600 dark:text-blue-400 text-sm font-semibold">Подробнее &rarr;</span>
-                    </div>
-                </div>
-            </div>`;
+        // ОСТАЛЬНЫЕ ФУНКЦИИ (Создание проекта, Чаты, Файлы, CSV и т.д.)
+        window.exportData = async function (projectId) {
+            const project = allProjects.find(p => String(p.id) === String(projectId)); const { data: requests } = await supabaseClient.from('join_requests').select('user_id').eq('project_id', projectId).eq('status', 'approved');
+            if (!requests || requests.length === 0) return alert("Нет участников."); let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; csvContent += "Имя,Email,ВУЗ,Факультет\n";
+            requests.forEach(req => { const p = allProfiles.find(prof => prof.id === req.user_id); if (p) csvContent += `"${p.full_name || ''}","${p.email || ''}","${p.university || ''}","${p.faculty || ''}"\n`; });
+            const link = document.createElement("a"); link.setAttribute("href", encodeURI(csvContent)); link.setAttribute("download", `Участники_${project.title.replace(/\s+/g, '_')}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
+        async function loadProfiles() { const { data } = await supabaseClient.from('profiles').select('*'); if (data) allProfiles = data; }
+        async function loadTasks(projectId) { const list = document.getElementById('tasks-list'); list.innerHTML = ''; const { data } = await supabaseClient.from('tasks').select('*').eq('project_id', projectId).order('created_at', { ascending: true }); if (!data || data.length === 0) { list.innerHTML = '<p class="text-xs text-gray-500">Задач нет.</p>'; return; } data.forEach(task => { const checked = task.is_completed ? 'checked' : ''; const line = task.is_completed ? 'line-through text-gray-400' : ''; list.insertAdjacentHTML('beforeend', `<label class="flex items-center gap-2 cursor-pointer p-1"><input type="checkbox" ${checked} onchange="toggleTask(${task.id}, ${task.is_completed})" class="rounded text-yellow-600"><span class="text-xs ${line}">${escapeHTML(task.title)}</span></label>`); }); }
+        document.getElementById('addTaskForm').addEventListener('submit', async (e) => { e.preventDefault(); const input = document.getElementById('task-input'); if (!input.value.trim()) return; await supabaseClient.from('tasks').insert([{ project_id: currentDetailProjectId, title: input.value.trim() }]); input.value = ''; loadTasks(currentDetailProjectId); });
+        window.toggleTask = async function (taskId, currentStatus) { await supabaseClient.from('tasks').update({ is_completed: !currentStatus }).eq('id', taskId); loadTasks(currentDetailProjectId); };
+        window.openGroupChat = async function (projectId, projectTitle) { document.getElementById('groupChatTitle').innerText = `Команда: ${projectTitle}`; document.getElementById('groupChatMessages').innerHTML = 'Загрузка...'; document.getElementById('groupChatModal').classList.remove('hidden'); document.getElementById('groupChatModal').classList.add('flex'); await loadGroupMessages(projectId); setupGroupRealtime(projectId); document.getElementById('groupChatInput').focus(); await supabaseClient.from('join_requests').update({ last_read_group_at: new Date().toISOString() }).eq('project_id', projectId).eq('user_id', currentUser.id); if (unreadGroupCounts[projectId]) { delete unreadGroupCounts[projectId]; renderProjects(); } }
+        async function loadGroupMessages(projectId) { const { data } = await supabaseClient.from('group_messages').select('*').eq('project_id', projectId).order('created_at', { ascending: true }); const container = document.getElementById('groupChatMessages'); container.innerHTML = ''; if (!data || data.length === 0) { container.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">Нет сообщений</p>'; return; } data.forEach(msg => renderGroupMessage(msg)); container.scrollTop = container.scrollHeight; }
+        function renderGroupMessage(msg) { if (msg.id && document.getElementById(`group-msg-${msg.id}`)) return; const isMine = msg.sender_id === currentUser.id; const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); const author = allProfiles.find(p => p.id === msg.sender_id); document.getElementById('groupChatMessages').insertAdjacentHTML('beforeend', `<div id="group-msg-${msg.id || Date.now()}" class="flex ${isMine ? 'justify-end' : 'justify-start'} mb-2"><div class="max-w-[75%] p-3 rounded-xl text-sm ${isMine ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border dark:border-gray-600 rounded-bl-none shadow-sm'}">${!isMine ? `<div class="text-xs font-bold text-indigo-500 mb-1">${escapeHTML(author?.full_name || 'Кто-то')}</div>` : ''}${escapeHTML(msg.content)}<div class="text-[10px] ${isMine ? 'text-indigo-200' : 'text-gray-400'} text-right mt-1">${time}</div></div></div>`); }
+        function setupGroupRealtime(projectId) { if (groupChatSubscription) supabaseClient.removeChannel(groupChatSubscription); groupChatSubscription = supabaseClient.channel(`project_group_${String(projectId)}`).on('broadcast', { event: 'new_group_msg' }, (payload) => { if (String(payload.payload.sender_id) === String(currentUser.id)) return; const container = document.getElementById('groupChatMessages'); if (container.innerHTML.includes('Нет сообщений')) container.innerHTML = ''; renderGroupMessage(payload.payload); container.scrollTop = container.scrollHeight; }).subscribe(); }
+        document.getElementById('groupChatForm').addEventListener('submit', async (e) => { e.preventDefault(); const input = document.getElementById('groupChatInput'); if (!input.value.trim()) return; const text = input.value.trim(); input.value = ''; const { data, error } = await supabaseClient.from('group_messages').insert([{ project_id: currentDetailProjectId, sender_id: currentUser.id, content: text }]).select(); if (!error && data && data.length > 0) { const msgData = data[0]; renderGroupMessage(msgData); document.getElementById('groupChatMessages').scrollTop = document.getElementById('groupChatMessages').scrollHeight; if (groupChatSubscription) groupChatSubscription.send({ type: 'broadcast', event: 'new_group_msg', payload: msgData }); const { data: members } = await supabaseClient.from('join_requests').select('user_id').eq('project_id', currentDetailProjectId).eq('status', 'approved'); if (members) { members.forEach(member => { if (member.user_id !== currentUser.id) { const notifyChannel = supabaseClient.channel(`user_notifications_${member.user_id}`); notifyChannel.subscribe((status) => { if (status === 'SUBSCRIBED') { notifyChannel.send({ type: 'broadcast', event: 'new_group_message_alert', payload: { project_id: currentDetailProjectId } }); setTimeout(() => supabaseClient.removeChannel(notifyChannel), 1000); } }); } }); } } });
 
-        document.getElementById('searchInput').addEventListener('input', renderProjects);
-        document.getElementById('filterRole').addEventListener('change', renderProjects);
-        document.getElementById('filterCategory').addEventListener('change', renderProjects);
-        document.getElementById('filterFavorites').addEventListener('change', renderProjects);
-
-        window.toggleFavorite = async function (projectId) {
-            if (!currentUser) return alert("Войдите!"); const isFav = myFavoriteProjectIds.includes(String(projectId));
-            if (isFav) { await supabaseClient.from('favorites').delete().eq('user_id', currentUser.id).eq('project_id', projectId); myFavoriteProjectIds = myFavoriteProjectIds.filter(id => id !== String(projectId)); } 
-            else { await supabaseClient.from('favorites').insert([{ user_id: currentUser.id, project_id: projectId }]); myFavoriteProjectIds.push(String(projectId)); }
-            openProjectDetail(projectId); renderProjects();
-        }
-
-        async function openInbox() {
-            const inboxList = document.getElementById('inboxList'); inboxList.innerHTML = 'Загрузка...'; document.getElementById('inboxModal').classList.remove('hidden'); document.getElementById('inboxModal').classList.add('flex');
-            const { data } = await supabaseClient.from('messages').select('*').or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`).order('created_at', { ascending: false });
-            if (!data || data.length === 0) return inboxList.innerHTML = '<p class="text-center mt-4">Нет сообщений.</p>';
-            const chatsMap = new Map();
-            data.forEach(msg => { const otherId = msg.sender_id === currentUser.id ? msg.receiver_id : msg.sender_id; const key = `${msg.project_id}_${otherId}`; if (!chatsMap.has(key)) chatsMap.set(key, { projectId: msg.project_id, otherId: otherId, lastMessage: msg.content, unreadCount: 0 }); if (msg.receiver_id === currentUser.id && msg.is_read === false) chatsMap.get(key).unreadCount++; });
-            inboxList.innerHTML = '';
-            for (const chat of chatsMap.values()) {
-                const project = allProjects.find(p => String(p.id) === String(chat.projectId)); const otherProfile = allProfiles.find(p => p.id === chat.otherId);
-                const otherName = otherProfile?.full_name || 'Пользователь'; const otherAvatar = otherProfile?.avatar_url;
-                const badgeHTML = chat.unreadCount > 0 ? `<span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full ml-2">${chat.unreadCount}</span>` : '';
-                const avatarHTML = otherAvatar ? `<img src="${otherAvatar}" class="w-8 h-8 rounded-full object-cover mr-2">` : `<div class="w-8 h-8 rounded-full bg-blue-200 dark:bg-blue-900 text-blue-700 dark:text-blue-300 flex items-center justify-center font-bold mr-2">${otherName[0].toUpperCase()}</div>`;
-                inboxList.insertAdjacentHTML('beforeend', `<div onclick="openChatFromInbox('${chat.otherId}', ${chat.projectId}, '${project?.title.replace(/'/g, "\\'")}')" class="bg-white dark:bg-gray-700 p-3 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 flex items-center mb-2">${avatarHTML}<div class="flex-grow overflow-hidden"><div class="flex justify-between items-center mb-1"><div class="flex items-center"><span class="font-bold text-sm">${escapeHTML(otherName)}</span>${badgeHTML}</div><span class="text-[10px] text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-900 px-2 py-0.5 rounded truncate max-w-[120px]">${escapeHTML(project?.title || 'Удален')}</span></div><p class="text-xs text-gray-500 dark:text-gray-400 truncate">${escapeHTML(chat.lastMessage)}</p></div></div>`);
-            }
-        }
-        window.openChatFromInbox = function (receiverId, projectId, projectTitle) { document.getElementById('inboxModal').classList.add('hidden'); document.getElementById('inboxModal').classList.remove('flex'); openChat(receiverId, projectId, projectTitle); }
-
-        window.openChat = async function (receiverId, projectId, projectTitle) {
-            if (!currentUser) return; if (currentUser.id === receiverId) return alert("Это ваш проект!");
-            activeChat = { receiverId, projectId }; document.getElementById('chatTitle').innerText = "Чат"; document.getElementById('chatSubtitle').innerText = projectTitle; document.getElementById('chatMessages').innerHTML = 'Загрузка...'; document.getElementById('chatModal').classList.remove('hidden'); document.getElementById('chatModal').classList.add('flex');
-            await markMessagesAsRead(receiverId, projectId); await loadMessages(); setupChatRealtime(receiverId, projectId); document.getElementById('chatInput').focus();
-        }
-
-        async function loadMessages() {
-            if (!activeChat.receiverId || !activeChat.projectId) return;
-            const { data } = await supabaseClient.from('messages').select('*').or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${activeChat.receiverId}),and(sender_id.eq.${activeChat.receiverId},receiver_id.eq.${currentUser.id})`).order('created_at', { ascending: true });
-            const chatMessages = document.getElementById('chatMessages'); chatMessages.innerHTML = '';
-            const projectMessages = data ? data.filter(msg => String(msg.project_id) === String(activeChat.projectId)) : [];
-            if (projectMessages.length === 0) chatMessages.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">Нет сообщений!</p>';
-            else { projectMessages.forEach(msg => renderMessage(msg)); chatMessages.scrollTop = chatMessages.scrollHeight; }
-        }
-
-        function renderMessage(msg) {
-            if (msg.id && document.getElementById(`msg-${msg.id}`)) return; 
-            const isMine = msg.sender_id === currentUser.id;
-            const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            document.getElementById('chatMessages').insertAdjacentHTML('beforeend', `<div id="msg-${msg.id || Date.now()}" class="flex ${isMine ? 'justify-end' : 'justify-start'} mb-2"><div class="max-w-[75%] p-3 rounded-xl text-sm ${isMine ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-bl-none shadow-sm'}">${escapeHTML(msg.content)}<div class="text-[10px] ${isMine ? 'text-blue-200' : 'text-gray-400 dark:text-gray-500'} text-right mt-1">${time}</div></div></div>`);
-        }
-
-        function setupChatRealtime(receiverId, projectId) {
-            if (chatSubscription) supabaseClient.removeChannel(chatSubscription);
-            chatSubscription = supabaseClient.channel('chat-realtime')
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
-                    const newMsg = payload.new; if (String(newMsg.project_id) !== String(projectId)) return; if (String(newMsg.sender_id) === String(currentUser.id)) return;
-                    if ((String(newMsg.sender_id) === String(currentUser.id) && String(newMsg.receiver_id) === String(receiverId)) || (String(newMsg.sender_id) === String(receiverId) && String(newMsg.receiver_id) === String(currentUser.id))) {
-                        const chatMessages = document.getElementById('chatMessages'); if (chatMessages.innerHTML.includes('Нет сообщений')) chatMessages.innerHTML = '';
-                        renderMessage(newMsg); chatMessages.scrollTop = chatMessages.scrollHeight; if (String(newMsg.receiver_id) === String(currentUser.id)) markMessagesAsRead(receiverId, projectId);
-                    }
-                }).subscribe();
-        }
-
-        document.getElementById('chatForm').addEventListener('submit', async (e) => {
-            e.preventDefault(); const input = document.getElementById('chatInput'); const text = input.value.trim(); if (!text) return; input.value = '';
-            const { data, error } = await supabaseClient.from('messages').insert([{ sender_id: currentUser.id, receiver_id: activeChat.receiverId, project_id: activeChat.projectId, content: text, is_read: false }]).select();
-            if (!error && data && data.length > 0) {
-                renderMessage(data[0]); document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
-                const notifyChannel = supabaseClient.channel(`user_notifications_${activeChat.receiverId}`);
-                notifyChannel.subscribe((status) => { if (status === 'SUBSCRIBED') { notifyChannel.send({ type: 'broadcast', event: 'new_message', payload: { message: 'new' } }); setTimeout(() => supabaseClient.removeChannel(notifyChannel), 1000); } });
-            }
-        });
-
+        window.openReviewModal = function (targetId) { document.getElementById('review-target-id').value = targetId; document.getElementById('review-text').value = ''; document.getElementById('reviewModal').classList.remove('hidden'); document.getElementById('reviewModal').classList.add('flex'); };
+        document.getElementById('reviewForm').addEventListener('submit', async (e) => { e.preventDefault(); await supabaseClient.from('reviews').insert([{ project_id: currentDetailProjectId, author_id: currentUser.id, target_id: document.getElementById('review-target-id').value, rating: parseInt(document.getElementById('review-rating').value), text: document.getElementById('review-text').value }]); alert("Сохранено!"); document.getElementById('reviewModal').classList.add('hidden'); });
+        async function openAdminPanel() { const list = document.getElementById('adminList'); list.innerHTML = 'Загрузка...'; document.getElementById('adminModal').classList.remove('hidden'); document.getElementById('adminModal').classList.add('flex'); const { data } = await supabaseClient.from('reports').select('*').eq('status', 'pending').order('created_at', { ascending: false }); list.innerHTML = ''; if (!data || data.length === 0) { list.innerHTML = '<p class="text-center mt-4">Жалоб нет.</p>'; return; } data.forEach(report => { const reporter = allProfiles.find(p => p.id === report.reporter_id); const badGuy = allProfiles.find(p => p.id === report.reported_user_id); list.insertAdjacentHTML('beforeend', `<div class="bg-white dark:bg-gray-700 p-3 rounded shadow border mb-2 text-xs"><p>От: <b>${reporter?.full_name || 'Аноним'}</b></p><p>На: <b class="text-red-500">${badGuy?.full_name || 'Неизвестный'}</b></p><div class="bg-red-50 dark:bg-red-900 p-2 rounded my-2">${escapeHTML(report.reason)}</div><button onclick="dismissReport(${report.id})" class="bg-gray-500 text-white px-2 py-1 rounded mr-1">Игнор</button><button onclick="deleteBadUser('${report.reported_user_id}', ${report.id})" class="bg-red-600 text-white px-2 py-1 rounded">Удалить</button></div>`); }); }
+        window.dismissReport = async function (id) { await supabaseClient.from('reports').update({ status: 'ignored' }).eq('id', id); openAdminPanel(); }
+        window.deleteBadUser = async function (userId, reportId) { if (!confirm("Удалить пользователя?")) return; await supabaseClient.from('projects').delete().eq('user_id', userId); await supabaseClient.from('profiles').delete().eq('id', userId); await supabaseClient.from('reports').update({ status: 'ignored' }).eq('id', reportId); openAdminPanel(); loadProjects(); }
+        async function loadMyApprovedProjects() { if (!currentUser) return; const { data } = await supabaseClient.from('join_requests').select('project_id, last_read_group_at').eq('user_id', currentUser.id).eq('status', 'approved'); if (data) { myApprovedProjectIds = data.map(d => String(d.project_id)); unreadGroupCounts = {}; for (let req of data) { const { count } = await supabaseClient.from('group_messages').select('*', { count: 'exact', head: true }).eq('project_id', req.project_id).gt('created_at', req.last_read_group_at).neq('sender_id', currentUser.id); if (count > 0) unreadGroupCounts[req.project_id] = count; } } }
+        async function loadMyFavorites() { if (!currentUser) return; const { data } = await supabaseClient.from('favorites').select('project_id').eq('user_id', currentUser.id); if (data) myFavoriteProjectIds = data.map(d => String(d.project_id)); }
+        async function updateUnreadBadge() { if (!currentUser) return; const { count } = await supabaseClient.from('messages').select('*', { count: 'exact', head: true }).eq('receiver_id', currentUser.id).eq('is_read', false); const b1 = document.getElementById('unreadBadge'), b2 = document.getElementById('unreadBadgeMob'); if (b1) { if (count > 0) { b1.innerText = count; b1.classList.remove('hidden'); } else b1.classList.add('hidden'); } if (b2) { if (count > 0) { b2.innerText = count; b2.classList.remove('hidden'); } else b2.classList.add('hidden'); } }
+        async function updateRequestsBadge() { if (!currentUser) return; const myProjectIds = allProjects.filter(p => p.user_id === currentUser.id).map(p => p.id); const b1 = document.getElementById('requestsBadge'), b2 = document.getElementById('requestsBadgeMob'); if (!b1 && !b2) return; if (myProjectIds.length === 0) { b1?.classList.add('hidden'); b2?.classList.add('hidden'); return; } const { count } = await supabaseClient.from('join_requests').select('*', { count: 'exact', head: true }).in('project_id', myProjectIds).eq('status', 'pending'); if (b1) { if (count > 0) { b1.innerText = count; b1.classList.remove('hidden'); } else b1.classList.add('hidden'); } if (b2) { if (count > 0) { b2.innerText = count; b2.classList.remove('hidden'); } else b2.classList.add('hidden'); } }
+        function setupGlobalRealtime() { if (globalSubscription) supabaseClient.removeChannel(globalSubscription); globalSubscription = supabaseClient.channel(`user_notifications_${currentUser.id}`).on('broadcast', { event: 'new_message' }, () => { updateUnreadBadge(); if (!document.getElementById('inboxModal').classList.contains('hidden')) openInbox(); }).on('broadcast', { event: 'new_request' }, () => { updateRequestsBadge(); if (!document.getElementById('requestsModal').classList.contains('hidden')) openRequests(); }).on('broadcast', { event: 'new_group_message_alert' }, (payload) => { const projectId = payload.payload.project_id; if (String(currentDetailProjectId) === String(projectId) && !document.getElementById('groupChatModal').classList.contains('hidden')) return; if (!unreadGroupCounts[projectId]) unreadGroupCounts[projectId] = 0; unreadGroupCounts[projectId]++; renderProjects(); }).subscribe(); }
+        async function markMessagesAsRead(senderId, projectId) { await supabaseClient.from('messages').update({ is_read: true }).eq('receiver_id', currentUser.id).eq('sender_id', senderId).eq('project_id', projectId); updateUnreadBadge(); }
+        async function loadProjectMembers(projectId, isAuthor) { const list = document.getElementById('detail-members-list'); list.innerHTML = ''; const { data } = await supabaseClient.from('join_requests').select('user_id').eq('project_id', projectId).eq('status', 'approved'); if (!data || data.length === 0) { list.innerHTML = '<span class="text-xs text-gray-500">Нет участников</span>'; return; } data.forEach(req => { const profile = allProfiles.find(p => p.id === req.user_id); const name = profile?.full_name || 'Пользователь'; const kickBtn = isAuthor ? `<button onclick="kickMember(${projectId}, '${req.user_id}', '${name}')" class="ml-1 text-red-500 font-bold">✕</button>` : ''; const revBtn = isAuthor ? `<button onclick="openReviewModal('${req.user_id}')" class="ml-1 text-green-600 font-bold">⭐</button>` : ''; list.insertAdjacentHTML('beforeend', `<span class="bg-gray-200 dark:bg-gray-700 text-xs px-2 py-1 rounded-full flex items-center mb-1 mr-1">${escapeHTML(name)} ${kickBtn} ${revBtn}</span>`); }); }
+        window.kickMember = async function (pid, mid, mname) { if (!confirm(`Исключить?`)) return; await supabaseClient.from('join_requests').update({ status: 'rejected' }).eq('project_id', pid).eq('user_id', mid); await supabaseClient.from('project_files').delete().eq('project_id', pid).eq('user_id', mid); openProjectDetail(pid); }
+        window.leaveProject = async function (pid) { if (!confirm('Покинуть проект?')) return; await supabaseClient.from('join_requests').update({ status: 'rejected' }).eq('project_id', pid).eq('user_id', currentUser.id); await supabaseClient.from('project_files').delete().eq('project_id', pid).eq('user_id', currentUser.id); await loadMyApprovedProjects(); loadProjects(); document.getElementById('detailModal').classList.add('hidden'); }
+        async function loadProjectFiles(projectId) { const list = document.getElementById('detail-files-list'); const noMsg = document.getElementById('no-files-msg'); list.innerHTML = ''; noMsg.classList.add('hidden'); const { data } = await supabaseClient.from('project_files').select('*').eq('project_id', projectId).order('created_at', { ascending: false }); if (!data || data.length === 0) { noMsg.classList.remove('hidden'); return; } for (const file of data) { let url = file.file_url; if (!url.startsWith('http')) { const { data: u } = await supabaseClient.storage.from('project-documents').createSignedUrl(file.file_url, 3600); if (u) url = u.signedUrl; } list.insertAdjacentHTML('beforeend', `<a href="${url}" target="_blank" class="flex justify-between items-center bg-white dark:bg-gray-600 p-2 rounded border text-xs text-blue-700 dark:text-blue-300 mb-1"><span>📄 ${escapeHTML(file.file_name)}</span></a>`); } }
+        document.getElementById('uploadFileForm').addEventListener('submit', async (e) => { e.preventDefault(); const file = document.getElementById('project-file-input').files[0]; if (!file || !currentDetailProjectId) return; if (file.size > 10 * 1024 * 1024) return alert("Файл > 10 МБ."); const btn = document.getElementById('uploadFileBtn'); btn.disabled = true; const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.\s_-]/g, '_')}`; const { error } = await supabaseClient.storage.from('project-documents').upload(fileName, file); if (!error) { await supabaseClient.from('project_files').insert([{ project_id: currentDetailProjectId, user_id: currentUser.id, file_name: file.name, file_url: fileName }]); document.getElementById('project-file-input').value = ''; loadProjectFiles(currentDetailProjectId); } else alert("Ошибка!"); btn.disabled = false; });
+        window.sendJoinRequest = async function (pid, aid) { if (!currentUser) return alert("Войдите!"); const { data } = await supabaseClient.from('join_requests').select('*').eq('project_id', pid).eq('user_id', currentUser.id).maybeSingle(); if (data) { if (data.status === 'pending') return alert("Ждите."); if (data.status === 'approved') return alert("Вы приняты."); if (data.status === 'rejected') { await supabaseClient.from('join_requests').update({ status: 'pending' }).eq('id', data.id); } } else { await supabaseClient.from('join_requests').insert([{ project_id: pid, user_id: currentUser.id, status: 'pending' }]); } alert("Заявка отправлена!"); const ch = supabaseClient.channel(`user_notifications_${aid}`); ch.subscribe(s => { if (s === 'SUBSCRIBED') { ch.send({ type: 'broadcast', event: 'new_request', payload: {} }); setTimeout(() => supabaseClient.removeChannel(ch), 1000); } }); document.getElementById('detailModal').classList.add('hidden'); }
+        async function openRequests() { const list = document.getElementById('requestsList'); list.innerHTML = 'Загрузка...'; document.getElementById('requestsModal').classList.remove('hidden'); document.getElementById('requestsModal').classList.add('flex'); mobileMenu.classList.add('hidden'); const myProjectIds = allProjects.filter(p => p.user_id === currentUser.id).map(p => p.id); if (myProjectIds.length === 0) return list.innerHTML = 'Нет проектов.'; const { data } = await supabaseClient.from('join_requests').select('*').in('project_id', myProjectIds).order('created_at', { ascending: false }); if (!data || data.length === 0) return list.innerHTML = 'Нет заявок.'; list.innerHTML = ''; data.forEach(req => { const project = allProjects.find(p => String(p.id) === String(req.project_id)); const userProfile = allProfiles.find(p => p.id === req.user_id); let statusBadge = req.status === 'approved' ? '<span class="text-green-600 font-bold text-xs">Принят</span>' : req.status === 'rejected' ? '<span class="text-red-600 font-bold text-xs">Отклонен</span>' : '<span class="text-yellow-600 font-bold text-xs">В ожидании</span>'; const btns = req.status === 'pending' ? `<div class="flex gap-1 mt-2"><button onclick="updateRequest(${req.id}, 'approved')" class="bg-green-500 text-white px-2 py-1 rounded text-xs">Принять</button><button onclick="updateRequest(${req.id}, 'rejected')" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Отклонить</button></div>` : ''; list.insertAdjacentHTML('beforeend', `<div class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm border dark:border-gray-600 mb-2"><div class="flex justify-between items-start mb-1"><div><p class="font-bold text-sm">${escapeHTML(userProfile?.full_name || 'Пользователь')}</p><p class="text-xs text-gray-500">Проект: <span class="font-medium text-blue-600">${escapeHTML(project?.title || 'Удален')}</span></p></div>${statusBadge}</div>${btns}</div>`); }); }
+        window.updateRequest = async function (reqId, newStatus) { await supabaseClient.from('join_requests').update({ status: newStatus }).eq('id', reqId); openRequests(); }
+        async function loadProjects() { const { data } = await supabaseClient.from('projects').select('*').order('id', { ascending: false }); if (data) { allProjects = data; renderProjects(); updateRequestsBadge(); } }
+        function createCardHTML(p) { const img = p.image_url ? `<img src="${p.image_url}" class="w-full h-40 object-cover rounded-t-xl">` : ''; const a = allProfiles.find(pr => pr.id === p.user_id); const aName = a?.full_name || 'Аноним'; const avUrl = a?.avatar_url; const isApp = myApprovedProjectIds.includes(String(p.id)); const isFav = myFavoriteProjectIds.includes(String(p.id)); const cardBorder = isApp ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-gray-100 dark:border-gray-700'; const sBadge = isApp ? '<span class="bg-green-500 text-white text-[10px] px-2 py-0.5 rounded font-bold ml-1">В проекте</span>' : ''; const cBadge = p.status === 'closed' ? '<span class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded font-bold ml-1">Закрыт</span>' : ''; const fIcon = isFav ? '<span class="text-yellow-500 text-lg">⭐</span>' : ''; const av = avUrl ? `<img src="${avUrl}" onclick="event.stopPropagation(); openZoomModal('${avUrl}')" class="w-5 h-5 rounded-full object-cover inline-block mr-1 cursor-pointer">` : `<div class="w-5 h-5 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold text-[10px] inline-block mr-1">${aName[0].toUpperCase()}</div>`; const uBadge = (unreadGroupCounts[p.id] > 0) ? `<span class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1 animate-pulse">💬 ${unreadGroupCounts[p.id]}</span>` : ''; return `<div onclick="openProjectDetail(${p.id})" class="rounded-xl shadow border ${cardBorder} hover:shadow-lg transition relative flex flex-col overflow-hidden cursor-pointer bg-white dark:bg-gray-800"><div class="p-4 flex flex-col flex-grow"><div class="flex justify-between items-start mb-2"><div class="flex items-center flex-wrap gap-1"><span class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-[10px] px-2 py-0.5 rounded font-bold">${escapeHTML(p.category || 'Другое')}</span>${sBadge}${cBadge}${uBadge}</div><div class="flex items-center gap-1">${fIcon}<span class="text-[10px] text-gray-400">${escapeHTML(p.deadline)}</span></div></div><h3 class="font-bold text-base mb-1 text-gray-800 dark:text-gray-200">${escapeHTML(p.title)}</h3><p class="text-xs text-gray-600 dark:text-gray-400 mb-2 flex items-center">${av} ${escapeHTML(aName)}</p><p class="text-xs text-gray-600 dark:text-gray-400 mb-3 line-clamp-2 flex-grow">${escapeHTML(p.description || 'Нет описания.')}</p><div class="flex items-center justify-between mt-auto pt-2 border-t border-gray-100 dark:border-gray-700"><span class="text-[10px] font-medium text-gray-500">Нужен: ${escapeHTML(p.role)}</span><span class="text-blue-600 text-xs font-semibold">Подробнее &rarr;</span></div></div></div>`; }
+        document.getElementById('searchInput').addEventListener('input', renderProjects); document.getElementById('filterRole').addEventListener('change', renderProjects); document.getElementById('filterCategory').addEventListener('change', renderProjects); document.getElementById('filterFavorites').addEventListener('change', renderProjects);
+        window.toggleFavorite = async function (pid) { if (!currentUser) return alert("Войдите!"); const isFav = myFavoriteProjectIds.includes(String(pid)); if (isFav) { await supabaseClient.from('favorites').delete().eq('user_id', currentUser.id).eq('project_id', pid); myFavoriteProjectIds = myFavoriteProjectIds.filter(id => id !== String(pid)); } else { await supabaseClient.from('favorites').insert([{ user_id: currentUser.id, project_id: pid }]); myFavoriteProjectIds.push(String(pid)); } openProjectDetail(pid); renderProjects(); }
+        async function openInbox() { const inboxList = document.getElementById('inboxList'); inboxList.innerHTML = 'Загрузка...'; document.getElementById('inboxModal').classList.remove('hidden'); document.getElementById('inboxModal').classList.add('flex'); mobileMenu.classList.add('hidden'); const { data } = await supabaseClient.from('messages').select('*').or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`).order('created_at', { ascending: false }); if (!data || data.length === 0) return inboxList.innerHTML = '<p class="text-center mt-4">Нет сообщений.</p>'; const chatsMap = new Map(); data.forEach(msg => { const otherId = msg.sender_id === currentUser.id ? msg.receiver_id : msg.sender_id; const key = `${msg.project_id}_${otherId}`; if (!chatsMap.has(key)) chatsMap.set(key, { projectId: msg.project_id, otherId: otherId, lastMessage: msg.content, unreadCount: 0 }); if (msg.receiver_id === currentUser.id && msg.is_read === false) chatsMap.get(key).unreadCount++; }); inboxList.innerHTML = ''; for (const chat of chatsMap.values()) { const project = allProjects.find(p => String(p.id) === String(chat.projectId)); const otherProfile = allProfiles.find(p => p.id === chat.otherId); const otherName = otherProfile?.full_name || 'Пользователь'; const otherAvatar = otherProfile?.avatar_url; const badgeHTML = chat.unreadCount > 0 ? `<span class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-2">${chat.unreadCount}</span>` : ''; const avatarHTML = otherAvatar ? `<img src="${otherAvatar}" class="w-8 h-8 rounded-full object-cover mr-2">` : `<div class="w-8 h-8 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold mr-2 text-xs">${otherName[0].toUpperCase()}</div>`; inboxList.insertAdjacentHTML('beforeend', `<div onclick="openChatFromInbox('${chat.otherId}', ${chat.projectId}, '${project?.title.replace(/'/g, "\\'")}')" class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm border dark:border-gray-600 cursor-pointer flex items-center mb-2">${avatarHTML}<div class="flex-grow overflow-hidden"><div class="flex justify-between items-center mb-1"><div class="flex items-center"><span class="font-bold text-sm">${escapeHTML(otherName)}</span>${badgeHTML}</div><span class="text-[10px] text-blue-600 bg-blue-50 dark:bg-blue-900 px-2 py-0.5 rounded truncate max-w-[100px]">${escapeHTML(project?.title || 'Удален')}</span></div><p class="text-xs text-gray-500 truncate">${escapeHTML(chat.lastMessage)}</p></div></div>`); } }
+        window.openChatFromInbox = function (rid, pid, ptitle) { document.getElementById('inboxModal').classList.add('hidden'); openChat(rid, pid, ptitle); }
+        window.openChat = async function (rid, pid, ptitle) { if (!currentUser || currentUser.id === rid) return; activeChat = { receiverId: rid, projectId: pid }; document.getElementById('chatTitle').innerText = "Чат"; document.getElementById('chatSubtitle').innerText = ptitle; document.getElementById('chatMessages').innerHTML = 'Загрузка...'; document.getElementById('chatModal').classList.remove('hidden'); document.getElementById('chatModal').classList.add('flex'); await markMessagesAsRead(rid, pid); await loadMessages(); setupChatRealtime(rid, pid); document.getElementById('chatInput').focus(); }
+        async function loadMessages() { if (!activeChat.receiverId) return; const { data } = await supabaseClient.from('messages').select('*').or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${activeChat.receiverId}),and(sender_id.eq.${activeChat.receiverId},receiver_id.eq.${currentUser.id})`).order('created_at', { ascending: true }); const cm = document.getElementById('chatMessages'); cm.innerHTML = ''; const pms = data ? data.filter(m => String(m.project_id) === String(activeChat.projectId)) : []; if (pms.length === 0) cm.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">Нет сообщений!</p>'; else { pms.forEach(m => renderMessage(m)); cm.scrollTop = cm.scrollHeight; } }
+        function renderMessage(m) { if (m.id && document.getElementById(`msg-${m.id}`)) return; const mine = m.sender_id === currentUser.id; const t = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); document.getElementById('chatMessages').insertAdjacentHTML('beforeend', `<div id="msg-${m.id || Date.now()}" class="flex ${mine ? 'justify-end' : 'justify-start'} mb-2"><div class="max-w-[75%] p-3 rounded-xl text-sm ${mine ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border dark:border-gray-600 rounded-bl-none shadow-sm'}">${escapeHTML(m.content)}<div class="text-[10px] ${mine ? 'text-blue-200' : 'text-gray-400'} text-right mt-1">${t}</div></div></div>`); }
+        function setupChatRealtime(rid, pid) { if (chatSubscription) supabaseClient.removeChannel(chatSubscription); chatSubscription = supabaseClient.channel('chat-realtime').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => { const m = payload.new; if (String(m.project_id) !== String(pid) || String(m.sender_id) === String(currentUser.id)) return; if ((String(m.sender_id) === String(currentUser.id) && String(m.receiver_id) === String(rid)) || (String(m.sender_id) === String(rid) && String(m.receiver_id) === String(currentUser.id))) { const cm = document.getElementById('chatMessages'); if (cm.innerHTML.includes('Нет сообщений')) cm.innerHTML = ''; renderMessage(m); cm.scrollTop = cm.scrollHeight; if (String(m.receiver_id) === String(currentUser.id)) markMessagesAsRead(rid, pid); } }).subscribe(); }
+        document.getElementById('chatForm').addEventListener('submit', async (e) => { e.preventDefault(); const inp = document.getElementById('chatInput'); const txt = inp.value.trim(); if (!txt) return; inp.value = ''; const { data, error } = await supabaseClient.from('messages').insert([{ sender_id: currentUser.id, receiver_id: activeChat.receiverId, project_id: activeChat.projectId, content: txt, is_read: false }]).select(); if (!error && data && data.length > 0) { renderMessage(data[0]); document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight; const ch = supabaseClient.channel(`user_notifications_${activeChat.receiverId}`); ch.subscribe(s => { if (s === 'SUBSCRIBED') { ch.send({ type: 'broadcast', event: 'new_message', payload: {} }); setTimeout(() => supabaseClient.removeChannel(ch), 1000); } }); } });
         document.getElementById('reportBtn').addEventListener('click', () => { document.getElementById('report-reason').value = ''; document.getElementById('reportModal').classList.remove('hidden'); document.getElementById('reportModal').classList.add('flex'); });
-        document.getElementById('reportForm').addEventListener('submit', async (e) => { e.preventDefault(); await supabaseClient.from('reports').insert([{ reporter_id: currentUser.id, reported_user_id: activeChat.receiverId, project_id: activeChat.projectId, reason: document.getElementById('report-reason').value }]); alert("Жалоба отправлена!"); document.getElementById('reportModal').classList.add('hidden'); document.getElementById('reportModal').classList.remove('flex'); });
-
-        window.editProject = function (id) {
-            const project = allProjects.find(p => String(p.id) === String(id)); if (!project) return;
-            editingProjectId = id; document.getElementById('modalTitle').innerText = "Редактировать"; document.getElementById('submitBtn').innerText = "Сохранить";
-            document.getElementById('input-title').value = project.title; document.getElementById('input-category').value = project.category || 'Другое'; document.getElementById('input-status').value = project.status || 'open'; document.getElementById('input-deadline').value = project.deadline; document.getElementById('input-role').value = project.role; document.getElementById('input-desc').value = project.description || ''; document.getElementById('input-image').value = '';
-            if (project.image_url) { document.getElementById('current-image-preview').src = project.image_url; document.getElementById('current-image-container').classList.remove('hidden'); } else document.getElementById('current-image-container').classList.add('hidden');
-            document.getElementById('modal').classList.remove('hidden'); document.getElementById('modal').classList.add('flex'); document.getElementById('detailModal').classList.add('hidden'); document.getElementById('detailModal').classList.remove('flex');
-        }
-
-        window.deleteProject = async function (id) { if (confirm('Удалить?')) { await supabaseClient.from('projects').delete().eq('id', id); loadProjects(); document.getElementById('detailModal').classList.add('hidden'); document.getElementById('detailModal').classList.remove('flex'); } }
-
-        document.getElementById('projectForm').addEventListener('submit', async (e) => {
-            e.preventDefault(); const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerText = "Ждите...";
-            const file = document.getElementById('input-image').files[0]; let imageUrl = null;
-            if (file) { 
-                if (file.size > 10 * 1024 * 1024) { alert("Картинка слишком большая! Максимум 10 МБ."); btn.disabled = false; btn.innerText = "Опубликовать"; return; }
-                const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`; const { error } = await supabaseClient.storage.from('project-images').upload(fileName, file); if (!error) imageUrl = supabaseClient.storage.from('project-images').getPublicUrl(fileName).data.publicUrl; 
-            }
-            const projectData = { title: document.getElementById('input-title').value, category: document.getElementById('input-category').value, status: document.getElementById('input-status').value, deadline: document.getElementById('input-deadline').value, role: document.getElementById('input-role').value, description: document.getElementById('input-desc').value };
-            if (editingProjectId) {
-                const current = allProjects.find(p => String(p.id) === String(editingProjectId)); let finalImg = document.getElementById('delete-image-checkbox').checked ? null : current.image_url; if (file) finalImg = imageUrl;
-                await supabaseClient.from('projects').update({ ...projectData, image_url: finalImg }).eq('id', editingProjectId);
-            } else { await supabaseClient.from('projects').insert([{ ...projectData, user_id: currentUser.id, image_url: imageUrl }]); }
-            btn.disabled = false; btn.innerText = "Опубликовать"; document.getElementById('modal').classList.add('hidden'); document.getElementById('modal').classList.remove('flex'); document.getElementById('projectForm').reset(); editingProjectId = null; loadProjects();
-        });
+        document.getElementById('reportForm').addEventListener('submit', async (e) => { e.preventDefault(); await supabaseClient.from('reports').insert([{ reporter_id: currentUser.id, reported_user_id: activeChat.receiverId, project_id: activeChat.projectId, reason: document.getElementById('report-reason').value }]); alert("Жалоба отправлена!"); document.getElementById('reportModal').classList.add('hidden'); });
+        window.editProject = function (id) { const p = allProjects.find(x => String(x.id) === String(id)); if (!p) return; editingProjectId = id; document.getElementById('modalTitle').innerText = "Редактировать"; document.getElementById('submitBtn').innerText = "Сохранить"; document.getElementById('input-title').value = p.title; document.getElementById('input-category').value = p.category || 'Другое'; document.getElementById('input-status').value = p.status || 'open'; document.getElementById('input-deadline').value = p.deadline; document.getElementById('input-role').value = p.role; document.getElementById('input-desc').value = p.description || ''; document.getElementById('input-image').value = ''; if (p.image_url) { document.getElementById('current-image-preview').src = p.image_url; document.getElementById('current-image-container').classList.remove('hidden'); } else document.getElementById('current-image-container').classList.add('hidden'); document.getElementById('modal').classList.remove('hidden'); document.getElementById('modal').classList.add('flex'); document.getElementById('detailModal').classList.add('hidden'); }
+        window.deleteProject = async function (id) { if (confirm('Удалить?')) { await supabaseClient.from('projects').delete().eq('id', id); loadProjects(); document.getElementById('detailModal').classList.add('hidden'); } }
+        document.getElementById('projectForm').addEventListener('submit', async (e) => { e.preventDefault(); const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerText = "Ждите..."; const file = document.getElementById('input-image').files[0]; let imageUrl = null; if (file) { if (file.size > 10 * 1024 * 1024) { alert("Картинка > 10 МБ."); btn.disabled = false; btn.innerText = "Опубликовать"; return; } const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`; const { error } = await supabaseClient.storage.from('project-images').upload(fileName, file); if (!error) imageUrl = supabaseClient.storage.from('project-images').getPublicUrl(fileName).data.publicUrl; } const projectData = { title: document.getElementById('input-title').value, category: document.getElementById('input-category').value, status: document.getElementById('input-status').value, deadline: document.getElementById('input-deadline').value, role: document.getElementById('input-role').value, description: document.getElementById('input-desc').value }; if (editingProjectId) { const cur = allProjects.find(p => String(p.id) === String(editingProjectId)); let finalImg = document.getElementById('delete-image-checkbox').checked ? null : cur.image_url; if (file) finalImg = imageUrl; await supabaseClient.from('projects').update({ ...projectData, image_url: finalImg }).eq('id', editingProjectId); } else { await supabaseClient.from('projects').insert([{ ...projectData, user_id: currentUser.id, image_url: imageUrl }]); } btn.disabled = false; btn.innerText = "Опубликовать"; document.getElementById('modal').classList.add('hidden'); document.getElementById('projectForm').reset(); editingProjectId = null; loadProjects(); });
+        document.getElementById('authForm').addEventListener('submit', async (e) => { e.preventDefault(); const { error } = await supabaseClient.auth.signInWithPassword({ email: document.getElementById('auth-email').value, password: document.getElementById('auth-password').value }); if (!error) { document.getElementById('authModal').classList.add('hidden'); document.getElementById('authForm').reset(); } else alert(error.message); });
+        document.getElementById('signupSubmitBtn').addEventListener('click', async (e) => { e.preventDefault(); const email = document.getElementById('auth-email').value; const pass = document.getElementById('auth-password').value; const { error: e1 } = await supabaseClient.auth.signUp({ email, password: pass }); if (e1) return alert(e1.message); const { error: e2 } = await supabaseClient.auth.signInWithPassword({ email, password: pass }); if (!e2) { document.getElementById('authModal').classList.add('hidden'); document.getElementById('authForm').reset(); } });
+        document.getElementById('forgotPasswordBtn').addEventListener('click', async () => { const email = document.getElementById('auth-email').value; if (!email) return alert("Введите email!"); const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin }); if (error) alert(error.message); else alert("Письмо отправлено на " + email); });
+        const handleOAuth = async (p) => { const { error } = await supabaseClient.auth.signInWithOAuth({ provider: p, options: { redirectTo: window.location.origin } }); if (error) alert(error.message); };
+        document.getElementById('googleLoginBtn').addEventListener('click', () => handleOAuth('google'));
+        document.getElementById('yandexLoginBtn').addEventListener('click', () => handleOAuth('custom:yandex'));
 
         checkUser();
     </script>
 </body>
+
 </html>
