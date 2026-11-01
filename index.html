@@ -267,14 +267,35 @@
             </form>
         </div>
     </div>
+    
+    <!-- МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ -->
     <div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4 relative"><button id="closeAuthBtn" class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
+        <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4 relative">
+            <button id="closeAuthBtn" class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
             <h2 class="text-2xl font-bold mb-4">Вход</h2>
             <form id="authForm" class="flex flex-col gap-4">
                 <div><label class="block text-sm font-medium mb-1">Email</label><input type="email" id="auth-email" required class="w-full border rounded-lg px-3 py-2"></div>
                 <div><label class="block text-sm font-medium mb-1">Пароль</label><input type="password" id="auth-password" required class="w-full border rounded-lg px-3 py-2"></div>
-                <div class="flex gap-2 mt-2"><button type="submit" id="loginSubmitBtn" class="w-1/2 bg-blue-600 text-white font-bold py-2 rounded-lg">Войти</button><button type="button" id="signupSubmitBtn" class="w-1/2 bg-green-600 text-white font-bold py-2 rounded-lg">Регистрация</button></div>
+                <div class="flex gap-2 mt-2">
+                    <button type="submit" id="loginSubmitBtn" class="w-1/2 bg-blue-600 text-white font-bold py-2 rounded-lg">Войти</button>
+                    <button type="button" id="signupSubmitBtn" class="w-1/2 bg-green-600 text-white font-bold py-2 rounded-lg">Регистрация</button>
+                </div>
             </form>
+            
+            <div class="relative flex py-5 items-center">
+                <div class="flex-grow border-t border-gray-300"></div>
+                <span class="flex-shrink mx-4 text-gray-500 text-sm">или войдите через</span>
+                <div class="flex-grow border-t border-gray-300"></div>
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <button type="button" id="googleLoginBtn" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2">
+                     Google
+                </button>
+                <button type="button" id="yandexLoginBtn" class="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2">
+                     Яндекс
+                </button>
+            </div>
         </div>
     </div>
 
@@ -307,7 +328,6 @@
         const authBlock = document.getElementById('auth-block');
 
         // === ЗАЩИТА ОТ XSS (Санитайзер) ===
-        // Эта функция заменяет опасные символы на безопасные, чтобы скрипты не выполнялись
         function escapeHTML(str) {
             if (!str) return '';
             return str.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -438,6 +458,21 @@
             if (signInError) { alert("Ошибка входа: " + signInError.message); } 
             else { document.getElementById('authModal').classList.add('hidden'); document.getElementById('authModal').classList.remove('flex'); document.getElementById('authForm').reset(); }
         });
+
+        // ОБРАБОТЧИКИ ВХОДА ЧЕРЕЗ СОЦСЕТИ
+        const handleOAuthLogin = async (provider) => {
+            const { data, error } = await supabaseClient.auth.signInWithOAuth({
+                provider: provider,
+                options: { redirectTo: window.location.origin }
+            });
+            if (error) {
+                alert(`Ошибка входа через ${provider}: ${error.message}`);
+                console.error(error);
+            }
+        };
+
+        document.getElementById('googleLoginBtn')?.addEventListener('click', () => handleOAuthLogin('google'));
+        document.getElementById('yandexLoginBtn')?.addEventListener('click', () => handleOAuthLogin('custom:yandex'));
 
         async function loadProfiles() {
             const { data } = await supabaseClient.from('profiles').select('*');
@@ -869,7 +904,6 @@
             const closedBadge = project.status === 'closed' ? '<span class="bg-red-500 text-white text-xs px-2 py-1 rounded font-bold ml-2">Набор закрыт</span>' : '';
             const favIcon = isFav ? '<span class="text-yellow-500 text-xl">⭐</span>' : '';
             
-            // ЗДЕСЬ ДОБАВЛЕНА ВОЗМОЖНОСТЬ УВЕЛИЧИТЬ АВАТАРКУ В КАРТОЧКЕ
             const avatarHTML = avatarUrl 
                 ? `<img src="${avatarUrl}" onclick="event.stopPropagation(); openZoomModal('${avatarUrl}')" class="w-6 h-6 rounded-full object-cover inline-block mr-1 cursor-pointer hover:opacity-80 transition">` 
                 : `<div class="w-6 h-6 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold text-xs inline-block mr-1">${authorName[0].toUpperCase()}</div>`;
