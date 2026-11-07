@@ -247,7 +247,6 @@
         </div>
     </div>
 
-    <!-- ОСТАЛЬНЫЕ ОКНА -->
     <div id="groupChatModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-lg relative flex flex-col h-[85vh]">
             <div class="p-3 border-b flex justify-between items-center bg-indigo-50 dark:bg-gray-700 rounded-t-xl"><div><h3 class="font-bold text-indigo-800 dark:text-indigo-300" id="groupChatTitle">Чат</h3></div><button id="closeGroupChatBtn" class="text-gray-500 font-bold text-2xl">&times;</button></div>
@@ -307,6 +306,17 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-sm relative"><button id="closeReviewBtn" class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button><h2 class="text-xl font-bold mb-4 dark:text-gray-200">Оценить</h2><form id="reviewForm" class="flex flex-col gap-4"><input type="hidden" id="review-target-id"><div><select id="review-rating" class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"><option value="5">5 (Отлично)</option><option value="4">4 (Хорошо)</option><option value="3">3</option><option value="2">2</option><option value="1">1</option></select></div><div><textarea id="review-text" rows="3" required placeholder="Отзыв..." class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></textarea></div><button type="submit" class="bg-green-600 text-white font-bold py-2 rounded-lg text-sm">Отправить</button></form></div>
     </div>
 
+    <div id="reportModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-sm relative">
+            <button id="closeReportBtn" class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
+            <h2 class="text-xl font-bold mb-4 dark:text-gray-200">Пожаловаться</h2>
+            <form id="reportForm" class="flex flex-col gap-4">
+                <textarea id="report-reason" rows="3" required placeholder="Причина жалобы..." class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"></textarea>
+                <button type="submit" class="bg-red-600 text-white font-bold py-2 rounded-lg text-sm">Отправить</button>
+            </form>
+        </div>
+    </div>
+
     <div id="imageZoomModal" class="fixed inset-0 bg-black bg-opacity-90 hidden items-center justify-center z-[100] cursor-zoom-out" onclick="this.classList.add('hidden'); this.classList.remove('flex');"><img id="zoomedImage" src="" class="max-w-[90vw] max-h-[90vh] object-contain rounded-lg"></div>
 
     <script>
@@ -347,7 +357,10 @@
         const grid = document.querySelector('.grid'), authBlockDesktop = document.getElementById('auth-block-desktop'), authBlockMobile = document.getElementById('auth-block-mobile');
         const mobileMenu = document.getElementById('mobileMenu');
 
+        // === БЕЗОПАСНОСТЬ (XSS) ===
         function escapeHTML(str) { if (!str) return ''; return str.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
+        function escapeJSString(str) { if (!str) return ''; return str.toString().replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r'); }
+        
         window.openZoomModal = function(url) { if(!url) return; document.getElementById('zoomedImage').src = url; document.getElementById('imageZoomModal').classList.remove('hidden'); document.getElementById('imageZoomModal').classList.add('flex'); }
 
         // Мобильное меню
@@ -375,16 +388,13 @@
                 currentUser = session.user;
                 await loadProfiles();
                 
-                // Проверка на админа через базу данных, а не по email
                 const myProfile = allProfiles.find(p => p.id === currentUser.id);
                 
-                // Если профиля нет, создаем его
                 if (!myProfile) { 
-                    await supabaseClient.from('profiles').insert([{ id: currentUser.id, email: currentUser.email, full_name: 'Пользователь ' + currentUser.email.split('@')[0] }]); 
+                    await supabaseClient.from('profiles').insert([{ id: currentUser.id, full_name: 'Пользователь ' + currentUser.email.split('@')[0] }]); 
                     await loadProfiles(); 
                 }
 
-                // Проверяем is_admin
                 const isAdmin = myProfile?.is_admin === true;
                 let adminBtn = isAdmin ? `<button onclick="openAdminPanel()" class="bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 px-3 py-1.5 rounded-lg text-sm font-medium w-full text-left md:w-auto">Админка 🚨</button>` : '';
                 
@@ -449,18 +459,15 @@
                 alert("Пароль изменен!"); 
                 document.getElementById('passwordModal').classList.add('hidden'); 
                 document.getElementById('new-password-input').value = '';
-            } catch (err) {
-                alert("Ошибка: " + err.message);
-            }
+            } catch (err) { alert("Ошибка: " + err.message); }
         });
 
-        // Сохранение профиля
         document.getElementById('profileForm')?.addEventListener('submit', async (e) => {
             e.preventDefault(); 
             const btn = e.target.querySelector('button[type="submit"]'); 
             const name = document.getElementById('profile-name').value.trim();
             
-            if (!name) return alert("Имя не может быть пустым!"); // Валидация
+            if (!name) return alert("Имя не может быть пустым!");
             
             btn.disabled = true; btn.innerText = "Сохранение...";
 
@@ -501,7 +508,6 @@
                 document.getElementById('profile-avatar-input').value = ''; 
             } catch (err) {
                 alert("Ошибка сохранения: " + err.message);
-                console.error(err);
             } finally {
                 btn.disabled = false; btn.innerText = "Сохранить";
             }
@@ -510,7 +516,7 @@
         window.viewProfile = async function (userId) {
             if (!userId) return; const p = allProfiles.find(prof => prof.id === userId); if (!p) return;
             document.getElementById('view-name').innerText = p.full_name || 'Пользователь';
-            document.getElementById('view-skills').innerText = p.skills ? `Навыки: ${escapeHTML(p.skills)}` : '';
+            document.getElementById('view-skills').innerText = p.skills ? `Навыки: ${p.skills}` : '';            
             document.getElementById('view-university').innerText = p.university || 'Не указан';
             document.getElementById('view-faculty').innerText = p.faculty || '';
             document.getElementById('view-advisor').innerText = p.academic_advisor || 'Не указан';
@@ -524,14 +530,16 @@
                 if (!data || data.length === 0) { reviewsList.innerHTML = 'Отзывов пока нет.'; document.getElementById('view-rating').innerText = 'Нет рейтинга'; } 
                 else {
                     const avg = (data.reduce((acc, r) => acc + r.rating, 0) / data.length).toFixed(1); document.getElementById('view-rating').innerText = `⭐ ${avg} (${data.length})`; reviewsList.innerHTML = '';
-                    data.forEach(r => { const author = allProfiles.find(a => a.id === r.author_id); reviewsList.insertAdjacentHTML('beforeend', `<div class="bg-gray-50 dark:bg-gray-700 p-2 rounded text-sm mb-2"><div class="flex justify-between font-bold"><span>${author?.full_name || 'Аноним'}</span><span class="text-yellow-500">${'★'.repeat(r.rating)}</span></div><p class="text-gray-600 dark:text-gray-400 mt-1">${escapeHTML(r.text)}</p></div>`); });
+                    data.forEach(r => { 
+                        const author = allProfiles.find(a => a.id === r.author_id); 
+                        reviewsList.insertAdjacentHTML('beforeend', `<div class="bg-gray-50 dark:bg-gray-700 p-2 rounded text-sm mb-2"><div class="flex justify-between font-bold"><span>${escapeHTML(author?.full_name || 'Аноним')}</span><span class="text-yellow-500">${'★'.repeat(r.rating)}</span></div><p class="text-gray-600 dark:text-gray-400 mt-1">${escapeHTML(r.text)}</p></div>`); 
+                    });
                 }
             } catch(err) { console.error(err); }
 
             document.getElementById('viewProfileModal').classList.remove('hidden'); document.getElementById('viewProfileModal').classList.add('flex');
         }
 
-        // === ГЕНЕРАТОР ИДЕЙ И ШАБЛОНЫ ===
         document.getElementById('ideaGeneratorBtn')?.addEventListener('click', () => {
             const ideas = ["Влияние коротких видео на концентрацию студентов", "Анализ шовного материала в хирургии", "Применение ИИ в диагностике заболеваний", "Психология командной работы в научных проектах", "Экономика удаленной работы", "Социологический портрет современного студента"];
             document.getElementById('input-title').value = ideas[Math.floor(Math.random() * ideas.length)];
@@ -550,10 +558,13 @@
             const project = allProjects.find(p => String(p.id) === String(id)); if (!project) return;
             currentDetailProjectId = id; document.getElementById('detail-title').innerText = project.title; document.getElementById('detail-role').innerText = project.role; document.getElementById('detail-deadline').innerText = project.deadline; document.getElementById('detail-desc').innerText = project.description || 'Нет описания.'; document.getElementById('detail-category').innerText = project.category || 'Другое';
             const statusEl = document.getElementById('detail-status'); if (project.status === 'closed') { statusEl.innerText = 'Набор закрыт'; statusEl.className = 'bg-red-100 text-red-700 text-xs px-2 py-1 rounded font-bold'; } else { statusEl.innerText = 'Открыт'; statusEl.className = 'bg-green-100 text-green-700 text-xs px-2 py-1 rounded font-bold'; }
-            const author = allProfiles.find(p => p.id === project.user_id); document.getElementById('detail-author').innerText = author?.full_name || 'Аноним'; document.getElementById('detail-author').setAttribute('data-id', project.user_id); document.getElementById('detail-author-skills').innerText = author?.skills ? `Навыки: ${escapeHTML(author.skills)}` : '';
+            const author = allProfiles.find(p => p.id === project.user_id); document.getElementById('detail-author').innerText = author?.full_name || 'Аноним'; document.getElementById('detail-author').setAttribute('data-id', project.user_id); document.getElementById('detail-author-skills').innerText = author?.skills ? `Навыки: ${author.skills}` : '';
             if (author?.avatar_url) { document.getElementById('detail-author-avatar').src = author.avatar_url; document.getElementById('detail-author-avatar').classList.remove('hidden'); document.getElementById('detail-author-avatar-placeholder').classList.add('hidden'); document.getElementById('detail-author-avatar').onclick = () => openZoomModal(author.avatar_url); } else { document.getElementById('detail-author-avatar').classList.add('hidden'); document.getElementById('detail-author-avatar-placeholder').classList.remove('hidden'); document.getElementById('detail-author-avatar-placeholder').innerText = (author?.full_name || 'А')[0].toUpperCase(); }
             const img = document.getElementById('detail-image'); if (project.image_url) { img.src = project.image_url; img.classList.remove('hidden'); } else { img.classList.add('hidden'); }
             const isAuthor = currentUser && String(project.user_id) === String(currentUser.id); const isApproved = myApprovedProjectIds.includes(String(project.id)); let buttonsHTML = '';
+            
+            const safeTitle = escapeJSString(project.title); 
+
             if (isAuthor) {
                 buttonsHTML += `<button onclick="openRequests()" class="bg-yellow-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Заявки</button>`;
                 buttonsHTML += `<button onclick="exportData(${project.id})" class="bg-green-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold">CSV</button>`;
@@ -561,13 +572,13 @@
                 buttonsHTML += `<button onclick="deleteProject(${project.id})" class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Удалить</button>`;
             } else if (isApproved) {
                 buttonsHTML += `<button onclick="leaveProject(${project.id})" class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Покинуть</button>`;
-                buttonsHTML += `<button onclick="openChat('${project.user_id}', ${project.id}, '${project.title.replace(/'/g, "\\'")}')" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Написать</button>`;
+                buttonsHTML += `<button onclick="openChat('${project.user_id}', ${project.id}, '${safeTitle}')" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Написать</button>`;
             } else {
                 if (project.status !== 'closed') buttonsHTML += `<button onclick="sendJoinRequest(${project.id}, '${project.user_id}')" class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Заявка</button>`;
                 else buttonsHTML += `<span class="bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-sm font-bold cursor-not-allowed">Закрыт</span>`;
-                buttonsHTML += `<button onclick="openChat('${project.user_id}', ${project.id}, '${project.title.replace(/'/g, "\\'")}')" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Написать</button>`;
+                buttonsHTML += `<button onclick="openChat('${project.user_id}', ${project.id}, '${safeTitle}')" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Написать</button>`;
             }
-            if (isAuthor || isApproved) buttonsHTML += `<button onclick="openGroupChat(${project.id}, '${project.title.replace(/'/g, "\\'")}')" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Чат 💬</button>`;
+            if (isAuthor || isApproved) buttonsHTML += `<button onclick="openGroupChat(${project.id}, '${safeTitle}')" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Чат 💬</button>`;
             if (!isAuthor && currentUser) { const isFav = myFavoriteProjectIds.includes(String(project.id)); buttonsHTML += `<button onclick="toggleFavorite(${project.id})" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-lg text-sm font-bold border dark:border-gray-600">${isFav ? '⭐' : '☆'}</button>`; }
             document.getElementById('detail-actions').innerHTML = buttonsHTML;
             const canViewFiles = isAuthor || isApproved; document.getElementById('files-block-container').classList.toggle('hidden', !canViewFiles); document.getElementById('upload-file-container').classList.toggle('hidden', !canViewFiles); document.getElementById('tasks-block-container').classList.toggle('hidden', !canViewFiles);
@@ -575,7 +586,6 @@
             document.getElementById('detailModal').classList.remove('hidden'); document.getElementById('detailModal').classList.add('flex');
         }
 
-        // === РЕНДЕР ПРОЕКТОВ ===
         function renderProjects() {
             const searchText = document.getElementById('searchInput').value.toLowerCase(); const selectedRole = document.getElementById('filterRole').value; const selectedCategory = document.getElementById('filterCategory').value; const showOnlyFavorites = document.getElementById('filterFavorites').checked;
             const filtered = allProjects.filter(p => {
@@ -589,7 +599,14 @@
             filtered.forEach(p => { grid.insertAdjacentHTML('beforeend', createCardHTML(p)); });
         }
 
-        // === ОСТАЛЬНЫЕ ФУНКЦИИ ===
+        // Делегирование событий для карточек
+        grid.addEventListener('click', (e) => {
+            const avatar = e.target.closest('.project-avatar');
+            if (avatar) { e.stopPropagation(); openZoomModal(avatar.dataset.avatar); return; }
+            const card = e.target.closest('.project-card');
+            if (card) { openProjectDetail(card.dataset.id); }
+        });
+
         window.exportData = async function(projectId) {
             const project = allProjects.find(p => String(p.id) === String(projectId)); const { data: requests } = await supabaseClient.from('join_requests').select('user_id').eq('project_id', projectId).eq('status', 'approved');
             if (!requests || requests.length === 0) return alert("Нет участников."); let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; csvContent += "Имя,Email,ВУЗ,Факультет\n";
@@ -597,8 +614,12 @@
             const link = document.createElement("a"); link.setAttribute("href", encodeURI(csvContent)); link.setAttribute("download", `Участники_${project.title.replace(/\s+/g, '_')}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
         
+        // === ЗАГРУЗКА ПРОФИЛЕЙ (Только безопасные поля, без email) ===
         async function loadProfiles() { 
-            try { const { data } = await supabaseClient.from('profiles').select('*'); if (data) allProfiles = data; } catch(e) { console.error(e); }
+            try { 
+                const { data } = await supabaseClient.from('profiles').select('id, full_name, skills, avatar_url, university, faculty, academic_advisor, bio, is_admin'); 
+                if (data) allProfiles = data; 
+            } catch(e) { console.error(e); }
         }
         
         async function loadTasks(projectId) { 
@@ -647,14 +668,23 @@
             try {
                 const { data } = await supabaseClient.from('reports').select('*').eq('status', 'pending').order('created_at', { ascending: false }); 
                 list.innerHTML = ''; if (!data || data.length === 0) { list.innerHTML = '<p class="text-center mt-4">Жалоб нет.</p>'; return; } 
-                data.forEach(report => { const reporter = allProfiles.find(p => p.id === report.reporter_id); const badGuy = allProfiles.find(p => p.id === report.reported_user_id); list.insertAdjacentHTML('beforeend', `<div class="bg-white dark:bg-gray-700 p-3 rounded shadow border mb-2 text-xs"><p>От: <b>${reporter?.full_name || 'Аноним'}</b></p><p>На: <b class="text-red-500">${badGuy?.full_name || 'Неизвестный'}</b></p><div class="bg-red-50 dark:bg-red-900 p-2 rounded my-2">${escapeHTML(report.reason)}</div><button onclick="dismissReport(${report.id})" class="bg-gray-500 text-white px-2 py-1 rounded mr-1">Игнор</button><button onclick="deleteBadUser('${report.reported_user_id}', ${report.id})" class="bg-red-600 text-white px-2 py-1 rounded">Удалить</button></div>`); }); 
+                data.forEach(report => { 
+                    const reporter = allProfiles.find(p => p.id === report.reporter_id); 
+                    const badGuy = allProfiles.find(p => p.id === report.reported_user_id); 
+                    list.insertAdjacentHTML('beforeend', `<div class="bg-white dark:bg-gray-700 p-3 rounded shadow border mb-2 text-xs">
+                        <p>От: <b>${escapeHTML(reporter?.full_name || 'Аноним')}</b></p>
+                        <p>На: <b class="text-red-500">${escapeHTML(badGuy?.full_name || 'Неизвестный')}</b></p>
+                        <div class="bg-red-50 dark:bg-red-900 p-2 rounded my-2">${escapeHTML(report.reason)}</div>
+                        <button onclick="dismissReport(${report.id})" class="bg-gray-500 text-white px-2 py-1 rounded mr-1">Игнор</button>
+                        <button onclick="deleteBadUser('${report.reported_user_id}', ${report.id})" class="bg-red-600 text-white px-2 py-1 rounded">Удалить</button>
+                    </div>`); 
+                }); 
             } catch(e) { list.innerHTML = "Ошибка загрузки"; }
         }
         
         window.dismissReport = async function(id) { await supabaseClient.from('reports').update({ status: 'ignored' }).eq('id', id); openAdminPanel(); }
         window.deleteBadUser = async function(userId, reportId) { if (!confirm("Удалить пользователя?")) return; await supabaseClient.from('projects').delete().eq('user_id', userId); await supabaseClient.from('profiles').delete().eq('id', userId); await supabaseClient.from('reports').update({ status: 'ignored' }).eq('id', reportId); openAdminPanel(); loadProjects(); }
         
-        // === ОПТИМИЗИРОВАННАЯ ЗАГРУЗКА ПРОЕКТОВ (Promise.all) ===
         async function loadMyApprovedProjects() { 
             if (!currentUser) return; 
             try {
@@ -663,7 +693,6 @@
                     myApprovedProjectIds = data.map(d => String(d.project_id)); 
                     unreadGroupCounts = {}; 
                     
-                    // Запускаем все запросы параллельно
                     const counts = await Promise.all(data.map(async (req) => {
                         const { count, error } = await supabaseClient.from('group_messages')
                             .select('*', { count: 'exact', head: true })
@@ -698,11 +727,23 @@
             try {
                 const { data } = await supabaseClient.from('join_requests').select('user_id').eq('project_id', projectId).eq('status', 'approved'); 
                 if (!data || data.length === 0) { list.innerHTML = '<span class="text-xs text-gray-500">Нет участников</span>'; return; } 
-                data.forEach(req => { const profile = allProfiles.find(p => p.id === req.user_id); const name = profile?.full_name || 'Пользователь'; const kickBtn = isAuthor ? `<button onclick="kickMember(${projectId}, '${req.user_id}', '${name}')" class="ml-1 text-red-500 font-bold">✕</button>` : ''; const revBtn = isAuthor ? `<button onclick="openReviewModal('${req.user_id}')" class="ml-1 text-green-600 font-bold">⭐</button>` : ''; list.insertAdjacentHTML('beforeend', `<span class="bg-gray-200 dark:bg-gray-700 text-xs px-2 py-1 rounded-full flex items-center mb-1 mr-1">${escapeHTML(name)} ${kickBtn} ${revBtn}</span>`); }); 
+                data.forEach(req => { 
+                    const profile = allProfiles.find(p => p.id === req.user_id); 
+                    const name = profile?.full_name || 'Пользователь'; 
+                    const kickBtn = isAuthor ? `<button onclick="kickMember('${projectId}', '${req.user_id}')" class="ml-1 text-red-500 font-bold">✕</button>` : ''; 
+                    const revBtn = isAuthor ? `<button onclick="openReviewModal('${req.user_id}')" class="ml-1 text-green-600 font-bold">⭐</button>` : ''; 
+                    list.insertAdjacentHTML('beforeend', `<span class="bg-gray-200 dark:bg-gray-700 text-xs px-2 py-1 rounded-full flex items-center mb-1 mr-1">${escapeHTML(name)} ${kickBtn} ${revBtn}</span>`); 
+                }); 
             } catch(e) { console.error(e); }
         }
+
+        window.kickMember = async function (pid, mid) { 
+            if (!confirm(`Исключить участника?`)) return; 
+            await supabaseClient.from('join_requests').update({ status: 'rejected' }).eq('project_id', pid).eq('user_id', mid); 
+            await supabaseClient.from('project_files').delete().eq('project_id', pid).eq('user_id', mid); 
+            openProjectDetail(pid); 
+        }
         
-        window.kickMember = async function (pid, mid, mname) { if (!confirm(`Исключить?`)) return; await supabaseClient.from('join_requests').update({ status: 'rejected' }).eq('project_id', pid).eq('user_id', mid); await supabaseClient.from('project_files').delete().eq('project_id', pid).eq('user_id', mid); openProjectDetail(pid); }
         window.leaveProject = async function (pid) { if (!confirm('Покинуть проект?')) return; await supabaseClient.from('join_requests').update({ status: 'rejected' }).eq('project_id', pid).eq('user_id', currentUser.id); await supabaseClient.from('project_files').delete().eq('project_id', pid).eq('user_id', currentUser.id); await loadMyApprovedProjects(); loadProjects(); document.getElementById('detailModal').classList.add('hidden'); }
         
         async function loadProjectFiles(projectId) { 
@@ -758,7 +799,46 @@
             } catch(e) { console.error(e); }
         }
         
-        function createCardHTML(p) { const img = p.image_url ? `<img src="${p.image_url}" class="w-full h-40 object-cover rounded-t-xl">` : ''; const a = allProfiles.find(pr => pr.id === p.user_id); const aName = a?.full_name || 'Аноним'; const avUrl = a?.avatar_url; const isApp = myApprovedProjectIds.includes(String(p.id)); const isFav = myFavoriteProjectIds.includes(String(p.id)); const cardBorder = isApp ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-gray-100 dark:border-gray-700'; const sBadge = isApp ? '<span class="bg-green-500 text-white text-[10px] px-2 py-0.5 rounded font-bold ml-1">В проекте</span>' : ''; const cBadge = p.status === 'closed' ? '<span class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded font-bold ml-1">Закрыт</span>' : ''; const fIcon = isFav ? '<span class="text-yellow-500 text-lg">⭐</span>' : ''; const av = avUrl ? `<img src="${avUrl}" onclick="event.stopPropagation(); openZoomModal('${avUrl}')" class="w-5 h-5 rounded-full object-cover inline-block mr-1 cursor-pointer">` : `<div class="w-5 h-5 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold text-[10px] inline-block mr-1">${aName[0].toUpperCase()}</div>`; const uBadge = (unreadGroupCounts[p.id] > 0) ? `<span class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1 animate-pulse">💬 ${unreadGroupCounts[p.id]}</span>` : ''; return `<div onclick="openProjectDetail(${p.id})" class="rounded-xl shadow border ${cardBorder} hover:shadow-lg transition relative flex flex-col overflow-hidden cursor-pointer bg-white dark:bg-gray-800"><div class="p-4 flex flex-col flex-grow"><div class="flex justify-between items-start mb-2"><div class="flex items-center flex-wrap gap-1"><span class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-[10px] px-2 py-0.5 rounded font-bold">${escapeHTML(p.category || 'Другое')}</span>${sBadge}${cBadge}${uBadge}</div><div class="flex items-center gap-1">${fIcon}<span class="text-[10px] text-gray-400">${escapeHTML(p.deadline)}</span></div></div><h3 class="font-bold text-base mb-1 text-gray-800 dark:text-gray-200">${escapeHTML(p.title)}</h3><p class="text-xs text-gray-600 dark:text-gray-400 mb-2 flex items-center">${av} ${escapeHTML(aName)}</p><p class="text-xs text-gray-600 dark:text-gray-400 mb-3 line-clamp-2 flex-grow">${escapeHTML(p.description || 'Нет описания.')}</p><div class="flex items-center justify-between mt-auto pt-2 border-t border-gray-100 dark:border-gray-700"><span class="text-[10px] font-medium text-gray-500">Нужен: ${escapeHTML(p.role)}</span><span class="text-blue-600 text-xs font-semibold">Подробнее &rarr;</span></div></div></div>`; }
+        function createCardHTML(p) { 
+            const safeImgUrl = p.image_url && p.image_url.startsWith('http') ? escapeHTML(p.image_url) : null;
+            const img = safeImgUrl ? `<img src="${safeImgUrl}" class="w-full h-40 object-cover rounded-t-xl pointer-events-none">` : ''; 
+            
+            const a = allProfiles.find(pr => pr.id === p.user_id); 
+            const aName = a?.full_name || 'Аноним'; 
+            const avUrl = a?.avatar_url; 
+            const isApp = myApprovedProjectIds.includes(String(p.id)); 
+            const isFav = myFavoriteProjectIds.includes(String(p.id)); 
+            const cardBorder = isApp ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-gray-100 dark:border-gray-700'; 
+            const sBadge = isApp ? '<span class="bg-green-500 text-white text-[10px] px-2 py-0.5 rounded font-bold ml-1">В проекте</span>' : ''; 
+            const cBadge = p.status === 'closed' ? '<span class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded font-bold ml-1">Закрыт</span>' : ''; 
+            const fIcon = isFav ? '<span class="text-yellow-500 text-lg">⭐</span>' : ''; 
+            
+            const safeAvUrl = avUrl && avUrl.startsWith('http') ? escapeHTML(avUrl) : null;
+            const av = safeAvUrl 
+                ? `<img src="${safeAvUrl}" data-avatar="${safeAvUrl}" class="project-avatar w-5 h-5 rounded-full object-cover inline-block mr-1 cursor-pointer">` 
+                : `<div class="w-5 h-5 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold text-[10px] inline-block mr-1">${escapeHTML(aName[0].toUpperCase())}</div>`; 
+                
+            const uBadge = (unreadGroupCounts[p.id] > 0) ? `<span class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1 animate-pulse">💬 ${unreadGroupCounts[p.id]}</span>` : ''; 
+            
+            return `<div data-id="${p.id}" class="project-card rounded-xl shadow border ${cardBorder} hover:shadow-lg transition relative flex flex-col overflow-hidden cursor-pointer bg-white dark:bg-gray-800">
+                <div class="p-4 flex flex-col flex-grow">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex items-center flex-wrap gap-1">
+                            <span class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-[10px] px-2 py-0.5 rounded font-bold">${escapeHTML(p.category || 'Другое')}</span>
+                            ${sBadge}${cBadge}${uBadge}
+                        </div>
+                        <div class="flex items-center gap-1">${fIcon}<span class="text-[10px] text-gray-400">${escapeHTML(p.deadline)}</span></div>
+                    </div>
+                    <h3 class="font-bold text-base mb-1 text-gray-800 dark:text-gray-200">${escapeHTML(p.title)}</h3>
+                    <p class="text-xs text-gray-600 dark:text-gray-400 mb-2 flex items-center">${av} ${escapeHTML(aName)}</p>
+                    <p class="text-xs text-gray-600 dark:text-gray-400 mb-3 line-clamp-2 flex-grow">${escapeHTML(p.description || 'Нет описания.')}</p>
+                    <div class="flex items-center justify-between mt-auto pt-2 border-t border-gray-100 dark:border-gray-700">
+                        <span class="text-[10px] font-medium text-gray-500">Нужен: ${escapeHTML(p.role)}</span>
+                        <span class="text-blue-600 text-xs font-semibold">Подробнее &rarr;</span>
+                    </div>
+                </div>
+            </div>`; 
+        }
         
         document.getElementById('searchInput')?.addEventListener('input', renderProjects); document.getElementById('filterRole')?.addEventListener('change', renderProjects); document.getElementById('filterCategory')?.addEventListener('change', renderProjects); document.getElementById('filterFavorites')?.addEventListener('change', renderProjects);
         
@@ -768,7 +848,23 @@
             const inboxList = document.getElementById('inboxList'); inboxList.innerHTML = 'Загрузка...'; document.getElementById('inboxModal').classList.remove('hidden'); document.getElementById('inboxModal').classList.add('flex'); mobileMenu.classList.add('hidden'); 
             try {
                 const { data } = await supabaseClient.from('messages').select('*').or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`).order('created_at', { ascending: false }); 
-                if (!data || data.length === 0) return inboxList.innerHTML = '<p class="text-center mt-4">Нет сообщений.</p>'; const chatsMap = new Map(); data.forEach(msg => { const otherId = msg.sender_id === currentUser.id ? msg.receiver_id : msg.sender_id; const key = `${msg.project_id}_${otherId}`; if (!chatsMap.has(key)) chatsMap.set(key, { projectId: msg.project_id, otherId: otherId, lastMessage: msg.content, unreadCount: 0 }); if (msg.receiver_id === currentUser.id && msg.is_read === false) chatsMap.get(key).unreadCount++; }); inboxList.innerHTML = ''; for (const chat of chatsMap.values()) { const project = allProjects.find(p => String(p.id) === String(chat.projectId)); const otherProfile = allProfiles.find(p => p.id === chat.otherId); const otherName = otherProfile?.full_name || 'Пользователь'; const otherAvatar = otherProfile?.avatar_url; const badgeHTML = chat.unreadCount > 0 ? `<span class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-2">${chat.unreadCount}</span>` : ''; const avatarHTML = otherAvatar ? `<img src="${otherAvatar}" class="w-8 h-8 rounded-full object-cover mr-2">` : `<div class="w-8 h-8 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold mr-2 text-xs">${otherName[0].toUpperCase()}</div>`; inboxList.insertAdjacentHTML('beforeend', `<div onclick="openChatFromInbox('${chat.otherId}', ${chat.projectId}, '${project?.title.replace(/'/g, "\\'")}')" class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm border dark:border-gray-600 cursor-pointer flex items-center mb-2">${avatarHTML}<div class="flex-grow overflow-hidden"><div class="flex justify-between items-center mb-1"><div class="flex items-center"><span class="font-bold text-sm">${escapeHTML(otherName)}</span>${badgeHTML}</div><span class="text-[10px] text-blue-600 bg-blue-50 dark:bg-blue-900 px-2 py-0.5 rounded truncate max-w-[100px]">${escapeHTML(project?.title || 'Удален')}</span></div><p class="text-xs text-gray-500 truncate">${escapeHTML(chat.lastMessage)}</p></div></div>`); } 
+                if (!data || data.length === 0) return inboxList.innerHTML = '<p class="text-center mt-4">Нет сообщений.</p>'; 
+                const chatsMap = new Map(); 
+                data.forEach(msg => { const otherId = msg.sender_id === currentUser.id ? msg.receiver_id : msg.sender_id; const key = `${msg.project_id}_${otherId}`; if (!chatsMap.has(key)) chatsMap.set(key, { projectId: msg.project_id, otherId: otherId, lastMessage: msg.content, unreadCount: 0 }); if (msg.receiver_id === currentUser.id && msg.is_read === false) chatsMap.get(key).unreadCount++; }); 
+                inboxList.innerHTML = ''; 
+                for (const chat of chatsMap.values()) { 
+                    const project = allProjects.find(p => String(p.id) === String(chat.projectId)); 
+                    const otherProfile = allProfiles.find(p => p.id === chat.otherId); 
+                    const otherName = otherProfile?.full_name || 'Пользователь'; 
+                    const otherAvatar = otherProfile?.avatar_url; 
+                    const badgeHTML = chat.unreadCount > 0 ? `<span class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-2">${chat.unreadCount}</span>` : ''; 
+                    
+                    const safeOtherAvatar = otherAvatar && otherAvatar.startsWith('http') ? escapeHTML(otherAvatar) : null;
+                    const avatarHTML = safeOtherAvatar ? `<img src="${safeOtherAvatar}" class="w-8 h-8 rounded-full object-cover mr-2">` : `<div class="w-8 h-8 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold mr-2 text-xs">${escapeHTML(otherName[0].toUpperCase())}</div>`; 
+                    
+                    const safeTitle = escapeJSString(project?.title || 'Удален');
+                    inboxList.insertAdjacentHTML('beforeend', `<div onclick="openChatFromInbox('${chat.otherId}', ${chat.projectId}, '${safeTitle}')" class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm border dark:border-gray-600 cursor-pointer flex items-center mb-2">${avatarHTML}<div class="flex-grow overflow-hidden"><div class="flex justify-between items-center mb-1"><div class="flex items-center"><span class="font-bold text-sm">${escapeHTML(otherName)}</span>${badgeHTML}</div><span class="text-[10px] text-blue-600 bg-blue-50 dark:bg-blue-900 px-2 py-0.5 rounded truncate max-w-[100px]">${escapeHTML(project?.title || 'Удален')}</span></div><p class="text-xs text-gray-500 truncate">${escapeHTML(chat.lastMessage)}</p></div></div>`); 
+                } 
             } catch(e) { inboxList.innerHTML = "Ошибка"; }
         }
         
@@ -805,9 +901,11 @@
         document.getElementById('projectForm')?.addEventListener('submit', async (e) => { 
             e.preventDefault(); const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerText = "Ждите..."; 
             
-            // Валидация (Пункт 4)
             const titleVal = document.getElementById('input-title').value.trim();
+            const deadlineVal = document.getElementById('input-deadline').value.trim();
+            
             if (!titleVal) { alert("Введите тему проекта!"); btn.disabled = false; btn.innerText = "Опубликовать"; return; }
+            if (!deadlineVal) { alert("Введите сроки!"); btn.disabled = false; btn.innerText = "Опубликовать"; return; }
 
             try {
                 const file = document.getElementById('input-image').files[0]; let imageUrl = null; 
