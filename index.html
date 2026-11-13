@@ -88,6 +88,16 @@
         .animate-float {
             animation: float 4s ease-in-out infinite;
         }
+
+        /* Принудительный скролл для чатов */
+        .chat-scroll-area {
+            flex: 1 1 auto !important;
+            overflow-y: auto !important;
+            min-height: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.75rem !important;
+        }
     </style>
 </head>
 
@@ -122,7 +132,6 @@
     </header>
 
     <main class="max-w-5xl mx-auto px-4 py-6 md:py-8 flex-grow w-full no-print">
-        <!-- HERO SECTION -->
         <section
             class="relative bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 rounded-3xl p-8 md:p-12 mb-8 overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700">
             <div
@@ -148,14 +157,12 @@
         </section>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <!-- ТОП УЧАСТНИКОВ -->
             <div id="tierListContainer"
                 class="md:col-span-2 hidden bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                 <h2 class="text-lg font-bold mb-3 flex items-center gap-2">🏆 Топ студентов (Рейтинг от преподавателей)
                 </h2>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="tierListGrid"></div>
             </div>
-            <!-- АКТУАЛЬНЫЕ ДЕДЛАЙНЫ -->
             <div
                 class="bg-orange-50 dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-orange-200 dark:border-gray-700">
                 <h2 class="text-lg font-bold mb-3 flex items-center gap-2 text-orange-800 dark:text-orange-400">⏳ Скоро
@@ -221,10 +228,11 @@
 
     <!-- МОДАЛЬНЫЕ ОКНА -->
 
-    <!-- Детали проекта (Исправлен скролл и верстка) -->
+    <!-- Окно проекта -->
     <div id="detailModal"
-        class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden overflow-y-auto z-50 p-2 md:p-4 no-print">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-3xl mx-auto my-4 md:my-8 relative max-h-[85vh] overflow-y-auto animate-modal-pop"
+        class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden z-50 p-2 md:p-4 no-print"
+        style="overflow-y: auto;">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-3xl mx-auto my-4 md:my-8 relative animate-modal-pop"
             id="print-section">
             <button id="closeDetailBtn"
                 class="absolute top-3 right-3 text-gray-500 hover:text-red-500 font-bold text-xl bg-white dark:bg-gray-700 rounded-full p-1 z-10 no-print">&times;</button>
@@ -298,7 +306,8 @@
 
     <!-- Мой профиль -->
     <div id="profileModal"
-        class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden overflow-y-auto z-50 p-2 md:p-4 no-print">
+        class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden z-50 p-2 md:p-4 no-print"
+        style="overflow-y: auto;">
         <div
             class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6 w-full max-w-md mx-auto relative my-4 md:my-8 animate-modal-pop">
             <button id="closeProfileBtn" class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
@@ -346,7 +355,8 @@
 
     <!-- Чужой профиль -->
     <div id="viewProfileModal"
-        class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden overflow-y-auto z-50 p-2 md:p-4 no-print">
+        class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden z-50 p-2 md:p-4 no-print"
+        style="overflow-y: auto;">
         <div
             class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6 w-full max-w-md mx-auto relative my-4 md:my-8 animate-modal-pop">
             <button id="closeViewProfileBtn"
@@ -394,9 +404,9 @@
         </div>
     </div>
 
-    <!-- Окно создания проекта -->
-    <div id="modal"
-        class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden overflow-y-auto z-50 p-2 md:p-4 no-print">
+    <!-- Создание проекта -->
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden z-50 p-2 md:p-4 no-print"
+        style="overflow-y: auto;">
         <div
             class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6 w-full max-w-md mx-auto relative my-4 md:my-8 animate-modal-pop">
             <button id="closeModalBtn" class="absolute top-4 right-4 text-gray-500 font-bold text-xl">&times;</button>
@@ -460,21 +470,24 @@
         </div>
     </div>
 
-    <!-- ЧАТЫ -->
+    <!-- ЧАТЫ (Используем inline flexbox для 100% скролла) -->
+
+    <!-- Групповой чат -->
     <div id="groupChatModal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2 no-print">
-        <div
-            class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-3xl relative flex flex-col h-[85vh] animate-modal-pop overflow-hidden">
-            <div class="p-3 border-b flex justify-between items-center bg-indigo-50 dark:bg-gray-700 rounded-t-xl">
+        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2 no-print"
+        style="overflow: hidden;">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-3xl relative animate-modal-pop"
+            style="display: flex; flex-direction: column; height: 85vh; max-height: 85vh; overflow: hidden;">
+            <div
+                class="p-3 border-b flex justify-between items-center bg-indigo-50 dark:bg-gray-700 rounded-t-xl flex-shrink-0">
                 <div>
                     <h3 class="font-bold text-indigo-800 dark:text-indigo-300" id="groupChatTitle">Чат</h3>
-                </div><button id="closeGroupChatBtn" class="text-gray-500 font-bold text-2xl">&times;</button>
+                </div>
+                <button id="closeGroupChatBtn" class="text-gray-500 font-bold text-2xl">&times;</button>
             </div>
-            <!-- Скролл для группового чата -->
-            <div id="groupChatMessages"
-                class="flex-grow p-4 overflow-y-auto overscroll-contain bg-gray-100 dark:bg-gray-900 flex flex-col gap-3 min-h-0">
-            </div>
-            <div class="p-3 border-t bg-white dark:bg-gray-800 rounded-b-xl">
+            <!-- ЖЕСТКИЙ СКРОЛЛ -->
+            <div id="groupChatMessages" class="chat-scroll-area p-4 bg-gray-100 dark:bg-gray-900"></div>
+            <div class="p-3 border-t bg-white dark:bg-gray-800 rounded-b-xl flex-shrink-0">
                 <form id="groupChatForm" class="flex gap-2"><input type="text" id="groupChatInput" required
                         placeholder="Сообщение..."
                         class="flex-grow border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"><button
@@ -483,11 +496,14 @@
         </div>
     </div>
 
+    <!-- Личный чат -->
     <div id="chatModal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2 no-print">
-        <div
-            class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-3xl relative flex flex-col h-[85vh] animate-modal-pop overflow-hidden">
-            <div class="p-3 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-700 rounded-t-xl">
+        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2 no-print"
+        style="overflow: hidden;">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-3xl relative animate-modal-pop"
+            style="display: flex; flex-direction: column; height: 85vh; max-height: 85vh; overflow: hidden;">
+            <div
+                class="p-3 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-700 rounded-t-xl flex-shrink-0">
                 <div class="flex items-center gap-2">
                     <h3 class="font-bold" id="chatTitle">Чат</h3>
                     <span id="chatOnlineStatus" class="w-2 h-2 rounded-full bg-gray-400 inline-block"
@@ -498,11 +514,9 @@
                         class="text-orange-500 text-xl">🚩</button><button id="closeChatBtn"
                         class="text-gray-500 font-bold text-2xl">&times;</button></div>
             </div>
-            <!-- Скролл для личного чата (Исправлено) -->
-            <div id="chatMessages"
-                class="flex-grow p-4 overflow-y-auto overscroll-contain bg-gray-100 dark:bg-gray-900 flex flex-col gap-3 min-h-0">
-            </div>
-            <div class="p-3 border-t bg-white dark:bg-gray-800 rounded-b-xl">
+            <!-- ЖЕСТКИЙ СКРОЛЛ -->
+            <div id="chatMessages" class="chat-scroll-area p-4 bg-gray-100 dark:bg-gray-900"></div>
+            <div class="p-3 border-t bg-white dark:bg-gray-800 rounded-b-xl flex-shrink-0">
                 <form id="chatForm" class="flex gap-2"><input type="text" id="chatInput" required
                         placeholder="Сообщение..."
                         class="flex-grow border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600"><button
@@ -511,45 +525,53 @@
         </div>
     </div>
 
+    <!-- Входящие (Список чатов) -->
     <div id="inboxModal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2 no-print">
-        <div
-            class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-3xl relative flex flex-col h-[85vh] animate-modal-pop">
-            <div class="p-3 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-700 rounded-t-xl">
+        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2 no-print"
+        style="overflow: hidden;">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-3xl relative animate-modal-pop"
+            style="display: flex; flex-direction: column; height: 85vh; max-height: 85vh; overflow: hidden;">
+            <div
+                class="p-3 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-700 rounded-t-xl flex-shrink-0">
                 <h3 class="font-bold">Мои чаты</h3><button id="closeInboxBtn"
                     class="text-gray-500 font-bold text-2xl">&times;</button>
             </div>
-            <div id="inboxList" class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-2">
-            </div>
+            <!-- ЖЕСТКИЙ СКРОЛЛ -->
+            <div id="inboxList" class="chat-scroll-area p-4 bg-gray-100 dark:bg-gray-900"></div>
         </div>
     </div>
 
+    <!-- Заявки -->
     <div id="requestsModal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2 no-print">
-        <div
-            class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-3xl relative flex flex-col h-[85vh] animate-modal-pop">
-            <div class="p-3 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-700 rounded-t-xl">
+        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2 no-print"
+        style="overflow: hidden;">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-3xl relative animate-modal-pop"
+            style="display: flex; flex-direction: column; height: 85vh; max-height: 85vh; overflow: hidden;">
+            <div
+                class="p-3 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-700 rounded-t-xl flex-shrink-0">
                 <h3 class="font-bold">Заявки</h3><button id="closeRequestsBtn"
                     class="text-gray-500 font-bold text-2xl">&times;</button>
             </div>
-            <div id="requestsList"
-                class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-2"></div>
+            <div id="requestsList" class="chat-scroll-area p-4 bg-gray-100 dark:bg-gray-900"></div>
         </div>
     </div>
 
+    <!-- Админка -->
     <div id="adminModal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2 no-print">
-        <div
-            class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-5xl relative flex flex-col h-[85vh] animate-modal-pop">
-            <div class="p-3 border-b flex justify-between items-center bg-red-50 dark:bg-gray-700 rounded-t-xl">
+        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2 no-print"
+        style="overflow: hidden;">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-5xl relative animate-modal-pop"
+            style="display: flex; flex-direction: column; height: 85vh; max-height: 85vh; overflow: hidden;">
+            <div
+                class="p-3 border-b flex justify-between items-center bg-red-50 dark:bg-gray-700 rounded-t-xl flex-shrink-0">
                 <h3 class="font-bold text-red-800">Админ-панель</h3><button id="closeAdminBtn"
                     class="text-gray-500 font-bold text-2xl">&times;</button>
             </div>
-            <div id="adminList" class="flex-grow p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col gap-2">
-            </div>
+            <div id="adminList" class="chat-scroll-area p-4 bg-gray-100 dark:bg-gray-900"></div>
         </div>
     </div>
 
+    <!-- Оценки и Настройки -->
     <div id="ratingModal"
         class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-[70] p-4 no-print">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-sm relative animate-modal-pop">
@@ -596,7 +618,6 @@
         </div>
     </div>
 
-    <!-- МОДАЛКА АВТОРИЗАЦИИ (с выбором роли) -->
     <div id="authModal"
         class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4 no-print">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-sm relative animate-modal-pop">
@@ -701,7 +722,7 @@
 
         ['closeModalBtn', 'closeDetailBtn', 'closeAuthBtn', 'closeProfileBtn', 'closeReportBtn', 'closeRequestsBtn', 'closeInboxBtn', 'closeChatBtn', 'closeGroupChatBtn', 'closeReviewBtn', 'closeAdminBtn', 'closeViewProfileBtn', 'closeSettingsBtn', 'closePasswordBtn', 'closeRatingBtn'].forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('click', () => { const modal = el.closest('.fixed'); modal.classList.add('hidden'); modal.classList.remove('flex'); document.body.style.overflow = 'auto'; if (id === 'closeChatBtn' && chatSubscription) { supabaseClient.removeChannel(chatSubscription); chatSubscription = null; } if (id === 'closeGroupChatBtn' && groupChatSubscription) { supabaseClient.removeChannel(groupChatSubscription); groupChatSubscription = null; } }); });
 
-        // ГЛОБАЛЬНОЕ ЗАКРЫТИЕ МОДАЛОК ПО КЛИКУ НА ФОН
+        // ЗАКРЫТИЕ ПО КЛИКУ НА ФОН
         document.querySelectorAll('.fixed.inset-0').forEach(modal => {
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
@@ -969,7 +990,7 @@
         document.getElementById('groupChatForm')?.addEventListener('submit', async (e) => { e.preventDefault(); const input = document.getElementById('groupChatInput'); const text = input.value.trim(); if (!text) return; input.value = ''; try { const { data, error } = await supabaseClient.from('group_messages').insert([{ project_id: currentDetailProjectId, sender_id: currentUser.id, content: text }]).select(); if (error) throw error; if (data && data.length > 0) { const msgData = data[0]; renderGroupMessage(msgData); document.getElementById('groupChatMessages').scrollTop = document.getElementById('groupChatMessages').scrollHeight; if (groupChatSubscription) groupChatSubscription.send({ type: 'broadcast', event: 'new_group_msg', payload: msgData }); const { data: members } = await supabaseClient.from('join_requests').select('user_id').eq('project_id', currentDetailProjectId).eq('status', 'approved'); if (members) { members.forEach(member => { if (member.user_id !== currentUser.id) { const notifyChannel = supabaseClient.channel(`user_notifications_${member.user_id}`); notifyChannel.subscribe((status) => { if (status === 'SUBSCRIBED') { notifyChannel.send({ type: 'broadcast', event: 'new_group_message_alert', payload: { project_id: currentDetailProjectId } }); setTimeout(() => supabaseClient.removeChannel(notifyChannel), 1000); } }); } }); } } } catch (err) { alert("Ошибка: " + err.message); } });
 
         window.openInbox = async function () {
-            document.getElementById('inboxModal').classList.remove('hidden'); document.getElementById('inboxModal').classList.add('flex');
+            document.getElementById('inboxModal').classList.remove('hidden'); document.getElementById('inboxModal').classList.add('flex'); document.body.style.overflow = 'hidden';
             const list = document.getElementById('inboxList'); list.innerHTML = '<p class="text-center text-gray-500 mt-4">Загрузка...</p>';
             try {
                 const { data: msgs } = await supabaseClient.from('messages').select('*').or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`).order('created_at', { ascending: false });
@@ -1032,7 +1053,7 @@
         window.openReviewModal = function (targetId) { document.getElementById('review-target-id').value = targetId; document.getElementById('review-text').value = ''; document.getElementById('reviewModal').classList.remove('hidden'); document.getElementById('reviewModal').classList.add('flex'); };
         document.getElementById('reviewForm')?.addEventListener('submit', async (e) => { e.preventDefault(); try { await supabaseClient.from('reviews').insert([{ project_id: currentDetailProjectId, author_id: currentUser.id, target_id: document.getElementById('review-target-id').value, rating: parseInt(document.getElementById('review-rating').value), text: document.getElementById('review-text').value }]); alert("Сохранено!"); document.getElementById('reviewModal').classList.add('hidden'); } catch (err) { alert("Ошибка"); } });
 
-        async function openAdminPanel() { const list = document.getElementById('adminList'); list.innerHTML = 'Загрузка...'; document.getElementById('adminModal').classList.remove('hidden'); document.getElementById('adminModal').classList.add('flex'); try { const { data } = await supabaseClient.from('reports').select('*').eq('status', 'pending').order('created_at', { ascending: false }); list.innerHTML = ''; if (!data || data.length === 0) { list.innerHTML = '<p class="text-center mt-4">Жалоб нет.</p>'; return; } data.forEach(report => { const reporter = allProfiles.find(p => p.id === report.reporter_id); const badGuy = allProfiles.find(p => p.id === report.reported_user_id); list.insertAdjacentHTML('beforeend', `<div class="bg-white dark:bg-gray-700 p-3 rounded shadow border mb-2 text-xs"><p>От: <b>${escapeHTML(reporter?.full_name || 'Аноним')}</b></p><p>На: <b class="text-red-500">${escapeHTML(badGuy?.full_name || 'Неизвестный')}</b></p><div class="bg-red-50 dark:bg-red-900 p-2 rounded my-2">${escapeHTML(report.reason)}</div><button onclick="dismissReport(${report.id})" class="bg-gray-500 text-white px-2 py-1 rounded mr-1">Игнор</button><button onclick="deleteBadUser('${report.reported_user_id}', ${report.id})" class="bg-red-600 text-white px-2 py-1 rounded">Удалить</button></div>`); }); } catch (e) { list.innerHTML = "Ошибка загрузки"; } }
+        async function openAdminPanel() { const list = document.getElementById('adminList'); list.innerHTML = 'Загрузка...'; document.getElementById('adminModal').classList.remove('hidden'); document.getElementById('adminModal').classList.add('flex'); document.body.style.overflow = 'hidden'; try { const { data } = await supabaseClient.from('reports').select('*').eq('status', 'pending').order('created_at', { ascending: false }); list.innerHTML = ''; if (!data || data.length === 0) { list.innerHTML = '<p class="text-center mt-4">Жалоб нет.</p>'; return; } data.forEach(report => { const reporter = allProfiles.find(p => p.id === report.reporter_id); const badGuy = allProfiles.find(p => p.id === report.reported_user_id); list.insertAdjacentHTML('beforeend', `<div class="bg-white dark:bg-gray-700 p-3 rounded shadow border mb-2 text-xs"><p>От: <b>${escapeHTML(reporter?.full_name || 'Аноним')}</b></p><p>На: <b class="text-red-500">${escapeHTML(badGuy?.full_name || 'Неизвестный')}</b></p><div class="bg-red-50 dark:bg-red-900 p-2 rounded my-2">${escapeHTML(report.reason)}</div><button onclick="dismissReport(${report.id})" class="bg-gray-500 text-white px-2 py-1 rounded mr-1">Игнор</button><button onclick="deleteBadUser('${report.reported_user_id}', ${report.id})" class="bg-red-600 text-white px-2 py-1 rounded">Удалить</button></div>`); }); } catch (e) { list.innerHTML = "Ошибка загрузки"; } }
         window.dismissReport = async function (id) { await supabaseClient.from('reports').update({ status: 'ignored' }).eq('id', id); openAdminPanel(); }
         window.deleteBadUser = async function (userId, reportId) { if (!confirm("Удалить пользователя?")) return; await supabaseClient.from('projects').delete().eq('user_id', userId); await supabaseClient.from('profiles').delete().eq('id', userId); await supabaseClient.from('reports').update({ status: 'ignored' }).eq('id', reportId); openAdminPanel(); loadProjects(); }
 
@@ -1049,7 +1070,7 @@
         async function loadProjectFiles(projectId) { const list = document.getElementById('detail-files-list'); const noMsg = document.getElementById('no-files-msg'); list.innerHTML = ''; noMsg.classList.add('hidden'); try { const { data } = await supabaseClient.from('project_files').select('*').eq('project_id', projectId).order('created_at', { ascending: false }); if (!data || data.length === 0) { noMsg.classList.remove('hidden'); return; } for (const file of data) { let url = file.file_url; if (!url.startsWith('http')) { const { data: u } = await supabaseClient.storage.from('project-documents').createSignedUrl(file.file_url, 3600); if (u) url = u.signedUrl; } list.insertAdjacentHTML('beforeend', `<a href="${url}" target="_blank" class="flex justify-between items-center bg-white dark:bg-gray-600 p-2 rounded border text-xs text-blue-700 dark:text-blue-300 mb-1"><span>📄 ${escapeHTML(file.file_name)}</span></a>`); } } catch (e) { console.error(e); } }
         document.getElementById('uploadFileForm')?.addEventListener('submit', async (e) => { e.preventDefault(); const file = document.getElementById('project-file-input').files[0]; if (!file || !currentDetailProjectId) return; if (file.size > 10 * 1024 * 1024) return alert("Файл > 10 МБ."); const btn = document.getElementById('uploadFileBtn'); btn.disabled = true; const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.\s_-]/g, '_')}`; try { const { error } = await supabaseClient.storage.from('project-documents').upload(fileName, file); if (error) throw error; await supabaseClient.from('project_files').insert([{ project_id: currentDetailProjectId, user_id: currentUser.id, file_name: file.name, file_url: fileName }]); document.getElementById('project-file-input').value = ''; loadProjectFiles(currentDetailProjectId); } catch (err) { alert("Ошибка загрузки файла!"); console.error(err); } btn.disabled = false; });
         window.sendJoinRequest = async function (pid, aid) { if (!currentUser) return alert("Войдите!"); try { const { data } = await supabaseClient.from('join_requests').select('*').eq('project_id', pid).eq('user_id', currentUser.id).maybeSingle(); if (data) { if (data.status === 'pending') return alert("Ждите."); if (data.status === 'approved') return alert("Вы приняты."); if (data.status === 'rejected') { await supabaseClient.from('join_requests').update({ status: 'pending' }).eq('id', data.id); } } else { await supabaseClient.from('join_requests').insert([{ project_id: pid, user_id: currentUser.id, status: 'pending' }]); } alert("Заявка отправлена!"); const ch = supabaseClient.channel(`user_notifications_${aid}`); ch.subscribe(s => { if (s === 'SUBSCRIBED') { ch.send({ type: 'broadcast', event: 'new_request', payload: {} }); setTimeout(() => supabaseClient.removeChannel(ch), 1000); } }); document.getElementById('detailModal').classList.add('hidden'); } catch (err) { alert("Ошибка отправки заявки"); } }
-        async function openRequests() { const list = document.getElementById('requestsList'); list.innerHTML = 'Загрузка...'; document.getElementById('requestsModal').classList.remove('hidden'); document.getElementById('requestsModal').classList.add('flex'); mobileMenu.classList.add('hidden'); const myProjectIds = allProjects.filter(p => p.user_id === currentUser.id).map(p => p.id); if (myProjectIds.length === 0) return list.innerHTML = 'Нет проектов.'; try { const { data } = await supabaseClient.from('join_requests').select('*').in('project_id', myProjectIds).order('created_at', { ascending: false }); if (!data || data.length === 0) return list.innerHTML = 'Нет заявок.'; list.innerHTML = ''; data.forEach(req => { const project = allProjects.find(p => String(p.id) === String(req.project_id)); const userProfile = allProfiles.find(p => p.id === req.user_id); let statusBadge = req.status === 'approved' ? '<span class="text-green-600 font-bold text-xs">Принят</span>' : req.status === 'rejected' ? '<span class="text-red-600 font-bold text-xs">Отклонен</span>' : '<span class="text-yellow-600 font-bold text-xs">В ожидании</span>'; const btns = req.status === 'pending' ? `<div class="flex gap-1 mt-2"><button onclick="updateRequest(${req.id}, 'approved')" class="bg-green-500 text-white px-2 py-1 rounded text-xs">Принять</button><button onclick="updateRequest(${req.id}, 'rejected')" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Отклонить</button></div>` : ''; list.insertAdjacentHTML('beforeend', `<div class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm border dark:border-gray-600 mb-2"><div class="flex justify-between items-start mb-1"><div><p class="font-bold text-sm">${escapeHTML(userProfile?.full_name || 'Пользователь')}</p><p class="text-xs text-gray-500">Проект: <span class="font-medium text-blue-600">${escapeHTML(project?.title || 'Удален')}</span></p></div>${statusBadge}</div>${btns}</div>`); }); } catch (e) { list.innerHTML = "Ошибка"; } }
+        async function openRequests() { const list = document.getElementById('requestsList'); list.innerHTML = 'Загрузка...'; document.getElementById('requestsModal').classList.remove('hidden'); document.getElementById('requestsModal').classList.add('flex'); document.body.style.overflow = 'hidden'; mobileMenu.classList.add('hidden'); const myProjectIds = allProjects.filter(p => p.user_id === currentUser.id).map(p => p.id); if (myProjectIds.length === 0) return list.innerHTML = 'Нет проектов.'; try { const { data } = await supabaseClient.from('join_requests').select('*').in('project_id', myProjectIds).order('created_at', { ascending: false }); if (!data || data.length === 0) return list.innerHTML = 'Нет заявок.'; list.innerHTML = ''; data.forEach(req => { const project = allProjects.find(p => String(p.id) === String(req.project_id)); const userProfile = allProfiles.find(p => p.id === req.user_id); let statusBadge = req.status === 'approved' ? '<span class="text-green-600 font-bold text-xs">Принят</span>' : req.status === 'rejected' ? '<span class="text-red-600 font-bold text-xs">Отклонен</span>' : '<span class="text-yellow-600 font-bold text-xs">В ожидании</span>'; const btns = req.status === 'pending' ? `<div class="flex gap-1 mt-2"><button onclick="updateRequest(${req.id}, 'approved')" class="bg-green-500 text-white px-2 py-1 rounded text-xs">Принять</button><button onclick="updateRequest(${req.id}, 'rejected')" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Отклонить</button></div>` : ''; list.insertAdjacentHTML('beforeend', `<div class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm border dark:border-gray-600 mb-2"><div class="flex justify-between items-start mb-1"><div><p class="font-bold text-sm">${escapeHTML(userProfile?.full_name || 'Пользователь')}</p><p class="text-xs text-gray-500">Проект: <span class="font-medium text-blue-600">${escapeHTML(project?.title || 'Удален')}</span></p></div>${statusBadge}</div>${btns}</div>`); }); } catch (e) { list.innerHTML = "Ошибка"; } }
         window.updateRequest = async function (reqId, newStatus) { await supabaseClient.from('join_requests').update({ status: newStatus }).eq('id', reqId); openRequests(); }
 
         window.editProject = function (id) { const p = allProjects.find(x => String(x.id) === String(id)); if (!p) return; editingProjectId = id; document.getElementById('modalTitle').innerText = "Редактировать"; document.getElementById('submitBtn').innerText = "Сохранить"; document.getElementById('input-title').value = p.title; document.getElementById('input-category').value = p.category || 'Другое'; document.getElementById('input-status').value = p.status || 'open'; document.getElementById('input-deadline').value = p.deadline; document.getElementById('input-role').value = p.role; document.getElementById('input-desc').value = p.description || ''; document.getElementById('input-image').value = ''; if (p.image_url) { document.getElementById('current-image-preview').src = p.image_url; document.getElementById('current-image-container').classList.remove('hidden'); } else document.getElementById('current-image-container').classList.add('hidden'); document.getElementById('modal').classList.remove('hidden'); document.getElementById('modal').classList.add('flex'); document.getElementById('detailModal').classList.add('hidden'); }
