@@ -89,7 +89,7 @@
             animation: float 4s ease-in-out infinite;
         }
 
-        /* Принудительный скролл для чатов */
+        /* Жесткий скролл для чатов */
         .chat-scroll-area {
             flex: 1 1 auto !important;
             overflow-y: auto !important;
@@ -151,19 +151,20 @@
                 <div class="hidden md:block md:w-2/5 pl-8">
                     <div
                         class="w-48 h-48 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-2xl mx-auto border-4 border-blue-100 dark:border-gray-700 transform rotate-3">
-                        <span class="text-7xl inline-block animate-float">🔬</span>
-                    </div>
+                        <span class="text-7xl inline-block animate-float">🔬</span></div>
                 </div>
             </div>
         </section>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- ТОП УЧАСТНИКОВ -->
             <div id="tierListContainer"
-                class="md:col-span-2 hidden bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                class="md:col-span-2 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                 <h2 class="text-lg font-bold mb-3 flex items-center gap-2">🏆 Топ студентов (Рейтинг от преподавателей)
                 </h2>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="tierListGrid"></div>
             </div>
+            <!-- АКТУАЛЬНЫЕ ДЕДЛАЙНЫ -->
             <div
                 class="bg-orange-50 dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-orange-200 dark:border-gray-700">
                 <h2 class="text-lg font-bold mb-3 flex items-center gap-2 text-orange-800 dark:text-orange-400">⏳ Скоро
@@ -229,7 +230,7 @@
 
     <!-- МОДАЛЬНЫЕ ОКНА -->
 
-    <!-- Окно проекта -->
+    <!-- Детали проекта -->
     <div id="detailModal"
         class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden z-50 p-2 md:p-4 no-print"
         style="overflow-y: auto;">
@@ -249,7 +250,8 @@
                 <h2 id="detail-title" class="text-2xl md:text-3xl font-bold mb-2 break-words"></h2>
                 <p class="text-gray-500 dark:text-gray-400 text-sm mb-4">Нужен: <span id="detail-role"
                         class="font-bold text-blue-600 dark:text-blue-400"></span> | Сроки: <span
-                        id="detail-deadline"></span></p>
+                        id="detail-deadline"></span> | Лимит: <span id="detail-max-participants"
+                        class="font-bold"></span></p>
 
                 <div
                     class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg mb-4 border border-gray-200 dark:border-gray-700 w-full max-w-full overflow-hidden">
@@ -399,13 +401,13 @@
             <div id="teacherRatingContainer" class="hidden mb-4"><button onclick="openRatingModal()"
                     class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg">Оценить
                     студента</button></div>
-            <h3 class="font-bold text-gray-800 mb-2 border-b border-gray-200 dark:border-gray-700 pb-1 text-sm">Отзывы:
-            </h3>
+            <h3 class="font-bold text-gray-800 mb-2 border-b border-gray-200 dark:border-gray-700 pb-1 text-sm">Отзывы и
+                оценки:</h3>
             <div id="view-reviews-list" class="flex flex-col gap-2 max-h-48 overflow-y-auto"></div>
         </div>
     </div>
 
-    <!-- Создание проекта -->
+    <!-- Создание/Редактирование проекта -->
     <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden z-50 p-2 md:p-4 no-print"
         style="overflow-y: auto;">
         <div
@@ -438,11 +440,23 @@
                             <option>Гуманитарные науки</option>
                             <option>Другое</option>
                         </select></div>
-                    <div class="w-1/2"><label class="block text-xs font-medium mb-1">Статус</label><select
+                    <div class="w-1/2"><label class="block text-xs font-medium mb-1">Статус набора</label><select
                             id="input-status"
                             class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600">
                             <option value="open">Открыт</option>
                             <option value="closed">Закрыт</option>
+                        </select></div>
+                </div>
+                <div class="flex gap-2 mt-1">
+                    <div class="w-1/2"><label class="block text-xs font-medium mb-1">Лимит участников</label><input
+                            type="number" id="input-max-participants" min="0" placeholder="0 - без лимита"
+                            class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+                    <div class="w-1/2"><label class="block text-xs font-medium mb-1">Проект завершен?</label><select
+                            id="input-is-completed"
+                            class="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600">
+                            <option value="false">Нет</option>
+                            <option value="true">Да (Как пример)</option>
                         </select></div>
                 </div>
                 <div><label class="block text-xs font-medium mb-1">Сроки</label><input type="text" id="input-deadline"
@@ -471,9 +485,7 @@
         </div>
     </div>
 
-    <!-- ЧАТЫ (Используем inline flexbox для 100% скролла) -->
-
-    <!-- Групповой чат -->
+    <!-- ЧАТЫ -->
     <div id="groupChatModal"
         class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2 no-print"
         style="overflow: hidden;">
@@ -486,7 +498,6 @@
                 </div>
                 <button id="closeGroupChatBtn" class="text-gray-500 font-bold text-2xl">&times;</button>
             </div>
-            <!-- ЖЕСТКИЙ СКРОЛЛ -->
             <div id="groupChatMessages" class="chat-scroll-area p-4 bg-gray-100 dark:bg-gray-900"></div>
             <div class="p-3 border-t bg-white dark:bg-gray-800 rounded-b-xl flex-shrink-0">
                 <form id="groupChatForm" class="flex gap-2"><input type="text" id="groupChatInput" required
@@ -497,7 +508,6 @@
         </div>
     </div>
 
-    <!-- Личный чат -->
     <div id="chatModal"
         class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2 no-print"
         style="overflow: hidden;">
@@ -515,7 +525,6 @@
                         class="text-orange-500 text-xl">🚩</button><button id="closeChatBtn"
                         class="text-gray-500 font-bold text-2xl">&times;</button></div>
             </div>
-            <!-- ЖЕСТКИЙ СКРОЛЛ -->
             <div id="chatMessages" class="chat-scroll-area p-4 bg-gray-100 dark:bg-gray-900"></div>
             <div class="p-3 border-t bg-white dark:bg-gray-800 rounded-b-xl flex-shrink-0">
                 <form id="chatForm" class="flex gap-2"><input type="text" id="chatInput" required
@@ -526,7 +535,6 @@
         </div>
     </div>
 
-    <!-- Входящие (Список чатов) -->
     <div id="inboxModal"
         class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2 no-print"
         style="overflow: hidden;">
@@ -537,12 +545,10 @@
                 <h3 class="font-bold">Мои чаты</h3><button id="closeInboxBtn"
                     class="text-gray-500 font-bold text-2xl">&times;</button>
             </div>
-            <!-- ЖЕСТКИЙ СКРОЛЛ -->
             <div id="inboxList" class="chat-scroll-area p-4 bg-gray-100 dark:bg-gray-900"></div>
         </div>
     </div>
 
-    <!-- Заявки -->
     <div id="requestsModal"
         class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2 no-print"
         style="overflow: hidden;">
@@ -557,7 +563,6 @@
         </div>
     </div>
 
-    <!-- Админка -->
     <div id="adminModal"
         class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-2 no-print"
         style="overflow: hidden;">
@@ -572,7 +577,7 @@
         </div>
     </div>
 
-    <!-- Оценки и Настройки -->
+    <!-- Оценки, настройки, регистрация и прочее -->
     <div id="ratingModal"
         class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-[70] p-4 no-print">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-sm relative animate-modal-pop">
@@ -797,34 +802,33 @@
 
         function loadDeadlines() {
             const list = document.getElementById('deadlinesList');
-            const urgent = allProjects.filter(p => p.deadline && p.status === 'open').slice(0, 3);
+            const urgent = allProjects.filter(p => p.deadline && p.status === 'open' && !p.is_completed).slice(0, 3);
             if (urgent.length === 0) { list.innerHTML = '<p class="text-sm text-gray-500">Все спокойно</p>'; return; }
             list.innerHTML = '';
             urgent.forEach(p => { list.insertAdjacentHTML('beforeend', `<div onclick="openProjectDetail(${p.id})" class="bg-white dark:bg-gray-700 p-2 rounded shadow-sm text-sm cursor-pointer hover:bg-gray-50 truncate"><b class="text-orange-600">${escapeHTML(p.deadline)}</b> - ${escapeHTML(p.title)}</div>`); });
         }
 
         async function loadGrades() { try { const { data } = await supabaseClient.from('teacher_grades').select('*'); if (data) allGrades = data; } catch (e) { console.error(e); } }
-                function loadTierList() {
-            const container = document.getElementById('tierListContainer'); 
-            const grid = document.getElementById('tierListGrid');
-            
-            // Принудительно показываем контейнер
-            container.classList.remove('hidden'); 
 
-            if (allGrades.length === 0) { 
-                grid.innerHTML = '<p class="text-sm text-gray-500 col-span-3 text-center py-2">Оценок пока нет. Преподаватели, оцените лучших студентов!</p>'; 
-                return; 
+        function loadTierList() {
+            const container = document.getElementById('tierListContainer');
+            const grid = document.getElementById('tierListGrid');
+            container.classList.remove('hidden');
+
+            if (allGrades.length === 0) {
+                grid.innerHTML = '<p class="text-sm text-gray-500 col-span-3 text-center py-2">Оценок пока нет. Преподаватели, оцените лучших студентов!</p>';
+                return;
             }
-            
+
             const studentScores = {};
             allGrades.forEach(g => { if (!studentScores[g.student_id]) studentScores[g.student_id] = { total: 0, count: 0 }; studentScores[g.student_id].total += g.grade; studentScores[g.student_id].count += 1; });
             const topStudents = Object.keys(studentScores).map(id => { const p = allProfiles.find(prof => prof.id === id) || { full_name: 'Студент', avatar_url: null }; return { id, name: p.full_name, avatar: p.avatar_url, avg: (studentScores[id].total / studentScores[id].count).toFixed(1) }; }).sort((a, b) => b.avg - a.avg).slice(0, 3);
-            
-            if (topStudents.length === 0) { 
-                grid.innerHTML = '<p class="text-sm text-gray-500 col-span-3 text-center py-2">Оценок пока нет. Преподаватели, оцените лучших студентов!</p>'; 
-                return; 
+
+            if (topStudents.length === 0) {
+                grid.innerHTML = '<p class="text-sm text-gray-500 col-span-3 text-center py-2">Оценок пока нет. Преподаватели, оцените лучших студентов!</p>';
+                return;
             }
-            
+
             grid.innerHTML = '';
             topStudents.forEach((s, index) => {
                 const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';
@@ -856,7 +860,15 @@
             const isFav = myFavoriteProjectIds.includes(String(p.id));
             const cardBorder = isApp ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-gray-100 dark:border-gray-700';
             const sBadge = isApp ? '<span class="bg-green-500 text-white text-[10px] px-2 py-0.5 rounded font-bold ml-1">В проекте</span>' : '';
-            const cBadge = p.status === 'closed' ? '<span class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded font-bold ml-1">Закрыт</span>' : '';
+
+            // Бейджи статуса
+            let statusBadges = '';
+            if (p.is_completed) {
+                statusBadges += '<span class="bg-gray-500 text-white text-[10px] px-2 py-0.5 rounded font-bold ml-1">Завершен</span>';
+            } else if (p.status === 'closed') {
+                statusBadges += '<span class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded font-bold ml-1">Закрыт</span>';
+            }
+
             const fIcon = isFav ? '<span class="text-yellow-500 text-lg">⭐</span>' : '';
             const teacherBadge = a?.is_teacher ? '<span class="bg-purple-100 text-purple-700 text-[9px] px-1.5 py-0.5 rounded ml-1 border border-purple-200">Преп.</span>' : '';
             const safeAvUrl = avUrl && avUrl.startsWith('http') ? escapeHTML(avUrl) : null;
@@ -864,15 +876,16 @@
             const uBadge = (unreadGroupCounts[p.id] > 0) ? `<span class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1 animate-pulse">💬 ${unreadGroupCounts[p.id]}</span>` : '';
             const descText = p.description ? escapeHTML(p.description) : '<span class="text-gray-400 italic">Без описания</span>';
             const viewsText = `<span class="text-[10px] text-gray-400">👁️ ${p.views || 0}</span>`;
+            const limitText = p.max_participants > 0 ? p.max_participants : '∞';
 
             return `<div data-id="${p.id}" style="animation-delay: ${index * 50}ms;" class="project-card animate-fade-in-up rounded-xl shadow border ${cardBorder} transition-all duration-300 hover:-translate-y-1 hover:shadow-xl relative flex flex-col overflow-hidden cursor-pointer bg-white dark:bg-gray-800 h-[300px]">
                 ${img}
                 <div class="p-4 flex flex-col flex-grow overflow-hidden">
-                    <div class="flex justify-between items-start mb-2"><div class="flex items-center flex-wrap gap-1"><span class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-[10px] px-2 py-0.5 rounded font-bold">${escapeHTML(p.category || 'Другое')}</span>${sBadge}${cBadge}${uBadge}</div><div class="flex items-center gap-2">${viewsText}${fIcon}</div></div>
+                    <div class="flex justify-between items-start mb-2"><div class="flex items-center flex-wrap gap-1"><span class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-[10px] px-2 py-0.5 rounded font-bold">${escapeHTML(p.category || 'Другое')}</span>${sBadge}${statusBadges}${uBadge}</div><div class="flex items-center gap-2">${viewsText}${fIcon}</div></div>
                     <h3 class="font-bold text-sm mb-1 text-gray-800 dark:text-gray-200 line-clamp-2 leading-tight">${escapeHTML(p.title)}</h3>
                     <p class="text-xs text-gray-600 dark:text-gray-400 mb-2 flex items-center truncate">${av} ${escapeHTML(aName)} ${teacherBadge}</p>
                     <p class="text-[11px] text-gray-600 dark:text-gray-400 mb-2 overflow-hidden flex-grow" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${descText}</p>
-                    <div class="flex items-center justify-between mt-auto pt-2 border-t border-gray-100 dark:border-gray-700"><span class="text-[10px] font-medium text-gray-500 truncate mr-2">Нужен: ${escapeHTML(p.role)}</span><span class="text-blue-600 text-xs font-semibold whitespace-nowrap">Подробнее &rarr;</span></div>
+                    <div class="flex items-center justify-between mt-auto pt-2 border-t border-gray-100 dark:border-gray-700"><span class="text-[10px] font-medium text-gray-500 truncate mr-2">Нужен: ${escapeHTML(p.role)} | Лимит: ${limitText}</span><span class="text-blue-600 text-xs font-semibold whitespace-nowrap">Подробнее &rarr;</span></div>
                 </div>
             </div>`;
         }
@@ -883,8 +896,15 @@
             const project = allProjects.find(p => String(p.id) === String(id)); if (!project) return;
             currentDetailProjectId = id; document.getElementById('detail-title').innerText = project.title; document.getElementById('detail-role').innerText = project.role; document.getElementById('detail-deadline').innerText = project.deadline; document.getElementById('detail-desc').innerText = project.description || 'Нет описания.'; document.getElementById('detail-category').innerText = project.category || 'Другое';
             document.getElementById('detail-views').innerText = `👁️ ${project.views || 0}`;
+            document.getElementById('detail-max-participants').innerText = project.max_participants > 0 ? project.max_participants : 'Без лимита';
+
             supabaseClient.rpc('increment_views', { project_id: project.id }).then(() => { project.views = (project.views || 0) + 1; document.getElementById('detail-views').innerText = `👁️ ${project.views}`; });
-            const statusEl = document.getElementById('detail-status'); if (project.status === 'closed') { statusEl.innerText = 'Набор закрыт'; statusEl.className = 'bg-red-100 text-red-700 text-xs px-2 py-1 rounded font-bold'; } else { statusEl.innerText = 'Открыт'; statusEl.className = 'bg-green-100 text-green-700 text-xs px-2 py-1 rounded font-bold'; }
+
+            const statusEl = document.getElementById('detail-status');
+            if (project.is_completed) { statusEl.innerText = 'Завершен (Пример)'; statusEl.className = 'bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded font-bold'; }
+            else if (project.status === 'closed') { statusEl.innerText = 'Набор закрыт'; statusEl.className = 'bg-red-100 text-red-700 text-xs px-2 py-1 rounded font-bold'; }
+            else { statusEl.innerText = 'Открыт'; statusEl.className = 'bg-green-100 text-green-700 text-xs px-2 py-1 rounded font-bold'; }
+
             const author = allProfiles.find(p => p.id === project.user_id);
             let authorNameHtml = escapeHTML(author?.full_name || 'Аноним');
             if (author?.is_teacher) authorNameHtml += ' <span class="bg-purple-100 text-purple-700 text-[10px] px-1.5 py-0.5 rounded">Преп.</span>';
@@ -897,9 +917,24 @@
             const safeTitle = escapeJSString(project.title);
             buttonsHTML += `<button onclick="navigator.clipboard.writeText(window.location.origin + '/?project=' + ${project.id}); alert('Ссылка скопирована!');" class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-bold border">🔗 Поделиться</button>`;
             buttonsHTML += `<button onclick="window.print()" class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-bold border">🖨️ В PDF</button>`;
-            if (isAuthor) { buttonsHTML += `<button onclick="openRequests()" class="bg-yellow-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Заявки</button><button onclick="exportData(${project.id})" class="bg-green-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold">CSV</button><button onclick="editProject(${project.id})" class="bg-blue-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Изменить</button><button onclick="deleteProject(${project.id})" class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Удалить</button>`; }
-            else if (isApproved) { buttonsHTML += `<button onclick="leaveProject(${project.id})" class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Покинуть</button><button onclick="openChat('${project.user_id}', ${project.id}, '${safeTitle}')" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Написать</button>`; }
-            else { if (project.status !== 'closed') buttonsHTML += `<button onclick="sendJoinRequest(${project.id}, '${project.user_id}')" class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Заявка</button>`; else buttonsHTML += `<span class="bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-sm font-bold cursor-not-allowed">Закрыт</span>`; buttonsHTML += `<button onclick="openChat('${project.user_id}', ${project.id}, '${safeTitle}')" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Написать</button>`; }
+
+            if (isAuthor) {
+                buttonsHTML += `<button onclick="openRequests()" class="bg-yellow-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Заявки</button><button onclick="exportData(${project.id})" class="bg-green-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold">CSV</button><button onclick="editProject(${project.id})" class="bg-blue-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Изменить</button><button onclick="deleteProject(${project.id})" class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Удалить</button>`;
+            }
+            else if (isApproved) {
+                buttonsHTML += `<button onclick="leaveProject(${project.id})" class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Покинуть</button><button onclick="openChat('${project.user_id}', ${project.id}, '${safeTitle}')" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Написать</button>`;
+            }
+            else {
+                if (project.is_completed) {
+                    buttonsHTML += `<span class="bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-sm font-bold cursor-not-allowed">Проект завершен</span>`;
+                } else if (project.status !== 'closed') {
+                    buttonsHTML += `<button onclick="sendJoinRequest(${project.id}, '${project.user_id}')" class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Заявка</button>`;
+                } else {
+                    buttonsHTML += `<span class="bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-sm font-bold cursor-not-allowed">Закрыт</span>`;
+                }
+                buttonsHTML += `<button onclick="openChat('${project.user_id}', ${project.id}, '${safeTitle}')" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Написать</button>`;
+            }
+
             if (isAuthor || isApproved) buttonsHTML += `<button onclick="openGroupChat(${project.id}, '${safeTitle}')" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold">Чат 💬</button>`;
             if (!isAuthor && currentUser) { const isFav = myFavoriteProjectIds.includes(String(project.id)); buttonsHTML += `<button onclick="toggleFavorite(${project.id})" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-lg text-sm font-bold border dark:border-gray-600">${isFav ? '⭐' : '☆'}</button>`; }
             document.getElementById('detail-actions').innerHTML = buttonsHTML;
@@ -971,12 +1006,40 @@
             earnedBadges.push(`<span class="bg-teal-100 text-teal-700 text-xs px-2 py-1 rounded-full font-bold">✅ Трудяга</span>`);
             achievementsList.innerHTML = earnedBadges.join('');
 
-            const reviewsList = document.getElementById('view-reviews-list'); reviewsList.innerHTML = 'Загрузка...';
+            const reviewsList = document.getElementById('view-reviews-list');
+            reviewsList.innerHTML = '';
+
+            // Выводим оценки от преподавателей
+            if (userGrades.length > 0) {
+                const avgGrade = (userGrades.reduce((acc, g) => acc + g.grade, 0) / userGrades.length).toFixed(1);
+                document.getElementById('view-rating').innerHTML = `<span class="text-green-600">Оценка от преподавателей: ${avgGrade} / 10</span>`;
+
+                reviewsList.insertAdjacentHTML('beforeend', `<div class="bg-green-50 dark:bg-green-900/30 p-3 rounded-lg mb-4"><h3 class="font-bold text-sm text-green-800 mb-2">Оценки от преподавателей:</h3>`);
+                userGrades.forEach(g => {
+                    const author = allProfiles.find(a => a.id === g.teacher_id);
+                    reviewsList.insertAdjacentHTML('beforeend', `<div class="bg-white dark:bg-gray-800 p-2 rounded text-sm mb-2 border border-green-100"><div class="flex justify-between font-bold"><span>${escapeHTML(author?.full_name || 'Преподаватель')}</span><span class="text-green-600 font-bold">${g.grade} / 10</span></div><p class="text-gray-600 mt-1">${escapeHTML(g.comment || 'Без комментария')}</p></div>`);
+                });
+                reviewsList.insertAdjacentHTML('beforeend', `</div>`);
+            } else {
+                document.getElementById('view-rating').innerHTML = `<span class="text-gray-500">Нет оценок от преподавателей</span>`;
+            }
+
+            // Выводим обычные отзывы
             try {
                 const { data } = await supabaseClient.from('reviews').select('*').eq('target_id', userId);
-                if (!data || data.length === 0) { reviewsList.innerHTML = 'Отзывов пока нет.'; document.getElementById('view-rating').innerText = 'Нет рейтинга'; }
-                else { const avg = (data.reduce((acc, r) => acc + r.rating, 0) / data.length).toFixed(1); document.getElementById('view-rating').innerText = `⭐ ${avg} (${data.length})`; reviewsList.innerHTML = ''; data.forEach(r => { const author = allProfiles.find(a => a.id === r.author_id); reviewsList.insertAdjacentHTML('beforeend', `<div class="bg-gray-50 dark:bg-gray-700 p-2 rounded text-sm mb-2"><div class="flex justify-between font-bold"><span>${escapeHTML(author?.full_name || 'Аноним')}</span><span class="text-yellow-500">${'★'.repeat(r.rating)}</span></div><p class="text-gray-600 mt-1">${escapeHTML(r.text)}</p></div>`); }); }
+                if (!data || data.length === 0) {
+                    if (userGrades.length === 0) reviewsList.innerHTML = 'Отзывов и оценок пока нет.';
+                    else reviewsList.insertAdjacentHTML('beforeend', '<p class="text-xs text-gray-500 mt-2">Текстовых отзывов пока нет.</p>');
+                }
+                else {
+                    reviewsList.insertAdjacentHTML('beforeend', `<h3 class="font-bold text-sm mb-2 mt-4">Отзывы:</h3>`);
+                    data.forEach(r => {
+                        const author = allProfiles.find(a => a.id === r.author_id);
+                        reviewsList.insertAdjacentHTML('beforeend', `<div class="bg-gray-50 dark:bg-gray-700 p-2 rounded text-sm mb-2"><div class="flex justify-between font-bold"><span>${escapeHTML(author?.full_name || 'Аноним')}</span><span class="text-yellow-500">${'★'.repeat(r.rating)}</span></div><p class="text-gray-600 mt-1">${escapeHTML(r.text)}</p></div>`);
+                    });
+                }
             } catch (err) { console.error(err); }
+
             document.getElementById('viewProfileModal').classList.remove('hidden'); document.getElementById('viewProfileModal').classList.add('flex');
         }
 
@@ -1088,9 +1151,31 @@
         async function openRequests() { const list = document.getElementById('requestsList'); list.innerHTML = 'Загрузка...'; document.getElementById('requestsModal').classList.remove('hidden'); document.getElementById('requestsModal').classList.add('flex'); document.body.style.overflow = 'hidden'; mobileMenu.classList.add('hidden'); const myProjectIds = allProjects.filter(p => p.user_id === currentUser.id).map(p => p.id); if (myProjectIds.length === 0) return list.innerHTML = 'Нет проектов.'; try { const { data } = await supabaseClient.from('join_requests').select('*').in('project_id', myProjectIds).order('created_at', { ascending: false }); if (!data || data.length === 0) return list.innerHTML = 'Нет заявок.'; list.innerHTML = ''; data.forEach(req => { const project = allProjects.find(p => String(p.id) === String(req.project_id)); const userProfile = allProfiles.find(p => p.id === req.user_id); let statusBadge = req.status === 'approved' ? '<span class="text-green-600 font-bold text-xs">Принят</span>' : req.status === 'rejected' ? '<span class="text-red-600 font-bold text-xs">Отклонен</span>' : '<span class="text-yellow-600 font-bold text-xs">В ожидании</span>'; const btns = req.status === 'pending' ? `<div class="flex gap-1 mt-2"><button onclick="updateRequest(${req.id}, 'approved')" class="bg-green-500 text-white px-2 py-1 rounded text-xs">Принять</button><button onclick="updateRequest(${req.id}, 'rejected')" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Отклонить</button></div>` : ''; list.insertAdjacentHTML('beforeend', `<div class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm border dark:border-gray-600 mb-2"><div class="flex justify-between items-start mb-1"><div><p class="font-bold text-sm">${escapeHTML(userProfile?.full_name || 'Пользователь')}</p><p class="text-xs text-gray-500">Проект: <span class="font-medium text-blue-600">${escapeHTML(project?.title || 'Удален')}</span></p></div>${statusBadge}</div>${btns}</div>`); }); } catch (e) { list.innerHTML = "Ошибка"; } }
         window.updateRequest = async function (reqId, newStatus) { await supabaseClient.from('join_requests').update({ status: newStatus }).eq('id', reqId); openRequests(); }
 
-        window.editProject = function (id) { const p = allProjects.find(x => String(x.id) === String(id)); if (!p) return; editingProjectId = id; document.getElementById('modalTitle').innerText = "Редактировать"; document.getElementById('submitBtn').innerText = "Сохранить"; document.getElementById('input-title').value = p.title; document.getElementById('input-category').value = p.category || 'Другое'; document.getElementById('input-status').value = p.status || 'open'; document.getElementById('input-deadline').value = p.deadline; document.getElementById('input-role').value = p.role; document.getElementById('input-desc').value = p.description || ''; document.getElementById('input-image').value = ''; if (p.image_url) { document.getElementById('current-image-preview').src = p.image_url; document.getElementById('current-image-container').classList.remove('hidden'); } else document.getElementById('current-image-container').classList.add('hidden'); document.getElementById('modal').classList.remove('hidden'); document.getElementById('modal').classList.add('flex'); document.getElementById('detailModal').classList.add('hidden'); }
+        window.editProject = function (id) {
+            const p = allProjects.find(x => String(x.id) === String(id)); if (!p) return; editingProjectId = id; document.getElementById('modalTitle').innerText = "Редактировать"; document.getElementById('submitBtn').innerText = "Сохранить"; document.getElementById('input-title').value = p.title; document.getElementById('input-category').value = p.category || 'Другое'; document.getElementById('input-status').value = p.status || 'open'; document.getElementById('input-deadline').value = p.deadline; document.getElementById('input-role').value = p.role; document.getElementById('input-desc').value = p.description || ''; document.getElementById('input-image').value = ''; if (p.image_url) { document.getElementById('current-image-preview').src = p.image_url; document.getElementById('current-image-container').classList.remove('hidden'); } else document.getElementById('current-image-container').classList.add('hidden');
+            document.getElementById('input-max-participants').value = p.max_participants || '';
+            document.getElementById('input-is-completed').value = p.is_completed ? 'true' : 'false';
+            document.getElementById('modal').classList.remove('hidden'); document.getElementById('modal').classList.add('flex'); document.getElementById('detailModal').classList.add('hidden');
+        }
+
         window.deleteProject = async function (id) { if (confirm('Удалить?')) { await supabaseClient.from('projects').delete().eq('id', id); loadProjects(); document.getElementById('detailModal').classList.add('hidden'); } }
-        document.getElementById('projectForm')?.addEventListener('submit', async (e) => { e.preventDefault(); const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerText = "Ждите..."; const titleVal = document.getElementById('input-title').value.trim(); const deadlineVal = document.getElementById('input-deadline').value.trim(); if (!titleVal) { alert("Введите тему проекта!"); btn.disabled = false; btn.innerText = "Опубликовать"; return; } if (!deadlineVal) { alert("Введите сроки!"); btn.disabled = false; btn.innerText = "Опубликовать"; return; } try { const file = document.getElementById('input-image').files[0]; let imageUrl = null; if (file) { if (file.size > 10 * 1024 * 1024) throw new Error("Картинка > 10 МБ."); const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`; const { error: upErr } = await supabaseClient.storage.from('project-images').upload(fileName, file); if (upErr) throw upErr; imageUrl = supabaseClient.storage.from('project-images').getPublicUrl(fileName).data.publicUrl; } const projectData = { title: titleVal, category: document.getElementById('input-category').value, status: document.getElementById('input-status').value, deadline: document.getElementById('input-deadline').value, role: document.getElementById('input-role').value, description: document.getElementById('input-desc').value }; if (editingProjectId) { const cur = allProjects.find(p => String(p.id) === String(editingProjectId)); let finalImg = document.getElementById('delete-image-checkbox').checked ? null : cur.image_url; if (file) finalImg = imageUrl; const { error } = await supabaseClient.from('projects').update({ ...projectData, image_url: finalImg }).eq('id', editingProjectId); if (error) throw error; } else { const { error } = await supabaseClient.from('projects').insert([{ ...projectData, user_id: currentUser.id, image_url: imageUrl }]); if (error) throw error; } document.getElementById('modal').classList.add('hidden'); document.getElementById('projectForm').reset(); editingProjectId = null; loadProjects(); } catch (err) { alert("Ошибка: " + err.message); } finally { btn.disabled = false; btn.innerText = "Опубликовать"; } });
+
+        document.getElementById('projectForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault(); const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerText = "Ждите..."; const titleVal = document.getElementById('input-title').value.trim(); const deadlineVal = document.getElementById('input-deadline').value.trim(); if (!titleVal) { alert("Введите тему проекта!"); btn.disabled = false; btn.innerText = "Опубликовать"; return; } if (!deadlineVal) { alert("Введите сроки!"); btn.disabled = false; btn.innerText = "Опубликовать"; return; } try {
+                const file = document.getElementById('input-image').files[0]; let imageUrl = null; if (file) { if (file.size > 10 * 1024 * 1024) throw new Error("Картинка > 10 МБ."); const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`; const { error: upErr } = await supabaseClient.storage.from('project-images').upload(fileName, file); if (upErr) throw upErr; imageUrl = supabaseClient.storage.from('project-images').getPublicUrl(fileName).data.publicUrl; }
+                const projectData = {
+                    title: titleVal,
+                    category: document.getElementById('input-category').value,
+                    status: document.getElementById('input-status').value,
+                    deadline: document.getElementById('input-deadline').value,
+                    role: document.getElementById('input-role').value,
+                    description: document.getElementById('input-desc').value,
+                    max_participants: parseInt(document.getElementById('input-max-participants').value) || 0,
+                    is_completed: document.getElementById('input-is-completed').value === 'true'
+                };
+                if (editingProjectId) { const cur = allProjects.find(p => String(p.id) === String(editingProjectId)); let finalImg = document.getElementById('delete-image-checkbox').checked ? null : cur.image_url; if (file) finalImg = imageUrl; const { error } = await supabaseClient.from('projects').update({ ...projectData, image_url: finalImg }).eq('id', editingProjectId); if (error) throw error; } else { const { error } = await supabaseClient.from('projects').insert([{ ...projectData, user_id: currentUser.id, image_url: imageUrl }]); if (error) throw error; } document.getElementById('modal').classList.add('hidden'); document.getElementById('projectForm').reset(); editingProjectId = null; loadProjects();
+            } catch (err) { alert("Ошибка: " + err.message); } finally { btn.disabled = false; btn.innerText = "Опубликовать"; }
+        });
 
         document.getElementById('authForm')?.addEventListener('submit', async (e) => { e.preventDefault(); const { error } = await supabaseClient.auth.signInWithPassword({ email: document.getElementById('auth-email').value, password: document.getElementById('auth-password').value }); if (!error) { document.getElementById('authModal').classList.add('hidden'); document.getElementById('authForm').reset(); } else alert(error.message); });
 
