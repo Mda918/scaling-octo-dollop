@@ -151,7 +151,8 @@
                 <div class="hidden md:block md:w-2/5 pl-8">
                     <div
                         class="w-48 h-48 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-2xl mx-auto border-4 border-blue-100 dark:border-gray-700 transform rotate-3">
-                        <span class="text-7xl inline-block animate-float">🔬</span></div>
+                        <span class="text-7xl inline-block animate-float">🔬</span>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1142,20 +1143,189 @@
         function setupGlobalRealtime() { if (globalSubscription) supabaseClient.removeChannel(globalSubscription); globalSubscription = supabaseClient.channel(`user_notifications_${currentUser.id}`).on('broadcast', { event: 'new_message' }, () => { updateUnreadBadge(); if (!document.getElementById('inboxModal').classList.contains('hidden')) openInbox(); }).on('broadcast', { event: 'new_request' }, () => { updateRequestsBadge(); if (!document.getElementById('requestsModal').classList.contains('hidden')) openRequests(); }).on('broadcast', { event: 'new_group_message_alert' }, (payload) => { const projectId = payload.payload.project_id; if (String(currentDetailProjectId) === String(projectId) && !document.getElementById('groupChatModal').classList.contains('hidden')) return; if (!unreadGroupCounts[projectId]) unreadGroupCounts[projectId] = 0; unreadGroupCounts[projectId]++; renderProjects(); }).subscribe(); }
         async function markMessagesAsRead(senderId, projectId) { if (!senderId) return; let query = supabaseClient.from('messages').update({ is_read: true }).eq('receiver_id', currentUser.id).eq('sender_id', senderId); if (projectId) query = query.eq('project_id', projectId); await query; updateUnreadBadge(); }
 
-        async function loadProjectMembers(projectId, isAuthor) { const list = document.getElementById('detail-members-list'); list.innerHTML = ''; try { const { data } = await supabaseClient.from('join_requests').select('user_id').eq('project_id', projectId).eq('status', 'approved'); if (!data || data.length === 0) { list.innerHTML = '<span class="text-xs text-gray-500">Нет участников</span>'; return; } data.forEach(req => { const profile = allProfiles.find(p => p.id === req.user_id); const name = profile?.full_name || 'Пользователь'; const kickBtn = isAuthor ? `<button onclick="kickMember('${projectId}', '${req.user_id}')" class="ml-1 text-red-500 font-bold">✕</button>` : ''; const revBtn = isAuthor ? `<button onclick="openReviewModal('${req.user_id}')" class="ml-1 text-green-600 font-bold">⭐</button>` : ''; list.insertAdjacentHTML('beforeend', `<span class="bg-gray-200 dark:bg-gray-700 text-xs px-2 py-1 rounded-full flex items-center mb-1 mr-1">${escapeHTML(name)} ${kickBtn} ${revBtn}</span>`); }); } catch (e) { console.error(e); } }
-        window.kickMember = async function (pid, mid) { if (!confirm(`Исключить участника?`)) return; await supabaseClient.from('join_requests').update({ status: 'rejected' }).eq('project_id', pid).eq('user_id', mid); await supabaseClient.from('project_files').delete().eq('project_id', pid).eq('user_id', mid); openProjectDetail(pid); }
-        window.leaveProject = async function (pid) { if (!confirm('Покинуть проект?')) return; await supabaseClient.from('join_requests').update({ status: 'rejected' }).eq('project_id', pid).eq('user_id', currentUser.id); await supabaseClient.from('project_files').delete().eq('project_id', pid).eq('user_id', currentUser.id); await loadMyApprovedProjects(); loadProjects(); document.getElementById('detailModal').classList.add('hidden'); }
-        async function loadProjectFiles(projectId) { const list = document.getElementById('detail-files-list'); const noMsg = document.getElementById('no-files-msg'); list.innerHTML = ''; noMsg.classList.add('hidden'); try { const { data } = await supabaseClient.from('project_files').select('*').eq('project_id', projectId).order('created_at', { ascending: false }); if (!data || data.length === 0) { noMsg.classList.remove('hidden'); return; } for (const file of data) { let url = file.file_url; if (!url.startsWith('http')) { const { data: u } = await supabaseClient.storage.from('project-documents').createSignedUrl(file.file_url, 3600); if (u) url = u.signedUrl; } list.insertAdjacentHTML('beforeend', `<a href="${url}" target="_blank" class="flex justify-between items-center bg-white dark:bg-gray-600 p-2 rounded border text-xs text-blue-700 dark:text-blue-300 mb-1"><span>📄 ${escapeHTML(file.file_name)}</span></a>`); } } catch (e) { console.error(e); } }
-        document.getElementById('uploadFileForm')?.addEventListener('submit', async (e) => { e.preventDefault(); const file = document.getElementById('project-file-input').files[0]; if (!file || !currentDetailProjectId) return; if (file.size > 10 * 1024 * 1024) return alert("Файл > 10 МБ."); const btn = document.getElementById('uploadFileBtn'); btn.disabled = true; const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.\s_-]/g, '_')}`; try { const { error } = await supabaseClient.storage.from('project-documents').upload(fileName, file); if (error) throw error; await supabaseClient.from('project_files').insert([{ project_id: currentDetailProjectId, user_id: currentUser.id, file_name: file.name, file_url: fileName }]); document.getElementById('project-file-input').value = ''; loadProjectFiles(currentDetailProjectId); } catch (err) { alert("Ошибка загрузки файла!"); console.error(err); } btn.disabled = false; });
-        window.sendJoinRequest = async function (pid, aid) { if (!currentUser) return alert("Войдите!"); try { const { data } = await supabaseClient.from('join_requests').select('*').eq('project_id', pid).eq('user_id', currentUser.id).maybeSingle(); if (data) { if (data.status === 'pending') return alert("Ждите."); if (data.status === 'approved') return alert("Вы приняты."); if (data.status === 'rejected') { await supabaseClient.from('join_requests').update({ status: 'pending' }).eq('id', data.id); } } else { await supabaseClient.from('join_requests').insert([{ project_id: pid, user_id: currentUser.id, status: 'pending' }]); } alert("Заявка отправлена!"); const ch = supabaseClient.channel(`user_notifications_${aid}`); ch.subscribe(s => { if (s === 'SUBSCRIBED') { ch.send({ type: 'broadcast', event: 'new_request', payload: {} }); setTimeout(() => supabaseClient.removeChannel(ch), 1000); } }); document.getElementById('detailModal').classList.add('hidden'); } catch (err) { alert("Ошибка отправки заявки"); } }
-        async function openRequests() { const list = document.getElementById('requestsList'); list.innerHTML = 'Загрузка...'; document.getElementById('requestsModal').classList.remove('hidden'); document.getElementById('requestsModal').classList.add('flex'); document.body.style.overflow = 'hidden'; mobileMenu.classList.add('hidden'); const myProjectIds = allProjects.filter(p => p.user_id === currentUser.id).map(p => p.id); if (myProjectIds.length === 0) return list.innerHTML = 'Нет проектов.'; try { const { data } = await supabaseClient.from('join_requests').select('*').in('project_id', myProjectIds).order('created_at', { ascending: false }); if (!data || data.length === 0) return list.innerHTML = 'Нет заявок.'; list.innerHTML = ''; data.forEach(req => { const project = allProjects.find(p => String(p.id) === String(req.project_id)); const userProfile = allProfiles.find(p => p.id === req.user_id); let statusBadge = req.status === 'approved' ? '<span class="text-green-600 font-bold text-xs">Принят</span>' : req.status === 'rejected' ? '<span class="text-red-600 font-bold text-xs">Отклонен</span>' : '<span class="text-yellow-600 font-bold text-xs">В ожидании</span>'; const btns = req.status === 'pending' ? `<div class="flex gap-1 mt-2"><button onclick="updateRequest(${req.id}, 'approved')" class="bg-green-500 text-white px-2 py-1 rounded text-xs">Принять</button><button onclick="updateRequest(${req.id}, 'rejected')" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Отклонить</button></div>` : ''; list.insertAdjacentHTML('beforeend', `<div class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm border dark:border-gray-600 mb-2"><div class="flex justify-between items-start mb-1"><div><p class="font-bold text-sm">${escapeHTML(userProfile?.full_name || 'Пользователь')}</p><p class="text-xs text-gray-500">Проект: <span class="font-medium text-blue-600">${escapeHTML(project?.title || 'Удален')}</span></p></div>${statusBadge}</div>${btns}</div>`); }); } catch (e) { list.innerHTML = "Ошибка"; } }
-        window.updateRequest = async function (reqId, newStatus) { await supabaseClient.from('join_requests').update({ status: newStatus }).eq('id', reqId); openRequests(); }
+                async function loadProjectMembers(projectId, isAuthor) { 
+            const list = document.getElementById('detail-members-list'); 
+            list.innerHTML = ''; 
+            try { 
+                const { data } = await supabaseClient.from('join_requests').select('user_id').eq('project_id', projectId).eq('status', 'approved'); 
+                if (!data || data.length === 0) { 
+                    list.innerHTML = '<span class="text-xs text-gray-500">Нет участников</span>'; 
+                    return; 
+                } 
+                
+                const myProfile = allProfiles.find(p => p.id === currentUser?.id);
+                const iAmTeacher = myProfile?.is_teacher === true;
+
+                data.forEach(req => { 
+                    const profile = allProfiles.find(p => p.id === req.user_id); 
+                    const name = profile?.full_name || 'Пользователь'; 
+                    const kickBtn = isAuthor ? `<button onclick="kickMember('${projectId}', '${req.user_id}')" class="ml-1 text-red-500 font-bold" title="Исключить">✕</button>` : ''; 
+                    
+                    let revBtn = '';
+                    if (isAuthor || iAmTeacher) {
+                        const clickAction = iAmTeacher 
+                            ? `openRatingForMember('${req.user_id}')` 
+                            : `openReviewModal('${req.user_id}')`;
+                        const icon = iAmTeacher ? '🎓' : '⭐';
+                        const title = iAmTeacher ? 'Оценить как преподаватель (1-10)' : 'Оставить отзыв (1-5)';
+                        revBtn = `<button onclick="${clickAction}" class="ml-1 text-green-600 font-bold" title="${title}">${icon}</button>`;
+                    }
+
+                    list.insertAdjacentHTML('beforeend', `<span class="bg-gray-200 dark:bg-gray-700 text-xs px-2 py-1 rounded-full flex items-center mb-1 mr-1">${escapeHTML(name)} ${kickBtn} ${revBtn}</span>`); 
+                }); 
+            } catch(e) { 
+                console.error(e); 
+            } 
+        }
+
+        // Вспомогательная функция для преподавателей, чтобы открыть окно 1-10 прямо из списка участников
+        window.openRatingForMember = function(studentId) {
+            currentViewProfileId = studentId;
+            openRatingModal();
+        }
+
+        window.kickMember = async function (pid, mid) { 
+            if (!confirm(`Исключить участника?`)) return; 
+            await supabaseClient.from('join_requests').update({ status: 'rejected' }).eq('project_id', pid).eq('user_id', mid); 
+            await supabaseClient.from('project_files').delete().eq('project_id', pid).eq('user_id', mid); 
+            openProjectDetail(pid); 
+        }
+
+        window.leaveProject = async function (pid) { 
+            if (!confirm('Покинуть проект?')) return; 
+            await supabaseClient.from('join_requests').update({ status: 'rejected' }).eq('project_id', pid).eq('user_id', currentUser.id); 
+            await supabaseClient.from('project_files').delete().eq('project_id', pid).eq('user_id', currentUser.id); 
+            await loadMyApprovedProjects(); 
+            loadProjects(); 
+            document.getElementById('detailModal').classList.add('hidden'); 
+        }
+
+        async function loadProjectFiles(projectId) { 
+            const list = document.getElementById('detail-files-list'); 
+            const noMsg = document.getElementById('no-files-msg'); 
+            list.innerHTML = ''; 
+            noMsg.classList.add('hidden'); 
+            try { 
+                const { data } = await supabaseClient.from('project_files').select('*').eq('project_id', projectId).order('created_at', { ascending: false }); 
+                if (!data || data.length === 0) { 
+                    noMsg.classList.remove('hidden'); 
+                    return; 
+                } 
+                for (const file of data) { 
+                    let url = file.file_url; 
+                    if (!url.startsWith('http')) { 
+                        const { data: u } = await supabaseClient.storage.from('project-documents').createSignedUrl(file.file_url, 3600); 
+                        if (u) url = u.signedUrl; 
+                    } 
+                    list.insertAdjacentHTML('beforeend', `<a href="${url}" target="_blank" class="flex justify-between items-center bg-white dark:bg-gray-600 p-2 rounded border text-xs text-blue-700 dark:text-blue-300 mb-1"><span>📄 ${escapeHTML(file.file_name)}</span></a>`); 
+                } 
+            } catch(e) { 
+                console.error(e); 
+            } 
+        }
+
+        document.getElementById('uploadFileForm')?.addEventListener('submit', async (e) => { 
+            e.preventDefault(); 
+            const file = document.getElementById('project-file-input').files[0]; 
+            if (!file || !currentDetailProjectId) return; 
+            if (file.size > 10 * 1024 * 1024) return alert("Файл > 10 МБ."); 
+            const btn = document.getElementById('uploadFileBtn'); 
+            btn.disabled = true; 
+            const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.\s_-]/g, '_')}`; 
+            try { 
+                const { error } = await supabaseClient.storage.from('project-documents').upload(fileName, file); 
+                if (error) throw error; 
+                await supabaseClient.from('project_files').insert([{ project_id: currentDetailProjectId, user_id: currentUser.id, file_name: file.name, file_url: fileName }]); 
+                document.getElementById('project-file-input').value = ''; 
+                loadProjectFiles(currentDetailProjectId); 
+            } catch(err) { 
+                alert("Ошибка загрузки файла!"); 
+                console.error(err); 
+            } 
+            btn.disabled = false; 
+        });
+
+        window.sendJoinRequest = async function(pid, aid) { 
+            if (!currentUser) return alert("Войдите!"); 
+            try { 
+                const { data } = await supabaseClient.from('join_requests').select('*').eq('project_id', pid).eq('user_id', currentUser.id).maybeSingle(); 
+                if (data) { 
+                    if (data.status === 'pending') return alert("Ждите."); 
+                    if (data.status === 'approved') return alert("Вы приняты."); 
+                    if (data.status === 'rejected') { 
+                        await supabaseClient.from('join_requests').update({ status: 'pending' }).eq('id', data.id); 
+                    } 
+                } else { 
+                    await supabaseClient.from('join_requests').insert([{ project_id: pid, user_id: currentUser.id, status: 'pending' }]); 
+                } 
+                alert("Заявка отправлена!"); 
+                const ch = supabaseClient.channel(`user_notifications_${aid}`); 
+                ch.subscribe(s => { 
+                    if (s === 'SUBSCRIBED') { 
+                        ch.send({ type: 'broadcast', event: 'new_request', payload: {} }); 
+                        setTimeout(() => supabaseClient.removeChannel(ch), 1000); 
+                    } 
+                }); 
+                document.getElementById('detailModal').classList.add('hidden'); 
+            } catch(err) { 
+                alert("Ошибка отправки заявки"); 
+            } 
+        }
+
+        async function openRequests() { 
+            const list = document.getElementById('requestsList'); 
+            list.innerHTML = 'Загрузка...'; 
+            document.getElementById('requestsModal').classList.remove('hidden'); 
+            document.getElementById('requestsModal').classList.add('flex'); 
+            document.body.style.overflow = 'hidden'; 
+            mobileMenu.classList.add('hidden'); 
+            const myProjectIds = allProjects.filter(p => p.user_id === currentUser.id).map(p => p.id); 
+            if (myProjectIds.length === 0) return list.innerHTML = 'Нет проектов.'; 
+            try { 
+                const { data } = await supabaseClient.from('join_requests').select('*').in('project_id', myProjectIds).order('created_at', { ascending: false }); 
+                if (!data || data.length === 0) return list.innerHTML = 'Нет заявок.'; 
+                list.innerHTML = ''; 
+                data.forEach(req => { 
+                    const project = allProjects.find(p => String(p.id) === String(req.project_id)); 
+                    const userProfile = allProfiles.find(p => p.id === req.user_id); 
+                    let statusBadge = req.status === 'approved' ? '<span class="text-green-600 font-bold text-xs">Принят</span>' : req.status === 'rejected' ? '<span class="text-red-600 font-bold text-xs">Отклонен</span>' : '<span class="text-yellow-600 font-bold text-xs">В ожидании</span>'; 
+                    const btns = req.status === 'pending' ? `<div class="flex gap-1 mt-2"><button onclick="updateRequest(${req.id}, 'approved')" class="bg-green-500 text-white px-2 py-1 rounded text-xs">Принять</button><button onclick="updateRequest(${req.id}, 'rejected')" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Отклонить</button></div>` : ''; 
+                    list.insertAdjacentHTML('beforeend', `<div class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm border dark:border-gray-600 mb-2"><div class="flex justify-between items-start mb-1"><div><p class="font-bold text-sm">${escapeHTML(userProfile?.full_name || 'Пользователь')}</p><p class="text-xs text-gray-500">Проект: <span class="font-medium text-blue-600">${escapeHTML(project?.title || 'Удален')}</span></p></div>${statusBadge}</div>${btns}</div>`); 
+                }); 
+            } catch(e) { 
+                list.innerHTML = "Ошибка"; 
+            } 
+        }
+
+        window.updateRequest = async function (reqId, newStatus) { 
+            await supabaseClient.from('join_requests').update({ status: newStatus }).eq('id', reqId); 
+            openRequests(); 
+        }
 
         window.editProject = function (id) {
-            const p = allProjects.find(x => String(x.id) === String(id)); if (!p) return; editingProjectId = id; document.getElementById('modalTitle').innerText = "Редактировать"; document.getElementById('submitBtn').innerText = "Сохранить"; document.getElementById('input-title').value = p.title; document.getElementById('input-category').value = p.category || 'Другое'; document.getElementById('input-status').value = p.status || 'open'; document.getElementById('input-deadline').value = p.deadline; document.getElementById('input-role').value = p.role; document.getElementById('input-desc').value = p.description || ''; document.getElementById('input-image').value = ''; if (p.image_url) { document.getElementById('current-image-preview').src = p.image_url; document.getElementById('current-image-container').classList.remove('hidden'); } else document.getElementById('current-image-container').classList.add('hidden');
+            const p = allProjects.find(x => String(x.id) === String(id)); 
+            if (!p) return; 
+            editingProjectId = id; 
+            document.getElementById('modalTitle').innerText = "Редактировать"; 
+            document.getElementById('submitBtn').innerText = "Сохранить"; 
+            document.getElementById('input-title').value = p.title; 
+            document.getElementById('input-category').value = p.category || 'Другое'; 
+            document.getElementById('input-status').value = p.status || 'open'; 
+            document.getElementById('input-deadline').value = p.deadline; 
+            document.getElementById('input-role').value = p.role; 
+            document.getElementById('input-desc').value = p.description || ''; 
+            document.getElementById('input-image').value = ''; 
+            if (p.image_url) { 
+                document.getElementById('current-image-preview').src = p.image_url; 
+                document.getElementById('current-image-container').classList.remove('hidden'); 
+            } else {
+                document.getElementById('current-image-container').classList.add('hidden'); 
+            }
             document.getElementById('input-max-participants').value = p.max_participants || '';
             document.getElementById('input-is-completed').value = p.is_completed ? 'true' : 'false';
-            document.getElementById('modal').classList.remove('hidden'); document.getElementById('modal').classList.add('flex'); document.getElementById('detailModal').classList.add('hidden');
+            document.getElementById('modal').classList.remove('hidden'); 
+            document.getElementById('modal').classList.add('flex'); 
+            document.getElementById('detailModal').classList.add('hidden');
         }
 
         window.deleteProject = async function (id) { if (confirm('Удалить?')) { await supabaseClient.from('projects').delete().eq('id', id); loadProjects(); document.getElementById('detailModal').classList.add('hidden'); } }
