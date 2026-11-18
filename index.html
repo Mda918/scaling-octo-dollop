@@ -151,7 +151,8 @@
                 <div class="hidden md:block md:w-2/5 pl-8">
                     <div
                         class="w-48 h-48 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-2xl mx-auto border-4 border-blue-100 dark:border-gray-700 transform rotate-3">
-                        <span class="text-7xl inline-block animate-float">🔬</span></div>
+                        <span class="text-7xl inline-block animate-float">🔬</span>
+                    </div>
                 </div>
             </div>
         </section>
@@ -803,14 +804,28 @@
         }
 
         async function loadGrades() { try { const { data } = await supabaseClient.from('teacher_grades').select('*'); if (data) allGrades = data; } catch (e) { console.error(e); } }
-        function loadTierList() {
-            const container = document.getElementById('tierListContainer'); const grid = document.getElementById('tierListGrid');
-            if (allGrades.length === 0) { container.classList.add('hidden'); return; }
+                function loadTierList() {
+            const container = document.getElementById('tierListContainer'); 
+            const grid = document.getElementById('tierListGrid');
+            
+            // Принудительно показываем контейнер
+            container.classList.remove('hidden'); 
+
+            if (allGrades.length === 0) { 
+                grid.innerHTML = '<p class="text-sm text-gray-500 col-span-3 text-center py-2">Оценок пока нет. Преподаватели, оцените лучших студентов!</p>'; 
+                return; 
+            }
+            
             const studentScores = {};
             allGrades.forEach(g => { if (!studentScores[g.student_id]) studentScores[g.student_id] = { total: 0, count: 0 }; studentScores[g.student_id].total += g.grade; studentScores[g.student_id].count += 1; });
             const topStudents = Object.keys(studentScores).map(id => { const p = allProfiles.find(prof => prof.id === id) || { full_name: 'Студент', avatar_url: null }; return { id, name: p.full_name, avatar: p.avatar_url, avg: (studentScores[id].total / studentScores[id].count).toFixed(1) }; }).sort((a, b) => b.avg - a.avg).slice(0, 3);
-            if (topStudents.length === 0) { container.classList.add('hidden'); return; }
-            container.classList.remove('hidden'); grid.innerHTML = '';
+            
+            if (topStudents.length === 0) { 
+                grid.innerHTML = '<p class="text-sm text-gray-500 col-span-3 text-center py-2">Оценок пока нет. Преподаватели, оцените лучших студентов!</p>'; 
+                return; 
+            }
+            
+            grid.innerHTML = '';
             topStudents.forEach((s, index) => {
                 const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';
                 const av = s.avatar ? `<img src="${escapeHTML(s.avatar)}" class="w-10 h-10 rounded-full object-cover">` : `<div class="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center font-bold text-blue-700">${escapeHTML(s.name[0].toUpperCase())}</div>`;
